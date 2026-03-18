@@ -1,0 +1,1503 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>InternLog — Smart Digital Logbook System</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link rel="stylesheet" href="css/style.css">
+
+</head>
+<body>
+
+<!-- ============================================================ -->
+<!--  PAGE 1: REGISTER                                            -->
+<!-- ============================================================ -->
+<div id="page-register" class="page active" style="display:flex">
+  <div class="auth-wrap">
+    <div class="auth-left">
+      <div class="auth-left-content">
+        <div class="auth-logo"><i class="fas fa-book-open"></i></div>
+        <h1>InternLog</h1>
+        <p>Smart Digital Logbook System with GPS Verification for Internship Programs</p>
+        <div class="auth-features">
+          <div class="auth-feature"><i class="fas fa-map-marker-alt"></i><span>GPS-verified attendance & placement tracking</span></div>
+          <div class="auth-feature"><i class="fas fa-clipboard-check"></i><span>Digital task logging & supervisor approval</span></div>
+          <div class="auth-feature"><i class="fas fa-chart-line"></i><span>Real-time progress monitoring & analytics</span></div>
+          <div class="auth-feature"><i class="fas fa-comments"></i><span>Integrated supervisor communication</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="auth-right">
+      <div class="auth-card">
+        <h2>Create Account</h2>
+        <p class="sub">Join the smart internship management platform</p>
+        <div class="form-group">
+          <label>Select Your Role</label>
+          <select id="reg-role" onchange="toggleRegFields()">
+            <option value="">— Choose role —</option>
+            <option value="student">Student Intern</option>
+            <option value="school-supervisor">School Supervisor</option>
+            <option value="industry-supervisor">Industry Supervisor</option>
+            <option value="admin">Administrator</option>
+          </select>
+        </div>
+        <!-- STUDENT FIELDS -->
+        <div id="student-fields" style="display:none">
+          <div class="form-row">
+            <div class="form-group">
+              <label>Full Name</label>
+              <div class="input-icon"><i class="fas fa-user"></i><input type="text" placeholder="Your full name"></div>
+            </div>
+            <div class="form-group">
+              <label>Registration Number</label>
+              <div class="input-icon"><i class="fas fa-id-card"></i><input type="text" placeholder="e.g. 2021/BSC/001"></div>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Year of Study</label>
+              <select><option>Year 1</option><option>Year 2</option><option>Year 3</option><option>Year 4</option></select>
+            </div>
+            <div class="form-group">
+              <label>Internship Attempt</label>
+              <select><option>First Time</option><option>Retake</option></select>
+            </div>
+            <div class="form-group">
+              <label>Department / Course</label>
+              <div class="input-icon"><i class="fas fa-graduation-cap"></i><input type="text" placeholder="e.g. BSc Computer Science"></div>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Name of Placement (Company / Organisation)</label>
+            <div class="input-icon"><i class="fas fa-building"></i><input type="text" placeholder="Your internship placement name & location"></div>
+          </div>
+          <div class="form-group">
+            <label>Country</label>
+            <select><option>Uganda</option><option>Tanzania</option><option>kenya</option><option>Somalia</option><option>South sudan</option></select>
+          </div>
+          <div class="form-group">
+            <label>Email Address</label>
+            <div class="input-icon"><i class="fas fa-envelope"></i><input type="email" placeholder="student@university.ac.ug"></div>
+          </div>
+
+        </div>
+        <!-- SUPERVISOR / ADMIN FIELDS -->
+        <div id="supervisor-fields" style="display:none">
+          <div class="form-row">
+            <div class="form-group">
+              <label>Full Name</label>
+              <div class="input-icon"><i class="fas fa-user"></i><input type="text" placeholder="Your full name"></div>
+            </div>
+            <div class="form-group">
+              <label>Staff ID</label>
+              <div class="input-icon"><i class="fas fa-id-badge"></i><input type="text" placeholder="e.g. STAFF-042"></div>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Email Address</label>
+            <div class="input-icon"><i class="fas fa-envelope"></i><input type="email" placeholder="supervisor@institution.ac.ug"></div>
+          </div>
+          <div class="form-group" id="dept-field">
+            <label>Department</label>
+            <div class="input-icon"><i class="fas fa-sitemap"></i><input type="text" placeholder="Department / Unit"></div>
+          </div>
+        </div>
+        <!-- PASSWORD -->
+        <div id="pw-fields" style="display:none">
+          <div class="form-row">
+            <div class="form-group">
+              <label>Password</label>
+              <div class="input-icon pw-wrap"><i class="fas fa-lock"></i><input type="password" id="reg-pw" placeholder="Create password"><span class="pw-toggle" onclick="togglePw('reg-pw',this)"><i class="fas fa-eye"></i></span></div>
+            </div>
+            <div class="form-group">
+              <label>Confirm Password</label>
+              <div class="input-icon pw-wrap"><i class="fas fa-lock"></i><input type="password" id="reg-cpw" placeholder="Repeat password"><span class="pw-toggle" onclick="togglePw('reg-cpw',this)"><i class="fas fa-eye"></i></span></div>
+            </div>
+          </div>
+          <div class="form-group" style="margin-bottom:8px">
+            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;text-transform:none;letter-spacing:0;font-size:.88rem;font-weight:400"><input type="checkbox" style="width:auto;accent-color:var(--primary)"> I agree to the Terms of Service and Privacy Policy</label>
+          </div>
+          <button class="btn btn-primary btn-full" onclick="goToLogin()"><i class="fas fa-user-plus"></i> Create Account</button>
+        </div>
+        <div class="auth-switch">Already have an account? <span class="link" onclick="showPage('page-login')">Sign In</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!--  PAGE 2: LOGIN                                               -->
+<!-- ============================================================ -->
+<div id="page-login" class="page">
+  <div class="auth-wrap">
+    <div class="auth-left">
+      <div class="auth-left-content">
+        <div class="auth-logo"><i class="fas fa-book-open"></i></div>
+        <h1>Welcome Back</h1>
+        <p>Sign in to continue tracking your internship journey with InternLog.</p>
+        <div class="auth-features">
+          <div class="auth-feature"><i class="fas fa-shield-alt"></i><span>Secure GPS-verified login & activity</span></div>
+          <div class="auth-feature"><i class="fas fa-bell"></i><span>Real-time approvals & notifications</span></div>
+          <div class="auth-feature"><i class="fas fa-mobile-alt"></i><span>Access from any device, anytime</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="auth-right">
+      <div class="auth-card">
+        <h2>Sign In</h2>
+        <p class="sub">Enter your credentials to access your dashboard</p>
+        <div class="auth-tabs">
+          <div class="auth-tab active" onclick="setLoginRole('student',this)">Student</div>
+          <div class="auth-tab" onclick="setLoginRole('school',this)">School Sup.</div>
+          <div class="auth-tab" onclick="setLoginRole('industry',this)">Industry Sup.</div>
+          <div class="auth-tab" onclick="setLoginRole('admin',this)">Admin</div>
+        </div>
+        <div class="form-group">
+          <label id="login-id-label">Registration Number</label>
+          <div class="input-icon"><i class="fas fa-id-card"></i><input type="text" id="login-id" placeholder="e.g. 2021/BSC/001"></div>
+        </div>
+        <div class="form-group">
+          <label>Password</label>
+          <div class="input-icon pw-wrap"><i class="fas fa-lock"></i><input type="password" id="login-pw" placeholder="Your password"><span class="pw-toggle" onclick="togglePw('login-pw',this)"><i class="fas fa-eye"></i></span></div>
+        </div>
+        <div style="display:flex;justify-content:flex-end;margin-bottom:20px"><span class="link" style="font-size:.85rem">Forgot password?</span></div>
+        <button class="btn btn-primary btn-full" id="login-btn" onclick="handleLogin()"><i class="fas fa-sign-in-alt"></i> <span>Sign In</span></button>
+        <div class="auth-switch mt-2">New here? <span class="link" onclick="showPage('page-register')">Create an account</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!--  PAGE 3: STUDENT DASHBOARD                                   -->
+<!-- ============================================================ -->
+<div id="page-student" class="page" style="flex-direction:column">
+  <div class="overlay-sidebar" id="overlay-student" onclick="closeSidebar('sidebar-student','overlay-student')"></div>
+  <div class="dash-wrap">
+    <!-- SIDEBAR -->
+    <nav class="sidebar" id="sidebar-student">
+      <div class="sidebar-logo">
+        <div class="sidebar-logo-icon"><i class="fas fa-book-open"></i></div>
+        <div class="sidebar-logo-text">InternLog <span>Student Portal</span></div>
+      </div>
+      <div class="sidebar-user">
+        <div class="sidebar-user-avatar">AK</div>
+        <div class="sidebar-user-name">Amina Kibuuka</div>
+        <div class="sidebar-user-role">BSc Computer Science · Y3</div>
+      </div>
+      <div class="sidebar-nav">
+        <div class="sidebar-section">Main Menu</div>
+        <div class="nav-item active" onclick="switchTab('student','dashboard',this)"><i class="fas fa-th-large"></i> Dashboard</div>
+        <div class="nav-item" onclick="switchTab('student','logs',this)"><i class="fas fa-clipboard-list"></i> My Logs <span class="badge">3</span></div>
+        <div class="nav-item" onclick="switchTab('student','approved',this)"><i class="fas fa-check-circle"></i> Approved Tasks</div>
+        <div class="nav-item" onclick="switchTab('student','reports',this)"><i class="fas fa-file-alt"></i> Reports</div>
+        <div class="nav-item" onclick="switchTab('student','attendance',this)"><i class="fas fa-calendar-check"></i> Attendance</div>
+        <div class="sidebar-section">Account</div>
+        <div class="nav-item" onclick="switchTab('student','settings',this)"><i class="fas fa-cog"></i> Settings</div>
+        <div class="nav-item logout-btn" onclick="showPage('page-login')"><i class="fas fa-sign-out-alt"></i> Logout</div>
+      </div>
+    </nav>
+    <!-- MAIN -->
+    <div class="main-content">
+      <div class="topbar">
+        <div class="topbar-left">
+          <button class="topbar-btn hamburger" onclick="openSidebar('sidebar-student','overlay-student')"><i class="fas fa-bars"></i></button>
+          <div class="topbar-title" id="student-page-title">Dashboard</div>
+        </div>
+        <div class="topbar-right">
+          <div class="gps-badge"><i class="fas fa-map-marker-alt"></i> GPS Active</div>
+          <div style="position:relative">
+            <button class="topbar-btn" onclick="toggleNotif('student-notif')"><i class="fas fa-bell"></i><span class="notif-dot"></span></button>
+            <div class="notif-panel" id="student-notif">
+              <div style="padding:12px 16px;border-bottom:1px solid var(--border);font-size:.82rem;font-weight:700;color:var(--text2)">Notifications</div>
+              <div class="notif-item"><div class="notif-icon" style="background:rgba(56,161,105,.12);color:var(--success)"><i class="fas fa-check"></i></div><div class="notif-text"><h5>Task Approved</h5><p>Dr. Ssekandi approved your log</p><div class="notif-time">2 hrs ago</div></div></div>
+              <div class="notif-item"><div class="notif-icon" style="background:rgba(49,130,206,.12);color:var(--info)"><i class="fas fa-comment"></i></div><div class="notif-text"><h5>New Message</h5><p>Supervisor sent a message</p><div class="notif-time">Yesterday</div></div></div>
+            </div>
+          </div>
+          <button class="topbar-btn" onclick="switchTab('student','settings',document.querySelector('#sidebar-student .nav-item:nth-child(6)'))"><i class="fas fa-user-circle"></i></button>
+        </div>
+      </div>
+      <div class="page-body">
+
+        <!-- TAB: DASHBOARD -->
+        <div id="student-tab-dashboard" class="tab-content active">
+          <div class="welcome-banner">
+            <h3>Good morning, Amina! 👋</h3>
+            <p>You have <strong>3 pending tasks</strong> awaiting industry supervisor approval. Keep up the great work!</p>
+            <div class="wb-badge"><i class="fas fa-map-marker-alt"></i> Placed at: Stanbic Bank Uganda Ltd · Kampala</div>
+          </div>
+          <div class="cards-grid">
+            <div class="card"><div class="card-icon green"><i class="fas fa-clipboard-list"></i></div><div class="card-val">24</div><div class="card-label">Total Log Entries</div><div class="card-trend"><i class="fas fa-arrow-up"></i> 3 this week</div></div>
+            <div class="card"><div class="card-icon amber"><i class="fas fa-calendar-alt"></i></div><div class="card-val">18</div><div class="card-label">Days Left</div><div class="card-trend down"><i class="fas fa-clock"></i> Internship ends Apr 12</div></div>
+            <div class="card"><div class="card-icon blue"><i class="fas fa-chart-pie"></i></div><div class="card-val">72%</div><div class="card-label">Progress</div><div style="margin-top:8px"><div class="prog-bar"><div class="prog-fill" style="width:72%"></div></div></div></div>
+            <div class="card"><div class="card-icon green"><i class="fas fa-check-double"></i></div><div class="card-val">19</div><div class="card-label">Approved Tasks</div><div class="card-trend"><i class="fas fa-thumbs-up"></i> 3 pending</div></div>
+          </div>
+
+          <!-- LOG ENTRY FORM -->
+          <div class="section-card">
+            <div class="section-head"><h3><i class="fas fa-plus-circle" style="color:var(--primary);margin-right:6px"></i>Submit Today's Log Entry</h3><div class="gps-badge"><i class="fas fa-satellite-dish"></i> Location Verified</div></div>
+            <div class="section-body">
+              <div class="log-form-grid">
+                <div class="form-group">
+                  <label>Task Name</label>
+                  <input type="text" placeholder="Brief title of what you did">
+                </div>
+                <div class="form-group">
+                  <label>Work Type</label>
+                  <select>
+                    <option value="">— Select type —</option>
+                    <option>Onsite</option>
+                    <option>Offsite / Remote</option>
+                  </select>
+                </div>
+                <div class="form-group full-width">
+                  <label>Detailed Description</label>
+                  <textarea placeholder="Describe what you did in detail — tools used, people involved, outcomes, challenges faced..."></textarea>
+                </div>
+                <div class="form-group">
+                  <label>Skills Applied</label>
+                  <input type="text" placeholder="e.g. SQL, Communication, Excel">
+                </div>
+                <div class="form-group">
+                  <label>Estimated Hours</label>
+                  <input type="number" placeholder="Hours worked" min="1" max="12">
+                </div>
+                <div class="form-group full-width">
+                  <label>Upload Proof / Evidence</label>
+                  <div class="upload-area" onclick="document.getElementById('proof-upload').click()">
+                    <input type="file" id="proof-upload" style="display:none" accept="image/*,.pdf" onchange="showUpload(this)">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                    <p>Click to upload or drag & drop</p>
+                    <span>Images, PDF — Max 5MB</span>
+                    <div id="upload-preview" style="margin-top:10px;display:none"></div>
+                  </div>
+                </div>
+              </div>
+              <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:8px">
+                <button class="btn btn-primary" onclick="submitLog()"><i class="fas fa-paper-plane"></i> Submit Log Entry</button>
+                <button class="btn btn-outline" onclick="openModal('approval-modal')"><i class="fas fa-user-check"></i> Request Supervisor Approval</button>
+                <button class="btn btn-outline"><i class="fas fa-save"></i> Save as Draft</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- RECENT LOGS -->
+          <div class="section-card">
+            <div class="section-head"><h3>Recent Log Entries</h3><span class="view-all-link" onclick="switchTab('student','logs',null)">View All <i class="fas fa-arrow-right"></i></span></div>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Date</th><th>Task</th><th>Type</th><th>Hours</th><th>Status</th><th>Action</th></tr></thead>
+                <tbody>
+                  <tr><td>Mar 03, 2026</td><td>Database schema design for client module</td><td><span class="tag onsite">Onsite</span></td><td>6h</td><td><span class="tag approved">Approved</span></td><td><button class="btn btn-outline btn-sm">View</button></td></tr>
+                  <tr><td>Mar 02, 2026</td><td>API integration testing & documentation</td><td><span class="tag onsite">Onsite</span></td><td>7h</td><td><span class="tag pending">Pending</span></td><td><button class="btn btn-outline btn-sm">View</button></td></tr>
+                  <tr><td>Mar 01, 2026</td><td>Remote bug fix on payment gateway</td><td><span class="tag offsite">Offsite</span></td><td>4h</td><td><span class="tag pending">Pending</span></td><td><button class="btn btn-outline btn-sm">View</button></td></tr>
+                  <tr><td>Feb 28, 2026</td><td>Team standup & sprint planning session</td><td><span class="tag onsite">Onsite</span></td><td>8h</td><td><span class="tag approved">Approved</span></td><td><button class="btn btn-outline btn-sm">View</button></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB: LOGS -->
+        <div id="student-tab-logs" class="tab-content">
+          <div class="page-header"><h2>My Log Entries</h2><p>All your internship activities and task logs</p></div>
+          <div class="section-card">
+            <div class="section-head">
+              <h3>All Entries (24)</h3>
+              <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+                <div class="search-bar"><i class="fas fa-search"></i><input type="text" placeholder="Search logs..."></div>
+                <select style="padding:9px 14px;border:1.5px solid var(--border);border-radius:9px;font-size:.88rem;background:var(--surface2);color:var(--text);outline:none"><option>All Status</option><option>Approved</option><option>Pending</option><option>Rejected</option></select>
+              </div>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>#</th><th>Date</th><th>Task</th><th>Type</th><th>Hours</th><th>GPS</th><th>Status</th><th></th></tr></thead>
+                <tbody id="logs-tbody">
+                  <tr><td>24</td><td>Mar 03</td><td>Database schema design</td><td><span class="tag onsite">Onsite</span></td><td>6h</td><td><span class="gps-badge"><i class="fas fa-check"></i> Verified</span></td><td><span class="tag approved">Approved</span></td><td><button class="btn btn-outline btn-sm" onclick="openModal('log-detail-modal')">Detail</button></td></tr>
+                  <tr><td>23</td><td>Mar 02</td><td>API integration testing</td><td><span class="tag onsite">Onsite</span></td><td>7h</td><td><span class="gps-badge"><i class="fas fa-check"></i> Verified</span></td><td><span class="tag pending">Pending</span></td><td><button class="btn btn-outline btn-sm" onclick="openModal('log-detail-modal')">Detail</button></td></tr>
+                  <tr><td>22</td><td>Mar 01</td><td>Remote bug fix</td><td><span class="tag offsite">Offsite</span></td><td>4h</td><td><span class="gps-badge fail"><i class="fas fa-exclamation"></i> Offsite</span></td><td><span class="tag pending">Pending</span></td><td><button class="btn btn-outline btn-sm" onclick="openModal('log-detail-modal')">Detail</button></td></tr>
+                  <tr><td>21</td><td>Feb 28</td><td>Sprint planning session</td><td><span class="tag onsite">Onsite</span></td><td>8h</td><td><span class="gps-badge"><i class="fas fa-check"></i> Verified</span></td><td><span class="tag approved">Approved</span></td><td><button class="btn btn-outline btn-sm" onclick="openModal('log-detail-modal')">Detail</button></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB: APPROVED -->
+        <div id="student-tab-approved" class="tab-content">
+          <div class="page-header"><h2>Approved Tasks</h2><p>Tasks verified and signed off by your industry supervisor</p></div>
+          <div class="cards-grid" style="grid-template-columns:repeat(3,1fr)">
+            <div class="card"><div class="card-icon green"><i class="fas fa-check-circle"></i></div><div class="card-val">19</div><div class="card-label">Approved Tasks</div></div>
+            <div class="card"><div class="card-icon amber"><i class="fas fa-clock"></i></div><div class="card-val">3</div><div class="card-label">Pending Approval</div></div>
+            <div class="card"><div class="card-icon red"><i class="fas fa-times-circle"></i></div><div class="card-val">2</div><div class="card-label">Rejected / Revised</div></div>
+          </div>
+          <div class="section-card">
+            <div class="section-head"><h3>Approved Task List</h3></div>
+            <div class="table-wrap"><table><thead><tr><th>Date</th><th>Task</th><th>Hours</th><th>Approved By</th><th>Comment</th></tr></thead>
+              <tbody>
+                <tr><td>Mar 03</td><td>Database schema design</td><td>6h</td><td>Mr. Ouma (Industry Sup.)</td><td><em style="color:var(--text3)">Well structured, meets requirements</em></td></tr>
+                <tr><td>Feb 28</td><td>Sprint planning session</td><td>8h</td><td>Mr. Ouma (Industry Sup.)</td><td><em style="color:var(--text3)">Good participation noted</em></td></tr>
+                <tr><td>Feb 27</td><td>Client requirements gathering</td><td>5h</td><td>Mr. Ouma (Industry Sup.)</td><td><em style="color:var(--text3)">Excellent communication skills shown</em></td></tr>
+              </tbody>
+            </table></div>
+          </div>
+        </div>
+               <!-- TAB: REPORTS -->
+               <div id="student-tab-reports" class="tab-content">
+                <div class="page-header">
+                  <h2>Internship Report Submission</h2>
+                  <p>Upload your final internship report for supervisor review</p>
+                </div>
+                
+                <div class="section-card">
+                  <div class="section-head">
+                    <h3>Report Status</h3>
+                    <span id="report-status-badge" class="tag pending">Not Submitted</span>
+                  </div>
+                  
+                  <div class="section-body">
+                    <!-- Upload Section -->
+                    <div id="upload-section">
+                      <div style="background:var(--bg2);padding:24px;border-radius:12px;text-align:center;margin-bottom:24px">
+                        <i class="fas fa-file-pdf" style="font-size:3rem;color:var(--danger);margin-bottom:16px"></i>
+                        <h4 style="margin:0 0 8px 0">Upload Final Report</h4>
+                        <p style="color:var(--text2);margin:0 0 16px 0">PDF Format Only · Maximum 10MB</p>
+                        
+                        <div class="form-group" style="max-width:400px;margin:0 auto">
+                          <input type="file" id="report-file" accept=".pdf" style="display:none" onchange="validateFile(this)">
+                          <button class="btn btn-primary" onclick="document.getElementById('report-file').click()">
+                            <i class="fas fa-upload"></i> Choose PDF File
+                          </button>
+                          <div id="file-name" style="margin-top:12px;font-size:.85rem;color:var(--text3)"></div>
+                        </div>
+                        
+                        <div style="margin-top:20px">
+                          <button class="btn btn-primary" onclick="openReportModal()" id="btn-confirm-upload" disabled>
+                            <i class="fas fa-check"></i> Confirm & Upload
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+      
+                    <!-- Success Section (Hidden Initially) -->
+                    <div id="success-section" style="display:none;text-align:center;padding:40px 20px">
+                      <div style="width:60px;height:60px;background:rgba(56,161,105,.12);color:var(--success);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px auto">
+                        <i class="fas fa-check" style="font-size:1.5rem"></i>
+                      </div>
+                      <h3 style="margin:0 0 8px 0">Report Submitted Successfully!</h3>
+                      <p style="color:var(--text2);margin:0 0 24px 0">Your report has been uploaded and is awaiting supervisor review.</p>
+                      <div style="background:var(--bg2);padding:16px;border-radius:8px;display:inline-block">
+                        <div style="font-size:.8rem;color:var(--text3);margin-bottom:4px">Submitted On</div>
+                        <div style="font-weight:600" id="submission-date">Mar 05, 2026</div>
+                      </div>
+                      <div style="margin-top:24px;font-size:.8rem;color:var(--text3)">
+                        <i class="fas fa-info-circle"></i> You cannot submit another report.
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+      
+              <!-- CONFIRMATION MODAL -->
+              <div id="report-modal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.5);z-index:2000;align-items:center;justify-content:center">
+                <div style="background:var(--surface);padding:24px;border-radius:12px;max-width:400px;width:90%;box-shadow:0 10px 30px rgba(0,0,0,.2)">
+                  <h3 style="margin:0 0 16px 0">Confirm Upload</h3>
+                  <p style="color:var(--text2);margin-bottom:20px">Are you sure this is the final version of your internship report? You can only submit once.</p>
+                  
+                  <div class="form-group" style="display:flex;align-items:center;gap:10px;margin-bottom:24px">
+                    <input type="checkbox" id="confirm-checkbox" style="width:18px;height:18px">
+                    <label for="confirm-checkbox" style="font-size:.9rem;color:var(--text)">I confirm this is the correct PDF file and I understand I cannot submit again.</label>
+                  </div>
+                  
+                  <div style="display:flex;gap:12px;justify-content:flex-end">
+                    <button class="btn btn-outline" onclick="closeReportModal()">Cancel</button>
+                    <button class="btn btn-primary" onclick="submitReport()" id="btn-submit-report" disabled>Submit Report</button>
+                  </div>
+                </div>
+              </div>
+
+        <!-- TAB: ATTENDANCE -->
+        <div id="student-tab-attendance" class="tab-content">
+          <div class="page-header"><h2>Attendance</h2><p>GPS-verified daily check-ins at your placement</p></div>
+          <div class="cards-grid" style="grid-template-columns:repeat(3,1fr)">
+            <div class="card"><div class="card-icon green"><i class="fas fa-map-marker-alt"></i></div><div class="card-val">38</div><div class="card-label">Days Present</div></div>
+            <div class="card"><div class="card-icon red"><i class="fas fa-times"></i></div><div class="card-val">2</div><div class="card-label">Absent Days</div></div>
+            <div class="card"><div class="card-icon amber"><i class="fas fa-percentage"></i></div><div class="card-val">95%</div><div class="card-label">Attendance Rate</div></div>
+          </div>
+          <div class="section-card">
+            <div class="section-head"><h3>March 2026 — Attendance Calendar</h3><div class="gps-badge"><i class="fas fa-satellite-dish"></i> GPS Verified Records</div></div>
+            <div class="section-body">
+              <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:8px;text-align:center">
+                <div style="font-size:.75rem;font-weight:700;color:var(--text3)">Mon</div><div style="font-size:.75rem;font-weight:700;color:var(--text3)">Tue</div><div style="font-size:.75rem;font-weight:700;color:var(--text3)">Wed</div><div style="font-size:.75rem;font-weight:700;color:var(--text3)">Thu</div><div style="font-size:.75rem;font-weight:700;color:var(--text3)">Fri</div><div style="font-size:.75rem;font-weight:700;color:var(--text3)">Sat</div><div style="font-size:.75rem;font-weight:700;color:var(--text3)">Sun</div>
+                <div style="padding:10px 5px;border-radius:8px;background:rgba(26,107,74,.12);color:var(--primary);font-size:.88rem;font-weight:600">1</div>
+                <div style="padding:10px 5px;border-radius:8px;background:var(--bg2);color:var(--text3);font-size:.88rem">2</div>
+                <div style="padding:10px 5px;border-radius:8px;background:rgba(26,107,74,.12);color:var(--primary);font-size:.88rem;font-weight:600">3</div>
+                <div style="padding:10px 5px;border-radius:8px;background:rgba(229,62,62,.12);color:var(--danger);font-size:.88rem;font-weight:600">4</div>
+                <div style="padding:10px 5px;border-radius:8px;background:rgba(26,107,74,.12);color:var(--primary);font-size:.88rem;font-weight:600">5</div>
+                <div style="padding:10px 5px;border-radius:8px;background:var(--bg2);color:var(--text3);font-size:.88rem">6</div><div style="padding:10px 5px;border-radius:8px;background:var(--bg2);color:var(--text3);font-size:.88rem">7</div>
+              </div>
+              <div style="display:flex;gap:16px;margin-top:16px;flex-wrap:wrap">
+                <div style="display:flex;align-items:center;gap:6px;font-size:.82rem"><div style="width:14px;height:14px;border-radius:4px;background:rgba(26,107,74,.2)"></div> Present</div>
+                <div style="display:flex;align-items:center;gap:6px;font-size:.82rem"><div style="width:14px;height:14px;border-radius:4px;background:rgba(229,62,62,.2)"></div> Absent</div>
+                <div style="display:flex;align-items:center;gap:6px;font-size:.82rem"><div style="width:14px;height:14px;border-radius:4px;background:var(--bg2)"></div> Weekend</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB: SETTINGS -->
+        <div id="student-tab-settings" class="tab-content">
+          <div class="page-header"><h2>Settings</h2><p>Personalise your InternLog experience</p></div>
+          <div class="settings-grid">
+            <div class="section-card">
+              <div class="section-head"><h3>Appearance</h3></div>
+              <div class="section-body">
+                <div class="form-group">
+                  <label>Theme</label>
+                  <div class="theme-options">
+                    <div class="theme-option active" style="background:linear-gradient(135deg,#1a6b4a,#22874f)" onclick="setTheme('default',this)" title="Forest Green"></div>
+                    <div class="theme-option" style="background:linear-gradient(135deg,#0f1a14,#1c2b22)" onclick="setTheme('dark',this)" title="Dark Mode"></div>
+                    <div class="theme-option" style="background:linear-gradient(135deg,#1a5f8a,#2176ae)" onclick="setTheme('ocean',this)" title="Ocean Blue"></div>
+                    <div class="theme-option" style="background:linear-gradient(135deg,#5b21b6,#7c3aed)" onclick="setTheme('purple',this)" title="Purple"></div>
+                  </div>
+                </div>
+                <div class="settings-toggle"><div><div style="font-weight:600;font-size:.9rem">Compact Mode</div><div class="sub-text" style="font-size:.8rem">Reduce spacing and card sizes</div></div><div class="toggle-switch" onclick="this.classList.toggle('on')"></div></div>
+                <div class="settings-toggle"><div><div style="font-weight:600;font-size:.9rem">Show GPS Status</div><div class="sub-text" style="font-size:.8rem">Display GPS badge in topbar</div></div><div class="toggle-switch on" onclick="this.classList.toggle('on')"></div></div>
+                <div class="settings-toggle"><div><div style="font-weight:600;font-size:.9rem">Email Notifications</div><div class="sub-text" style="font-size:.8rem">Receive approval updates via email</div></div><div class="toggle-switch on" onclick="this.classList.toggle('on')"></div></div>
+              </div>
+            </div>
+            <div class="section-card">
+              <div class="section-head"><h3>Profile</h3></div>
+              <div class="section-body">
+                <div class="form-group"><label>Full Name</label><input type="text" value="Amina Kibuuka"></div>
+                <div class="form-group"><label>Registration Number</label><input type="text" value="2021/BSC/042" readonly style="opacity:.6"></div>
+                <div class="form-group"><label>Placement</label><input type="text" value="Stanbic Bank Uganda Ltd"></div>
+                <div class="form-group"><label>Email</label><input type="email" value="a.kibuuka@students.mak.ac.ug"></div>
+                <button class="btn btn-primary btn-sm"><i class="fas fa-save"></i> Save Changes</button>
+              </div>
+            </div>
+            <div class="section-card">
+              <div class="section-head"><h3>Change Password</h3></div>
+              <div class="section-body">
+                <div class="form-group"><label>Current Password</label><div class="pw-wrap"><input type="password" placeholder="••••••••"><span class="pw-toggle" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);cursor:pointer" onclick="togglePwEl(this)"><i class="fas fa-eye"></i></span></div></div>
+                <div class="form-group"><label>New Password</label><input type="password" placeholder="••••••••"></div>
+                <div class="form-group"><label>Confirm New Password</label><input type="password" placeholder="••••••••"></div>
+                <button class="btn btn-primary btn-sm"><i class="fas fa-key"></i> Update Password</button>
+              </div>
+            </div>
+            <div class="section-card">
+              <div class="section-head"><h3>GPS & Location</h3></div>
+              <div class="section-body">
+                <div style="background:rgba(26,107,74,.08);border:1px solid rgba(26,107,74,.2);border-radius:10px;padding:14px;margin-bottom:16px">
+                  <div style="font-weight:700;margin-bottom:4px;color:var(--primary)"><i class="fas fa-map-marker-alt"></i> Current Placement Location</div>
+                  <div class="sub-text">Stanbic Bank — Plot 45 Kampala Rd, Kampala, Uganda</div>
+                  <div class="sub-text" style="margin-top:4px">Radius: 200m · Status: <span style="color:var(--success);font-weight:600">Active</span></div>
+                </div>
+                <div class="settings-toggle"><div><div style="font-weight:600;font-size:.9rem">Auto Check-in</div><div class="sub-text" style="font-size:.8rem">Verify GPS on app open</div></div><div class="toggle-switch on" onclick="this.classList.toggle('on')"></div></div>
+                <div class="settings-toggle"><div><div style="font-weight:600;font-size:.9rem">Log GPS with each Entry</div><div class="sub-text" style="font-size:.8rem">Attach coordinates to every log</div></div><div class="toggle-switch on" onclick="this.classList.toggle('on')"></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+  <!-- CHAT WIDGET -->
+  <div class="chat-panel">
+    <div class="chat-box" id="chat-box">
+      <div class="chat-head">
+        <div class="avatar avatar-sm" style="background:rgba(255,255,255,.25);font-size:.75rem">SS</div>
+        <div class="chat-head-info"><h4>Dr. Ssekandi</h4><p>School Supervisor · Online</p></div>
+        <i class="fas fa-times chat-close" onclick="toggleChat()"></i>
+      </div>
+      <div class="chat-messages">
+        <div class="msg in">Hello Amina! How is the internship going? <div class="msg-time">10:22 AM</div></div>
+        <div class="msg out">Good morning Dr. Ssekandi! It's going very well. I've been working on the database module this week. <div class="msg-time">10:25 AM</div></div>
+        <div class="msg in">Excellent! Remember to log your activities daily and get them approved. Your progress report is due next Friday. <div class="msg-time">10:27 AM</div></div>
+      </div>
+      <div class="chat-input-row">
+        <input type="text" id="chat-input" placeholder="Type a message..." onkeypress="chatEnter(event)">
+        <div class="chat-send" onclick="sendChat()"><i class="fas fa-paper-plane"></i></div>
+      </div>
+    </div>
+    <div class="chat-bubble-btn" onclick="toggleChat()" title="Chat with Supervisor"><i class="fas fa-comment-dots"></i></div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!--  PAGE 4: SCHOOL SUPERVISOR DASHBOARD                         -->
+<!-- ============================================================ -->
+<div id="page-school-supervisor" class="page" style="flex-direction:column">
+  <div class="overlay-sidebar" id="overlay-school" onclick="closeSidebar('sidebar-school','overlay-school')"></div>
+  <div class="dash-wrap">
+    <nav class="sidebar" id="sidebar-school">
+      <div class="sidebar-logo">
+        <div class="sidebar-logo-icon"><i class="fas fa-book-open"></i></div>
+        <div class="sidebar-logo-text">InternLog <span>School Supervisor</span></div>
+      </div>
+      <div class="sidebar-user">
+        <div class="sidebar-user-avatar">DS</div>
+        <div class="sidebar-user-name">Dr. Ssekandi</div>
+        <div class="sidebar-user-role">School Supervisor</div>
+      </div>
+      <div class="sidebar-nav">
+        <div class="sidebar-section">Main Menu</div>
+        <div class="nav-item active" onclick="switchTab('school','dashboard',this)"><i class="fas fa-th-large"></i> Dashboard</div>
+        <div class="nav-item" onclick="switchTab('school','students',this)"><i class="fas fa-user-graduate"></i> My Students <span class="badge">7</span></div>
+        <div class="nav-item" onclick="switchTab('school','reports',this)"><i class="fas fa-chart-bar"></i> Reports</div>
+        <div class="nav-item" onclick="switchTab('school','supervision',this)">
+          <i class="fas fa-user-check"></i> Supervision <span class="badge">5</span>
+        </div>
+        <div class="nav-item" onclick="switchTab('school','grading',this)"><i class="fas fa-star"></i> Grading <span class="badge">3</span></div>
+        <div class="nav-item" onclick="switchTab('school','messages',this)"><i class="fas fa-comments"></i> Messages <span class="badge">2</span></div>
+        <div class="sidebar-section">Account</div>
+        <div class="nav-item" onclick="switchTab('school','settings',this)"><i class="fas fa-cog"></i> Settings</div>
+        <div class="nav-item logout-btn" onclick="showPage('page-login')"><i class="fas fa-sign-out-alt"></i> Logout</div>
+      </div>
+    </nav>
+    <div class="main-content">
+      <div class="topbar">
+        <div class="topbar-left">
+          <button class="topbar-btn hamburger" onclick="openSidebar('sidebar-school','overlay-school')"><i class="fas fa-bars"></i></button>
+          <div class="topbar-title" id="school-page-title">Dashboard</div>
+        </div>
+        <div class="topbar-right">
+          <div style="position:relative">
+            <button class="topbar-btn" onclick="toggleNotif('school-notif')"><i class="fas fa-bell"></i><span class="notif-dot"></span></button>
+            <div class="notif-panel" id="school-notif">
+              <div style="padding:12px 16px;border-bottom:1px solid var(--border);font-size:.82rem;font-weight:700;color:var(--text2)">Notifications</div>
+              <div class="notif-item"><div class="notif-icon" style="background:rgba(245,166,35,.12);color:var(--warning)"><i class="fas fa-file-alt"></i></div><div class="notif-text"><h5>Progress Report Due</h5><p>Amina Kibuuka — report pending</p><div class="notif-time">Today</div></div></div>
+              <div class="notif-item"><div class="notif-icon" style="background:rgba(49,130,206,.12);color:var(--info)"><i class="fas fa-comment"></i></div><div class="notif-text"><h5>Student Message</h5><p>Jonah Mwangi sent a message</p><div class="notif-time">1 hr ago</div></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="page-body">
+
+        <!-- DASHBOARD TAB -->
+        <div id="school-tab-dashboard" class="tab-content active">
+          <div class="welcome-banner">
+            <h3>Welcome, Dr. Ssekandi! 🎓</h3>
+            <p>You are supervising <strong>7 active student interns</strong>. Two students have progress reports due this week.</p>
+            <div class="wb-badge"><i class="fas fa-graduation-cap"></i> School of Computing & IT · Makerere University</div>
+          </div>
+          <div class="cards-grid">
+            <div class="card"><div class="card-icon green"><i class="fas fa-user-graduate"></i></div><div class="card-val">7</div><div class="card-label">Assigned Students</div></div>
+            <div class="card"><div class="card-icon blue"><i class="fas fa-clipboard-check"></i></div><div class="card-val">142</div><div class="card-label">Total Logs Reviewed</div></div>
+            <div class="card"><div class="card-icon amber"><i class="fas fa-exclamation-circle"></i></div><div class="card-val">2</div><div class="card-label">Reports Due</div></div>
+            <div class="card"><div class="card-icon green"><i class="fas fa-star"></i></div><div class="card-val">4.6</div><div class="card-label">Avg. Student Progress</div></div>
+          </div>
+          <div class="section-card">
+            <div class="section-head"><h3>Assigned Students — Summary</h3><span class="view-all-link" onclick="switchTab('school','students',null)">View All <i class="fas fa-arrow-right"></i></span></div>
+            <div class="section-body">
+              <div class="student-cards-grid">
+                <div class="student-card" onclick="openModal('student-profile-modal')">
+                  <div class="student-card-top">
+                    <div class="avatar avatar-lg">AK</div>
+                    <div class="student-card-info"><h4>Amina Kibuuka</h4><p>2021/BSC/042</p></div>
+                  </div>
+                  <div class="student-card-meta"><span><i class="fas fa-building" style="margin-right:4px"></i>Stanbic Bank Uganda</span><span><span class="approved-dot"></span>Latest: Approved</span></div>
+                  <div style="font-size:.8rem;color:var(--text2);margin-bottom:6px">Progress</div>
+                  <div class="prog-bar"><div class="prog-fill" style="width:72%"></div></div>
+                  <div style="font-size:.78rem;color:var(--text3);margin-top:4px;text-align:right">72%</div>
+                </div>
+                <div class="student-card" onclick="openModal('student-profile-modal')">
+                  <div class="student-card-top">
+                    <div class="avatar avatar-lg" style="background:linear-gradient(135deg,#2176ae,#3182ce)">JM</div>
+                    <div class="student-card-info"><h4>Jonah Mwangi</h4><p>2021/BSC/019</p></div>
+                  </div>
+                  <div class="student-card-meta"><span><i class="fas fa-building" style="margin-right:4px"></i>MTN Uganda HQ</span><span><span class="status-dot pending" style="margin-right:4px"></span>Latest: Pending</span></div>
+                  <div style="font-size:.8rem;color:var(--text2);margin-bottom:6px">Progress</div>
+                  <div class="prog-bar"><div class="prog-fill amber" style="width:58%"></div></div>
+                  <div style="font-size:.78rem;color:var(--text3);margin-top:4px;text-align:right">58%</div>
+                </div>
+                <div class="student-card" onclick="openModal('student-profile-modal')">
+                  <div class="student-card-top">
+                    <div class="avatar avatar-lg" style="background:linear-gradient(135deg,#d97706,#f59e0b)">PN</div>
+                    <div class="student-card-info"><h4>Patience Nantale</h4><p>2021/BSC/031</p></div>
+                  </div>
+                  <div class="student-card-meta"><span><i class="fas fa-building" style="margin-right:4px"></i>Airtel Uganda</span><span><span class="approved-dot"></span>Latest: Approved</span></div>
+                  <div style="font-size:.8rem;color:var(--text2);margin-bottom:6px">Progress</div>
+                  <div class="prog-bar"><div class="prog-fill" style="width:85%"></div></div>
+                  <div style="font-size:.78rem;color:var(--text3);margin-top:4px;text-align:right">85%</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- STUDENTS TAB -->
+        <div id="school-tab-students" class="tab-content">
+          <div class="page-header"><h2>My Students</h2><p>All students assigned to your supervision</p></div>
+          <div class="section-card">
+            <div class="section-head">
+              <h3>Student List (7)</h3>
+              <div class="search-bar"><i class="fas fa-search"></i><input type="text" placeholder="Search students..."></div>
+            </div>
+            <div class="table-wrap"><table>
+              <thead><tr><th>Student</th><th>Reg. No.</th><th>Placement</th><th>Progress</th><th>Last Log</th><th>Status</th><th></th></tr></thead>
+              <tbody>
+                <tr><td><div style="display:flex;align-items:center;gap:10px"><div class="avatar">AK</div>Amina Kibuuka</div></td><td>2021/BSC/042</td><td>Stanbic Bank Uganda</td><td><div style="min-width:90px"><div class="prog-bar"><div class="prog-fill" style="width:72%"></div></div><div style="font-size:.75rem;color:var(--text3);margin-top:2px">72%</div></div></td><td>Mar 03, 2026</td><td><span class="tag approved">Active</span></td><td><button class="btn btn-outline btn-sm" onclick="openModal('student-profile-modal')">View Profile</button></td></tr>
+                <tr><td><div style="display:flex;align-items:center;gap:10px"><div class="avatar" style="background:linear-gradient(135deg,#2176ae,#3182ce)">JM</div>Jonah Mwangi</div></td><td>2021/BSC/019</td><td>MTN Uganda HQ</td><td><div style="min-width:90px"><div class="prog-bar"><div class="prog-fill amber" style="width:58%"></div></div><div style="font-size:.75rem;color:var(--text3);margin-top:2px">58%</div></div></td><td>Mar 02, 2026</td><td><span class="tag pending">Behind</span></td><td><button class="btn btn-outline btn-sm" onclick="openModal('student-profile-modal')">View Profile</button></td></tr>
+                <tr><td><div style="display:flex;align-items:center;gap:10px"><div class="avatar" style="background:linear-gradient(135deg,#d97706,#f59e0b)">PN</div>Patience Nantale</div></td><td>2021/BSC/031</td><td>Airtel Uganda</td><td><div style="min-width:90px"><div class="prog-bar"><div class="prog-fill" style="width:85%"></div></div><div style="font-size:.75rem;color:var(--text3);margin-top:2px">85%</div></div></td><td>Mar 04, 2026</td><td><span class="tag approved">Active</span></td><td><button class="btn btn-outline btn-sm" onclick="openModal('student-profile-modal')">View Profile</button></td></tr>
+              </tbody>
+            </table></div>
+          </div>
+        </div>
+
+        <!-- REPORTS TAB -->
+        <div id="school-tab-reports" class="tab-content">
+          <div class="page-header"><h2>Reports</h2><p>Internship progress reports and evaluations</p></div>
+          <div class="section-card"><div class="section-head"><h3>Progress Reports</h3><button class="btn btn-primary btn-sm"><i class="fas fa-download"></i> Export All</button></div>
+            <div class="table-wrap"><table><thead><tr><th>Student</th><th>Reg. No.</th><th>Week</th><th>Submitted</th><th>Grade</th><th>Action</th></tr></thead>
+              <tbody>
+                <tr><td>Amina Kibuuka</td><td>2021/BSC/042</td><td>Week 7</td><td>Mar 01</td><td><span class="tag approved">A</span></td><td><button class="btn btn-outline btn-sm">View</button></td></tr>
+                <tr><td>Patience Nantale</td><td>2021/BSC/031</td><td>Week 7</td><td>Mar 02</td><td><span class="tag approved">B+</span></td><td><button class="btn btn-outline btn-sm">View</button></td></tr>
+                <tr><td>Jonah Mwangi</td><td>2021/BSC/019</td><td>Week 7</td><td><span style="color:var(--warning)">Pending</span></td><td>—</td><td><button class="btn btn-outline btn-sm" style="opacity:.5" disabled>View</button></td></tr>
+              </tbody>
+            </table></div>
+          </div>
+        </div>
+
+    <!-- SUPERVISION TAB -->
+<div id="school-tab-supervision" class="tab-content">
+  <div class="page-header">
+    <h2>Supervision Management</h2>
+    <p>Schedule and assess student supervision sessions</p>
+  </div>
+  
+  <div class="section-card">
+    <div class="section-head">
+      <h3>Supervision Form</h3>
+      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+        <select id="supervision-student-select" style="padding:9px 14px;border:1.5px solid var(--border);border-radius:9px;font-size:.88rem;background:var(--surface2);color:var(--text);outline:none">
+          <option value="">Select Student...</option>
+          <option value="AK" data-country="Uganda">Amina Kibuuka (2021/BSC/042) - Uganda</option>
+          <option value="JM" data-country="Uganda">Jonah Mwangi (2021/BSC/019) - Uganda</option>
+          <option value="PN" data-country="Uganda">Patience Nantale (2021/BSC/031) - Uganda</option>
+          <option value="INTL1" data-country="Kenya">John Doe (2021/BSC/050) - Kenya</option>
+          <option value="INTL2" data-country="Nigeria">Jane Smith (2021/BSC/051) - Nigeria</option>
+        </select>
+        <button class="btn btn-primary btn-sm" onclick="loadSupervisionForm()">
+          <i class="fas fa-search"></i> Load Form
+        </button>
+      </div>
+    </div>
+    
+    <div id="supervision-form-container" style="display:none">
+      <div class="grading-header" style="display:flex;align-items:center;gap:16px;margin-bottom:24px;padding-bottom:16px;border-bottom:1px solid var(--border)">
+        <div class="avatar avatar-lg">AK</div>
+        <div>
+          <h4 style="margin:0 0 4px 0">Amina Kibuuka</h4>
+          <p style="margin:0;color:var(--text2);font-size:.88rem">2021/BSC/042 · BSc Computer Science</p>
+          <p style="margin:4px 0 0 0;color:var(--text2);font-size:.88rem">Placement: Stanbic Bank Uganda Ltd</p>
+          <p style="margin:4px 0 0 0;color:var(--text2);font-size:.88rem">Country: <span id="student-country">Uganda</span></p>
+        </div>
+      </div>
+
+      <!-- PART 1: SCHEDULE SUPERVISION -->
+      <div class="grading-section" style="margin-bottom:24px">
+        <div class="section-title" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+          <div style="display:flex;align-items:center;gap:8px">
+            <i class="fas fa-calendar-plus" style="color:var(--primary)"></i>
+            <strong>Part 1: Schedule Supervision</strong>
+          </div>
+          <span style="font-size:.8rem;color:var(--text3);background:var(--bg2);padding:4px 8px;border-radius:4px">Before Visit</span>
+        </div>
+        
+        <div class="form-group">
+          <label>Mode of Supervision</label>
+          <select id="supervision-mode" style="width:100%;padding:9px;border:1.5px solid var(--border);border-radius:6px;background:var(--surface2)">
+            <option value="onground">🏢 Onground Supervision</option>
+            <option value="zoom" id="zoom-option" style="display:none">📹 Zoom (Online)</option>
+          </select>
+          <p id="zoom-notice" style="font-size:.75rem;color:var(--warning);margin-top:4px;display:none">
+            ⚠️ Zoom option only available for international students
+          </p>
+        </div>
+
+        <div class="form-group">
+          <label>Supervision Date</label>
+          <input type="date" id="supervision-date" style="width:100%;padding:9px;border:1.5px solid var(--border);border-radius:6px;background:var(--surface2)">
+        </div>
+
+        <div class="form-group">
+          <label>Supervision Time</label>
+          <input type="time" id="supervision-time" style="width:100%;padding:9px;border:1.5px solid var(--border);border-radius:6px;background:var(--surface2)">
+        </div>
+
+        <div class="form-group">
+          <label>Duration (Minutes)</label>
+          <select id="supervision-duration" style="width:100%;padding:9px;border:1.5px solid var(--border);border-radius:6px;background:var(--surface2)">
+            <option value="30">30 Minutes</option>
+            <option value="60" selected>60 Minutes</option>
+            <option value="90">90 Minutes</option>
+            <option value="120">120 Minutes</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label id="location-label">Supervision Location</label>
+          <input type="text" id="supervision-location" placeholder="e.g. Office 204, School of Computing" style="width:100%;padding:9px;border:1.5px solid var(--border);border-radius:6px;background:var(--surface2)">
+        </div>
+
+        <div class="form-group" id="zoom-link-group" style="display:none">
+          <label>Zoom Meeting Link</label>
+          <input type="url" id="zoom-link" placeholder="https://zoom.us/j/..." style="width:100%;padding:9px;border:1.5px solid var(--border);border-radius:6px;background:var(--surface2)">
+        </div>
+
+        <div class="form-group">
+          <label>Supervisor Notes (Before Visit)</label>
+          <textarea id="supervision-notes-before" placeholder="Enter any notes or agenda for this supervision session..." rows="3" style="width:100%"></textarea>
+        </div>
+
+        <div style="display:flex;gap:12px;margin-top:16px">
+          <button class="btn btn-primary" onclick="scheduleSupervision()">
+            <i class="fas fa-calendar-plus"></i> Schedule Supervision
+          </button>
+          <button class="btn btn-outline" onclick="document.getElementById('supervision-form-container').style.display='none'">
+            Cancel
+          </button>
+        </div>
+      </div>
+
+      <!-- PART 2: ASSESSMENT FORM (After Visit) -->
+      <div class="grading-section" style="margin-bottom:24px">
+        <div class="section-title" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+          <div style="display:flex;align-items:center;gap:8px">
+            <i class="fas fa-clipboard-check" style="color:var(--primary)"></i>
+            <strong>Part 2: Assessment Form</strong>
+          </div>
+          <span style="font-size:.8rem;color:var(--text3);background:var(--bg2);padding:4px 8px;border-radius:4px">After Visit</span>
+        </div>
+
+        <div class="form-group">
+          <label>Supervision Status</label>
+          <select id="assessment-status" style="width:100%;padding:9px;border:1.5px solid var(--border);border-radius:6px;background:var(--surface2)">
+            <option value="scheduled">Scheduled</option>
+            <option value="completed">Completed</option>
+            <option value="cancelled">Cancelled</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Actual Date & Time</label>
+          <input type="text" id="assessment-actual-date" placeholder="Auto-filled on completion" style="width:100%;padding:9px;border:1.5px solid var(--border);border-radius:6px;background:var(--surface2);opacity:.6">
+        </div>
+
+        <div class="form-group">
+          <label>Student Performance Rating</label>
+          <select id="assessment-performance" style="width:100%;padding:9px;border:1.5px solid var(--border);border-radius:6px;background:var(--surface2)">
+            <option value="excellent">Excellent</option>
+            <option value="good">Good</option>
+            <option value="average">Average</option>
+            <option value="poor">Poor</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Technical Skills Observed</label>
+          <textarea id="assessment-technical" placeholder="List technical skills observed during supervision..." rows="3" style="width:100%"></textarea>
+        </div>
+
+        <div class="form-group">
+          <label>Professionalism & Communication</label>
+          <textarea id="assessment-professionalism" placeholder="Assess student's professionalism, communication, and engagement..." rows="3" style="width:100%"></textarea>
+        </div>
+
+        <div class="form-group">
+          <label>Areas of Improvement</label>
+          <textarea id="assessment-improvement" placeholder="List areas where student needs improvement..." rows="3" style="width:100%"></textarea>
+        </div>
+
+        <div class="form-group">
+          <label>Supervisor Final Comments</label>
+          <textarea id="assessment-final-comments" placeholder="Final remarks and recommendations..." rows="4" style="width:100%"></textarea>
+        </div>
+
+        <div style="display:flex;gap:12px;margin-top:16px">
+          <button class="btn btn-primary" onclick="submitAssessment()">
+            <i class="fas fa-check-circle"></i> Submit Assessment
+          </button>
+          <button class="btn btn-outline" onclick="document.getElementById('supervision-form-container').style.display='none'">
+            Cancel
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+                <!-- GRADING TAB -->
+                <div id="school-tab-grading" class="tab-content">
+                  <div class="page-header">
+                    <h2>Student Grading</h2>
+                    <p>Evaluate student performance based on multiple criteria</p>
+                  </div>
+                  <div class="section-card">
+                    <div class="section-head">
+                      <h3>Grading Form</h3>
+                      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+                        <select id="grading-student-select" style="padding:9px 14px;border:1.5px solid var(--border);border-radius:9px;font-size:.88rem;background:var(--surface2);color:var(--text);outline:none">
+                          <option value="">Select Student...</option>
+                          <option value="AK">Amina Kibuuka (2021/BSC/042)</option>
+                          <option value="JM">Jonah Mwangi (2021/BSC/019)</option>
+                          <option value="PN">Patience Nantale (2021/BSC/031)</option>
+                        </select>
+                        <button class="btn btn-primary btn-sm" onclick="loadGradingForm()"><i class="fas fa-search"></i> Load Form</button>
+                      </div>
+                    </div>
+                    
+                    <div id="grading-form-container" style="display:none">
+                      <div class="grading-header" style="display:flex;align-items:center;gap:16px;margin-bottom:24px;padding-bottom:16px;border-bottom:1px solid var(--border)">
+                        <div class="avatar avatar-lg">AK</div>
+                        <div>
+                          <h4 style="margin:0 0 4px 0">Amina Kibuuka</h4>
+                          <p style="margin:0;color:var(--text2);font-size:.88rem">2021/BSC/042 · BSc Computer Science</p>
+                          <p style="margin:4px 0 0 0;color:var(--text2);font-size:.88rem">Placement: Stanbic Bank Uganda Ltd</p>
+                        </div>
+                      </div>
+        
+                      <div class="grading-criteria">
+                        <!-- 1. Attendance -->
+                        <div class="grading-section" style="margin-bottom:24px">
+                          <div class="section-title" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+                            <div style="display:flex;align-items:center;gap:8px">
+                              <i class="fas fa-calendar-check" style="color:var(--primary)"></i>
+                              <strong>Attendance</strong>
+                            </div>
+                            <span style="font-size:.8rem;color:var(--text3);background:var(--bg2);padding:4px 8px;border-radius:4px">20% Weight</span>
+                          </div>
+                          <div class="form-group">
+                            <label>Attendance Rate (%)</label>
+                            <input type="number" placeholder="e.g. 95" min="0" max="100" style="width:100%">
+                          </div>
+                          <div class="form-group">
+                            <label>Comments</label>
+                            <textarea placeholder="Note any absences or patterns..." rows="2" style="width:100%"></textarea>
+                          </div>
+                        </div>
+        
+                        <!-- 2. Daily Entries -->
+                        <div class="grading-section" style="margin-bottom:24px">
+                          <div class="section-title" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+                            <div style="display:flex;align-items:center;gap:8px">
+                              <i class="fas fa-clipboard-list" style="color:var(--primary)"></i>
+                              <strong>Daily Entries</strong>
+                            </div>
+                            <span style="font-size:.8rem;color:var(--text3);background:var(--bg2);padding:4px 8px;border-radius:4px">25% Weight</span>
+                          </div>
+                          <div class="form-group">
+                            <label>Quality of Logs</label>
+                            <select style="width:100%;padding:9px;border:1.5px solid var(--border);border-radius:6px;background:var(--surface2)">
+                              <option>Excellent</option>
+                              <option>Good</option>
+                              <option>Average</option>
+                              <option>Poor</option>
+                            </select>
+                          </div>
+                          <div class="form-group">
+                            <label>Consistency</label>
+                            <input type="range" min="1" max="10" value="8" style="width:100%">
+                          </div>
+                        </div>
+        
+                        <!-- 3. Internship Report -->
+                        <div class="grading-section" style="margin-bottom:24px">
+                          <div class="section-title" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+                            <div style="display:flex;align-items:center;gap:8px">
+                              <i class="fas fa-file-alt" style="color:var(--primary)"></i>
+                              <strong>Internship Report</strong>
+                            </div>
+                            <span style="font-size:.8rem;color:var(--text3);background:var(--bg2);padding:4px 8px;border-radius:4px">20% Weight</span>
+                          </div>
+                          <div class="form-group">
+                            <label>Report Grade</label>
+                            <select style="width:100%;padding:9px;border:1.5px solid var(--border);border-radius:6px;background:var(--surface2)">
+                              <option value="A">A (Excellent)</option>
+                              <option value="B">B (Good)</option>
+                              <option value="C">C (Average)</option>
+                              <option value="F">F (Fail)</option>
+                            </select>
+                          </div>
+                          <div class="form-group">
+                            <label>Feedback</label>
+                            <textarea placeholder="Specific feedback on the report..." rows="3" style="width:100%"></textarea>
+                          </div>
+                        </div>
+        
+                        <!-- 4. Communication Skills -->
+                        <div class="grading-section" style="margin-bottom:24px">
+                          <div class="section-title" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+                            <div style="display:flex;align-items:center;gap:8px">
+                              <i class="fas fa-comments" style="color:var(--primary)"></i>
+                              <strong>Communication Skills</strong>
+                            </div>
+                            <span style="font-size:.8rem;color:var(--text3);background:var(--bg2);padding:4px 8px;border-radius:4px">15% Weight</span>
+                          </div>
+                          <div class="form-group">
+                            <label>Rating (1-10)</label>
+                            <input type="number" min="1" max="10" placeholder="10" style="width:100%">
+                          </div>
+                          <div class="form-group">
+                            <label>Observations</label>
+                            <textarea placeholder="Professionalism, clarity, responsiveness..." rows="2" style="width:100%"></textarea>
+                          </div>
+                        </div>
+        
+                        <!-- 5. Industry Supervisor's Evaluation -->
+                        <div class="grading-section" style="margin-bottom:24px">
+                          <div class="section-title" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+                            <div style="display:flex;align-items:center;gap:8px">
+                              <i class="fas fa-building" style="color:var(--primary)"></i>
+                              <strong>Industry Supervisor's Evaluation</strong>
+                            </div>
+                            <span style="font-size:.8rem;color:var(--text3);background:var(--bg2);padding:4px 8px;border-radius:4px">20% Weight</span>
+                          </div>
+                          <div class="form-group">
+                            <label>Overall Performance</label>
+                            <select style="width:100%;padding:9px;border:1.5px solid var(--border);border-radius:6px;background:var(--surface2)">
+                              <option>Exceeds Expectations</option>
+                              <option>Meets Expectations</option>
+                              <option>Below Expectations</option>
+                            </select>
+                          </div>
+                          <div class="form-group">
+                            <label>Supervisor Comments</label>
+                            <textarea placeholder="Comments from industry supervisor..." rows="3" style="width:100%"></textarea>
+                          </div>
+                        </div>
+        
+                        <!-- Overall Grade & Submit -->
+                        <div style="background:var(--bg2);padding:20px;border-radius:10px;margin-top:24px">
+                          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+                            <h4 style="margin:0">Overall Grade</h4>
+                            <span style="font-size:1.5rem;font-weight:700;color:var(--primary)">A</span>
+                          </div>
+                          <div class="form-group">
+                            <label>Final Comments</label>
+                            <textarea placeholder="Final remarks for the student..." rows="2" style="width:100%"></textarea>
+                          </div>
+                          <div style="display:flex;gap:12px;margin-top:16px">
+                            <button class="btn btn-primary" onclick="submitGrading()"><i class="fas fa-save"></i> Submit Grading</button>
+                            <button class="btn btn-outline" onclick="document.getElementById('grading-form-container').style.display='none'">Cancel</button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+        <!-- MESSAGES TAB -->
+        <div id="school-tab-messages" class="tab-content">
+          <div class="page-header"><h2>Messages</h2><p>Communicate with your assigned students</p></div>
+          <div class="section-card"><div class="section-head"><h3>Inbox</h3></div>
+            <div style="display:flex;flex-direction:column;gap:0">
+              <div style="display:flex;align-items:center;gap:14px;padding:15px 22px;border-bottom:1px solid var(--border);cursor:pointer;transition:background var(--transition)" onmouseenter="this.style.background='var(--bg2)'" onmouseleave="this.style.background=''">
+                <div class="avatar">AK</div><div style="flex:1"><div style="font-weight:600;font-size:.9rem">Amina Kibuuka</div><div style="font-size:.82rem;color:var(--text2)">Thank you Dr. Ssekandi! I'll make sure to...</div></div><div style="font-size:.78rem;color:var(--text3)">10:25 AM</div>
+              </div>
+              <div style="display:flex;align-items:center;gap:14px;padding:15px 22px;border-bottom:1px solid var(--border);cursor:pointer;background:rgba(26,107,74,.05);transition:background var(--transition)">
+                <div class="avatar" style="background:linear-gradient(135deg,#2176ae,#3182ce)">JM</div><div style="flex:1"><div style="font-weight:700;font-size:.9rem">Jonah Mwangi <span style="width:8px;height:8px;background:var(--primary);border-radius:50%;display:inline-block;margin-left:6px"></span></div><div style="font-size:.82rem;color:var(--text2)">Good morning, I had a question about my report...</div></div><div style="font-size:.78rem;color:var(--text3)">1 hr ago</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SETTINGS TAB -->
+        <div id="school-tab-settings" class="tab-content">
+          <div class="page-header"><h2>Settings</h2><p>Manage your supervisor account</p></div>
+          <div class="settings-grid">
+            <div class="section-card"><div class="section-head"><h3>Appearance</h3></div><div class="section-body">
+              <div class="form-group"><label>Theme</label><div class="theme-options">
+                <div class="theme-option active" style="background:linear-gradient(135deg,#1a6b4a,#22874f)" onclick="setTheme('default',this)"></div>
+                <div class="theme-option" style="background:linear-gradient(135deg,#0f1a14,#1c2b22)" onclick="setTheme('dark',this)"></div>
+                <div class="theme-option" style="background:linear-gradient(135deg,#1a5f8a,#2176ae)" onclick="setTheme('ocean',this)"></div>
+              </div></div>
+              <div class="settings-toggle"><div><div style="font-weight:600;font-size:.9rem">Email Notifications</div></div><div class="toggle-switch on" onclick="this.classList.toggle('on')"></div></div>
+            </div></div>
+            <div class="section-card"><div class="section-head"><h3>Profile</h3></div><div class="section-body">
+              <div class="form-group"><label>Full Name</label><input type="text" value="Dr. James Ssekandi"></div>
+              <div class="form-group"><label>Staff ID</label><input type="text" value="STAFF-014" readonly style="opacity:.6"></div>
+              <div class="form-group"><label>Email</label><input type="email" value="j.ssekandi@mak.ac.ug"></div>
+              <button class="btn btn-primary btn-sm"><i class="fas fa-save"></i> Save Changes</button>
+            </div></div>
+          </div>
+        </div>
+
+        
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!--  PAGE 5: INDUSTRY SUPERVISOR DASHBOARD                       -->
+<!-- ============================================================ -->
+<div id="page-industry-supervisor" class="page" style="flex-direction:column">
+  <div class="overlay-sidebar" id="overlay-industry" onclick="closeSidebar('sidebar-industry','overlay-industry')"></div>
+  <div class="dash-wrap">
+    <nav class="sidebar" id="sidebar-industry">
+      <div class="sidebar-logo">
+        <div class="sidebar-logo-icon"><i class="fas fa-book-open"></i></div>
+        <div class="sidebar-logo-text">InternLog <span>Industry Supervisor</span></div>
+      </div>
+      <div class="sidebar-user">
+        <div class="sidebar-user-avatar">MO</div>
+        <div class="sidebar-user-name">Mr. Moses Ouma</div>
+        <div class="sidebar-user-role">Stanbic Bank Uganda</div>
+      </div>
+      <div class="sidebar-nav">
+        <div class="sidebar-section">Main Menu</div>
+        <div class="nav-item active" onclick="switchTab('industry','dashboard',this)"><i class="fas fa-th-large"></i> Dashboard</div>
+        <div class="nav-item" onclick="switchTab('industry','requests',this)"><i class="fas fa-inbox"></i> Approval Requests <span class="badge">5</span></div>
+        <div class="nav-item" onclick="switchTab('industry','history',this)"><i class="fas fa-history"></i> Approval History</div>
+        <div class="nav-item" onclick="switchTab('industry','interns',this)"><i class="fas fa-users"></i> My Interns</div>
+        <div class="sidebar-section">Account</div>
+        <div class="nav-item" onclick="switchTab('industry','settings',this)"><i class="fas fa-cog"></i> Settings</div>
+        <div class="nav-item logout-btn" onclick="showPage('page-login')"><i class="fas fa-sign-out-alt"></i> Logout</div>
+      </div>
+    </nav>
+    <div class="main-content">
+      <div class="topbar">
+        <div class="topbar-left">
+          <button class="topbar-btn hamburger" onclick="openSidebar('sidebar-industry','overlay-industry')"><i class="fas fa-bars"></i></button>
+          <div class="topbar-title" id="industry-page-title">Dashboard</div>
+        </div>
+        <div class="topbar-right">
+          <div style="position:relative">
+            <button class="topbar-btn" onclick="toggleNotif('industry-notif')"><i class="fas fa-bell"></i><span class="notif-dot"></span></button>
+            <div class="notif-panel" id="industry-notif">
+              <div style="padding:12px 16px;border-bottom:1px solid var(--border);font-size:.82rem;font-weight:700;color:var(--text2)">Notifications</div>
+              <div class="notif-item"><div class="notif-icon" style="background:rgba(245,166,35,.12);color:var(--warning)"><i class="fas fa-clock"></i></div><div class="notif-text"><h5>5 Pending Approvals</h5><p>Student tasks awaiting your review</p><div class="notif-time">Now</div></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="page-body">
+
+        <!-- DASHBOARD TAB -->
+        <div id="industry-tab-dashboard" class="tab-content active">
+          <div class="welcome-banner">
+            <h3>Welcome, Mr. Ouma! 🏢</h3>
+            <p>You have <strong>5 tasks pending your approval</strong> from student interns at Stanbic Bank Uganda.</p>
+            <div class="wb-badge"><i class="fas fa-building"></i> Stanbic Bank Uganda Ltd · IT Department</div>
+          </div>
+          <div class="cards-grid">
+            <div class="card"><div class="card-icon amber"><i class="fas fa-hourglass-half"></i></div><div class="card-val">5</div><div class="card-label">Pending Approvals</div></div>
+            <div class="card"><div class="card-icon green"><i class="fas fa-check-double"></i></div><div class="card-val">89</div><div class="card-label">Total Approved</div></div>
+            <div class="card"><div class="card-icon blue"><i class="fas fa-users"></i></div><div class="card-val">3</div><div class="card-label">Active Interns</div></div>
+            <div class="card"><div class="card-icon red"><i class="fas fa-times-circle"></i></div><div class="card-val">4</div><div class="card-label">Returned for Revision</div></div>
+          </div>
+          <div class="section-card">
+            <div class="section-head"><h3><i class="fas fa-inbox" style="color:var(--warning);margin-right:6px"></i>Pending Approval Requests</h3><span class="view-all-link" onclick="switchTab('industry','requests',null)">View All <i class="fas fa-arrow-right"></i></span></div>
+            <div class="section-body">
+              <div class="request-list">
+                <div class="request-card" onclick="openModal('approval-detail-modal')">
+                  <div class="avatar">AK</div>
+                  <div class="request-card-body"><h4>Database schema design for client module</h4><p>Amina Kibuuka · 2021/BSC/042</p><div class="request-card-meta"><span class="tag onsite">Onsite</span> &nbsp; 6 hours &nbsp; · &nbsp; Mar 03, 2026</div></div>
+                  <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px"><span class="tag pending">Pending</span><button class="btn btn-primary btn-sm">Review</button></div>
+                </div>
+                <div class="request-card" onclick="openModal('approval-detail-modal')">
+                  <div class="avatar">AK</div>
+                  <div class="request-card-body"><h4>API integration testing & documentation</h4><p>Amina Kibuuka · 2021/BSC/042</p><div class="request-card-meta"><span class="tag onsite">Onsite</span> &nbsp; 7 hours &nbsp; · &nbsp; Mar 02, 2026</div></div>
+                  <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px"><span class="tag pending">Pending</span><button class="btn btn-primary btn-sm">Review</button></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- REQUESTS TAB -->
+        <div id="industry-tab-requests" class="tab-content">
+          <div class="page-header"><h2>Approval Requests</h2><p>Student task submissions awaiting your review</p></div>
+          <div class="request-list">
+            <div class="request-card" onclick="openModal('approval-detail-modal')"><div class="avatar">AK</div><div class="request-card-body"><h4>Database schema design for client module</h4><p>Amina Kibuuka · Stanbic Bank Uganda</p><div class="request-card-meta"><span class="tag onsite">Onsite</span> &nbsp; 6 hours &nbsp; · &nbsp; Mar 03, 2026</div></div><div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px"><span class="tag pending">Pending</span><button class="btn btn-primary btn-sm">Review</button></div></div>
+            <div class="request-card" onclick="openModal('approval-detail-modal')"><div class="avatar">AK</div><div class="request-card-body"><h4>API integration testing & documentation</h4><p>Amina Kibuuka · Stanbic Bank Uganda</p><div class="request-card-meta"><span class="tag onsite">Onsite</span> &nbsp; 7 hours &nbsp; · &nbsp; Mar 02, 2026</div></div><div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px"><span class="tag pending">Pending</span><button class="btn btn-primary btn-sm">Review</button></div></div>
+            <div class="request-card" onclick="openModal('approval-detail-modal')"><div class="avatar" style="background:linear-gradient(135deg,#d97706,#f59e0b)">BN</div><div class="request-card-body"><h4>Network configuration & firewall setup</h4><p>Brian Nakato · Stanbic Bank Uganda</p><div class="request-card-meta"><span class="tag onsite">Onsite</span> &nbsp; 8 hours &nbsp; · &nbsp; Mar 01, 2026</div></div><div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px"><span class="tag pending">Pending</span><button class="btn btn-primary btn-sm">Review</button></div></div>
+          </div>
+        </div>
+
+        <!-- HISTORY TAB -->
+        <div id="industry-tab-history" class="tab-content">
+          <div class="page-header"><h2>Approval History</h2><p>Previously reviewed and acted upon task submissions</p></div>
+          <div class="section-card"><div class="section-head"><h3>All Reviewed Tasks</h3></div>
+            <div class="table-wrap"><table><thead><tr><th>Date</th><th>Student</th><th>Task</th><th>Action</th><th>Comment</th></tr></thead>
+              <tbody>
+                <tr><td>Mar 01</td><td>Amina Kibuuka</td><td>Sprint planning session</td><td><span class="tag approved">Approved</span></td><td>Good participation noted</td></tr>
+                <tr><td>Feb 28</td><td>Brian Nakato</td><td>Server maintenance</td><td><span class="tag approved">Approved</span></td><td>Thorough and well-documented</td></tr>
+                <tr><td>Feb 27</td><td>Amina Kibuuka</td><td>UI wireframes</td><td><span class="tag rejected">Returned</span></td><td>Needs more detail on user flows</td></tr>
+              </tbody>
+            </table></div>
+          </div>
+        </div>
+
+        <!-- INTERNS TAB -->
+        <div id="industry-tab-interns" class="tab-content">
+          <div class="page-header"><h2>My Interns</h2><p>Students placed at your organisation</p></div>
+          <div class="student-cards-grid">
+            <div class="student-card"><div class="student-card-top"><div class="avatar avatar-lg">AK</div><div class="student-card-info"><h4>Amina Kibuuka</h4><p>2021/BSC/042 · BSc CS</p></div></div><div class="student-card-meta"><span>Makerere University</span><span><span class="approved-dot"></span>Active</span></div><div style="font-size:.8rem;color:var(--text2);margin-bottom:6px">Overall Progress</div><div class="prog-bar"><div class="prog-fill" style="width:72%"></div></div><div style="font-size:.78rem;color:var(--text3);margin-top:4px;text-align:right">72%</div></div>
+            <div class="student-card"><div class="student-card-top"><div class="avatar avatar-lg" style="background:linear-gradient(135deg,#d97706,#f59e0b)">BN</div><div class="student-card-info"><h4>Brian Nakato</h4><p>2021/BSC/055 · BSc IT</p></div></div><div class="student-card-meta"><span>Makerere University</span><span><span class="approved-dot"></span>Active</span></div><div style="font-size:.8rem;color:var(--text2);margin-bottom:6px">Overall Progress</div><div class="prog-bar"><div class="prog-fill" style="width:61%"></div></div><div style="font-size:.78rem;color:var(--text3);margin-top:4px;text-align:right">61%</div></div>
+          </div>
+        </div>
+
+        <!-- SETTINGS TAB -->
+        <div id="industry-tab-settings" class="tab-content">
+          <div class="page-header"><h2>Settings</h2></div>
+          <div class="settings-grid">
+            <div class="section-card"><div class="section-head"><h3>Appearance</h3></div><div class="section-body">
+              <div class="form-group"><label>Theme</label><div class="theme-options">
+                <div class="theme-option active" style="background:linear-gradient(135deg,#1a6b4a,#22874f)" onclick="setTheme('default',this)"></div>
+                <div class="theme-option" style="background:linear-gradient(135deg,#0f1a14,#1c2b22)" onclick="setTheme('dark',this)"></div>
+                <div class="theme-option" style="background:linear-gradient(135deg,#1a5f8a,#2176ae)" onclick="setTheme('ocean',this)"></div>
+              </div></div>
+            </div></div>
+            <div class="section-card"><div class="section-head"><h3>Profile</h3></div><div class="section-body">
+              <div class="form-group"><label>Full Name</label><input type="text" value="Mr. Moses Ouma"></div>
+              <div class="form-group"><label>Organisation</label><input type="text" value="Stanbic Bank Uganda Ltd"></div>
+              <div class="form-group"><label>Email</label><input type="email" value="m.ouma@stanbic.co.ug"></div>
+              <button class="btn btn-primary btn-sm"><i class="fas fa-save"></i> Save Changes</button>
+            </div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!--  PAGE 6: ADMIN DASHBOARD                                     -->
+<!-- ============================================================ -->
+<div id="page-admin" class="page" style="flex-direction:column">
+  <div class="overlay-sidebar" id="overlay-admin" onclick="closeSidebar('sidebar-admin','overlay-admin')"></div>
+  <div class="dash-wrap">
+    <nav class="sidebar" id="sidebar-admin">
+      <div class="sidebar-logo">
+        <div class="sidebar-logo-icon"><i class="fas fa-book-open"></i></div>
+        <div class="sidebar-logo-text">InternLog <span>Administrator</span></div>
+      </div>
+      <div class="sidebar-user">
+        <div class="sidebar-user-avatar">AD</div>
+        <div class="sidebar-user-name">Admin</div>
+        <div class="sidebar-user-role">System Administrator</div>
+      </div>
+      <div class="sidebar-nav">
+        <div class="sidebar-section">Main Menu</div>
+        <div class="nav-item active" onclick="switchTab('admin','dashboard',this)"><i class="fas fa-th-large"></i> Dashboard</div>
+        <div class="nav-item" onclick="switchTab('admin','students',this)"><i class="fas fa-user-graduate"></i> Students</div>
+        <div class="nav-item" onclick="switchTab('admin','supervisors',this)"><i class="fas fa-chalkboard-teacher"></i> Supervisors</div>
+        <div class="nav-item" onclick="switchTab('admin','add-supervisor',this)"><i class="fas fa-user-plus"></i> Add Supervisor</div>
+        <div class="nav-item" onclick="switchTab('admin','placements',this)"><i class="fas fa-map-marked-alt"></i> Placements & GPS</div>
+        <div class="nav-item" onclick="switchTab('admin','reports',this)"><i class="fas fa-chart-bar"></i> Reports</div>
+        <div class="sidebar-section">Account</div>
+        <div class="nav-item" onclick="switchTab('admin','settings',this)"><i class="fas fa-cog"></i> Settings</div>
+        <div class="nav-item logout-btn" onclick="showPage('page-login')"><i class="fas fa-sign-out-alt"></i> Logout</div>
+      </div>
+    </nav>
+    <div class="main-content">
+      <div class="topbar">
+        <div class="topbar-left">
+          <button class="topbar-btn hamburger" onclick="openSidebar('sidebar-admin','overlay-admin')"><i class="fas fa-bars"></i></button>
+          <div class="topbar-title" id="admin-page-title">Dashboard</div>
+        </div>
+        <div class="topbar-right">
+          <div style="position:relative">
+            <button class="topbar-btn" onclick="toggleNotif('admin-notif')"><i class="fas fa-bell"></i><span class="notif-dot"></span></button>
+            <div class="notif-panel" id="admin-notif">
+              <div style="padding:12px 16px;border-bottom:1px solid var(--border);font-size:.82rem;font-weight:700;color:var(--text2)">Notifications</div>
+              <div class="notif-item"><div class="notif-icon" style="background:rgba(26,107,74,.12);color:var(--primary)"><i class="fas fa-user-plus"></i></div><div class="notif-text"><h5>New Registration</h5><p>3 students registered today</p><div class="notif-time">Today</div></div></div>
+              <div class="notif-item"><div class="notif-icon" style="background:rgba(229,62,62,.12);color:var(--danger)"><i class="fas fa-exclamation-triangle"></i></div><div class="notif-text"><h5>GPS Alert</h5><p>2 students outside placement zone</p><div class="notif-time">1 hr ago</div></div></div>
+            </div>
+          </div>
+          <button class="topbar-btn"><i class="fas fa-download"></i></button>
+        </div>
+      </div>
+      <div class="page-body">
+
+        <!-- DASHBOARD TAB -->
+        <div id="admin-tab-dashboard" class="tab-content active">
+          <div class="welcome-banner">
+            <h3>Welcome, Administrator! 🛡️</h3>
+            <p>InternLog system is running smoothly. Internship programme ends in <strong>47 days</strong>. Monitor student progress below.</p>
+            <div class="wb-badge"><i class="fas fa-university"></i> Makerere University · 2025/2026 Internship Programme</div>
+          </div>
+          <div class="cards-grid">
+            <div class="card"><div class="card-icon green"><i class="fas fa-user-graduate"></i></div><div class="card-val">142</div><div class="card-label">Active Students</div><div class="card-trend"><i class="fas fa-arrow-up"></i> 8 joined this week</div></div>
+            <div class="card"><div class="card-icon amber"><i class="fas fa-user-clock"></i></div><div class="card-val">23</div><div class="card-label">Not Yet Started</div><div class="card-trend down"><i class="fas fa-exclamation"></i> Awaiting placement</div></div>
+            <div class="card"><div class="card-icon blue"><i class="fas fa-chalkboard-teacher"></i></div><div class="card-val">18</div><div class="card-label">Supervisors</div><div class="card-trend"><i class="fas fa-check"></i> 14 school · 4 industry</div></div>
+            <div class="card"><div class="card-icon red"><i class="fas fa-calendar-times"></i></div><div class="card-val">47</div><div class="card-label">Days to End</div><div class="card-trend"><i class="fas fa-flag"></i> Programme ends Apr 21</div></div>
+          </div>
+
+          <!-- SUMMARY TABLE -->
+          <div class="section-card">
+            <div class="section-head">
+              <h3>Student Summary</h3>
+              <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+                <div class="search-bar"><i class="fas fa-search"></i><input type="text" placeholder="Search students..."></div>
+                <span class="view-all-link" onclick="switchTab('admin','students',null)">View All <i class="fas fa-arrow-right"></i></span>
+              </div>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Student</th><th>Reg. No.</th><th>Supervisor</th><th>Placement</th><th>Progress</th><th>Status</th></tr></thead>
+                <tbody>
+                  <tr>
+                    <td><div style="display:flex;align-items:center;gap:10px"><div class="avatar">AK</div>Amina Kibuuka</div></td>
+                    <td>2021/BSC/042</td>
+                    <td><select style="padding:5px 10px;border:1px solid var(--border);border-radius:6px;font-size:.82rem;background:var(--surface2);color:var(--text);outline:none"><option>Dr. Ssekandi</option><option>Dr. Namubiru</option><option>Dr. Kato</option></select></td>
+                    <td>Stanbic Bank Uganda</td>
+                    <td><div style="min-width:90px"><div class="prog-bar"><div class="prog-fill" style="width:72%"></div></div><div style="font-size:.72rem;color:var(--text3);margin-top:2px">72%</div></div></td>
+                    <td><span class="tag approved">Active</span></td>
+                  </tr>
+                  <tr>
+                    <td><div style="display:flex;align-items:center;gap:10px"><div class="avatar" style="background:linear-gradient(135deg,#2176ae,#3182ce)">JM</div>Jonah Mwangi</div></td>
+                    <td>2021/BSC/019</td>
+                    <td><select style="padding:5px 10px;border:1px solid var(--border);border-radius:6px;font-size:.82rem;background:var(--surface2);color:var(--text);outline:none"><option>Dr. Ssekandi</option><option>Dr. Namubiru</option><option>Dr. Kato</option></select></td>
+                    <td>MTN Uganda HQ</td>
+                    <td><div style="min-width:90px"><div class="prog-bar"><div class="prog-fill amber" style="width:58%"></div></div><div style="font-size:.72rem;color:var(--text3);margin-top:2px">58%</div></div></td>
+                    <td><span class="tag pending">Behind</span></td>
+                  </tr>
+                  <tr>
+                    <td><div style="display:flex;align-items:center;gap:10px"><div class="avatar" style="background:linear-gradient(135deg,#d97706,#f59e0b)">PN</div>Patience Nantale</div></td>
+                    <td>2021/BSC/031</td>
+                    <td><select style="padding:5px 10px;border:1px solid var(--border);border-radius:6px;font-size:.82rem;background:var(--surface2);color:var(--text);outline:none"><option>Dr. Namubiru</option><option>Dr. Ssekandi</option><option>Dr. Kato</option></select></td>
+                    <td>Airtel Uganda</td>
+                    <td><div style="min-width:90px"><div class="prog-bar"><div class="prog-fill" style="width:85%"></div></div><div style="font-size:.72rem;color:var(--text3);margin-top:2px">85%</div></div></td>
+                    <td><span class="tag approved">Active</span></td>
+                  </tr>
+                  <tr>
+                    <td><div style="display:flex;align-items:center;gap:10px"><div class="avatar" style="background:linear-gradient(135deg,#e53e3e,#fc8181)">RK</div>Ronald Kasozi</div></td>
+                    <td>2021/BSC/007</td>
+                    <td><select style="padding:5px 10px;border:1px solid var(--border);border-radius:6px;font-size:.82rem;background:var(--surface2);color:var(--text);outline:none"><option>— Unassigned —</option><option>Dr. Ssekandi</option><option>Dr. Namubiru</option></select></td>
+                    <td><span style="color:var(--text3);font-style:italic">Not Placed</span></td>
+                    <td><div style="min-width:90px"><div class="prog-bar"><div class="prog-fill" style="width:0%"></div></div><div style="font-size:.72rem;color:var(--text3);margin-top:2px">0%</div></div></td>
+                    <td><span class="tag rejected">Not Started</span></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- STUDENTS TAB -->
+        <div id="admin-tab-students" class="tab-content">
+          <div class="page-header"><h2>All Students</h2><p>Complete list of registered students in the programme</p></div>
+          <div class="section-card">
+            <div class="section-head">
+              <h3>Students (165)</h3>
+              <div style="display:flex;gap:10px;flex-wrap:wrap">
+                <div class="search-bar"><i class="fas fa-search"></i><input type="text" placeholder="Search..."></div>
+                <select style="padding:9px 14px;border:1.5px solid var(--border);border-radius:9px;font-size:.88rem;background:var(--surface2);color:var(--text);outline:none"><option>All Status</option><option>Active</option><option>Not Started</option><option>Completed</option></select>
+                <button class="btn btn-primary btn-sm"><i class="fas fa-download"></i> Export</button>
+              </div>
+            </div>
+            <div class="table-wrap"><table><thead><tr><th>Student</th><th>Reg. No.</th><th>Course</th><th>Supervisor</th><th>Placement</th><th>Progress</th><th>Status</th><th></th></tr></thead>
+              <tbody>
+                <tr><td><div style="display:flex;align-items:center;gap:10px"><div class="avatar">AK</div>Amina Kibuuka</div></td><td>2021/BSC/042</td><td>BSc CS</td><td>Dr. Ssekandi</td><td>Stanbic Bank</td><td><div class="prog-bar" style="min-width:80px"><div class="prog-fill" style="width:72%"></div></div></td><td><span class="tag approved">Active</span></td><td><button class="btn btn-outline btn-sm">View</button></td></tr>
+                <tr><td><div style="display:flex;align-items:center;gap:10px"><div class="avatar" style="background:linear-gradient(135deg,#2176ae,#3182ce)">JM</div>Jonah Mwangi</div></td><td>2021/BSC/019</td><td>BSc IT</td><td>Dr. Ssekandi</td><td>MTN Uganda</td><td><div class="prog-bar" style="min-width:80px"><div class="prog-fill amber" style="width:58%"></div></div></td><td><span class="tag pending">Behind</span></td><td><button class="btn btn-outline btn-sm">View</button></td></tr>
+              </tbody>
+            </table></div>
+          </div>
+        </div>
+
+        <!-- SUPERVISORS TAB -->
+        <div id="admin-tab-supervisors" class="tab-content">
+          <div class="page-header"><h2>Supervisors</h2><p>All registered school and industry supervisors</p></div>
+          <div class="tab-row">
+            <div class="tab-btn active" onclick="switchInnerTab('sv','school',this)">School Supervisors (14)</div>
+            <div class="tab-btn" onclick="switchInnerTab('sv','industry',this)">Industry Supervisors (4)</div>
+          </div>
+          <div id="sv-tab-school" class="tab-content active">
+            <div class="student-cards-grid">
+              <div class="student-card"><div class="student-card-top"><div class="avatar avatar-lg" style="background:linear-gradient(135deg,#1a5f8a,#2176ae)">DS</div><div class="student-card-info"><h4>Dr. James Ssekandi</h4><p>STAFF-014</p></div></div><div class="student-card-meta"><span>School of Computing & IT</span><span><span class="approved-dot"></span>Active</span></div><div style="font-size:.82rem;color:var(--text2)">Assigned Students: <strong>7</strong></div></div>
+              <div class="student-card"><div class="student-card-top"><div class="avatar avatar-lg" style="background:linear-gradient(135deg,#d97706,#f59e0b)">RN</div><div class="student-card-info"><h4>Dr. Ruth Namubiru</h4><p>STAFF-022</p></div></div><div class="student-card-meta"><span>School of Computing & IT</span><span><span class="approved-dot"></span>Active</span></div><div style="font-size:.82rem;color:var(--text2)">Assigned Students: <strong>9</strong></div></div>
+            </div>
+          </div>
+          <div id="sv-tab-industry" class="tab-content">
+            <div class="student-cards-grid">
+              <div class="student-card"><div class="student-card-top"><div class="avatar avatar-lg">MO</div><div class="student-card-info"><h4>Mr. Moses Ouma</h4><p>Stanbic Bank Uganda</p></div></div><div class="student-card-meta"><span>IT Department</span><span><span class="approved-dot"></span>Active</span></div><div style="font-size:.82rem;color:var(--text2)">Interns: <strong>3</strong></div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ADD SUPERVISOR TAB -->
+        <div id="admin-tab-add-supervisor" class="tab-content">
+          <div class="page-header"><h2>Add Supervisor</h2><p>Register a new school or industry supervisor</p></div>
+          <div class="section-card" style="max-width:600px">
+            <div class="section-head"><h3>New Supervisor Form</h3></div>
+            <div class="section-body">
+              <div class="form-group"><label>Supervisor Type</label><select><option>School Supervisor</option><option>Industry Supervisor</option></select></div>
+              <div class="form-row">
+                <div class="form-group"><label>Full Name</label><input type="text" placeholder="Full name"></div>
+                <div class="form-group"><label>Staff / Employee ID</label><input type="text" placeholder="e.g. STAFF-042"></div>
+              </div>
+              <div class="form-group"><label>Email Address</label><input type="email" placeholder="supervisor@institution.ac.ug"></div>
+              <div class="form-group"><label>Department / Organisation</label><input type="text" placeholder="Department or company name"></div>
+              <div class="form-group"><label>Phone Number</label><input type="tel" placeholder="+256 700 000 000"></div>
+              <div class="form-row">
+                <div class="form-group"><label>Temporary Password</label><input type="password" placeholder="Set temp password"></div>
+                <div class="form-group"><label>Max Student Capacity</label><input type="number" placeholder="e.g. 10" min="1"></div>
+              </div>
+              <button class="btn btn-primary"><i class="fas fa-user-plus"></i> Add Supervisor</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- PLACEMENTS TAB -->
+        <div id="admin-tab-placements" class="tab-content">
+          <div class="page-header"><h2>Placements & GPS</h2><p>Manage student placement locations and GPS verification zones</p></div>
+          <div class="section-card">
+            <div class="section-head"><h3>Registered Placement Locations</h3><button class="btn btn-primary btn-sm"><i class="fas fa-plus"></i> Add Location</button></div>
+            <div class="table-wrap"><table><thead><tr><th>Organisation</th><th>Address</th><th>GPS Coordinates</th><th>Radius</th><th>Interns</th><th>Status</th></tr></thead>
+              <tbody>
+                <tr><td><strong>Stanbic Bank Uganda</strong></td><td>Plot 45 Kampala Rd, Kampala</td><td><span class="gps-badge"><i class="fas fa-crosshairs"></i> 0.3476°N, 32.5825°E</span></td><td>200m</td><td>3</td><td><span class="tag approved">Active</span></td></tr>
+                <tr><td><strong>MTN Uganda HQ</strong></td><td>22 Hannington Rd, Kampala</td><td><span class="gps-badge"><i class="fas fa-crosshairs"></i> 0.3162°N, 32.5764°E</span></td><td>300m</td><td>2</td><td><span class="tag approved">Active</span></td></tr>
+                <tr><td><strong>Airtel Uganda</strong></td><td>Uganda House, Parliament Ave</td><td><span class="gps-badge"><i class="fas fa-crosshairs"></i> 0.3187°N, 32.5788°E</span></td><td>250m</td><td>4</td><td><span class="tag approved">Active</span></td></tr>
+              </tbody>
+            </table></div>
+          </div>
+        </div>
+
+        <!-- REPORTS TAB -->
+        <div id="admin-tab-reports" class="tab-content">
+          <div class="page-header"><h2>Reports & Analytics</h2></div>
+          <div class="cards-grid">
+            <div class="card"><div class="card-icon green"><i class="fas fa-clipboard-list"></i></div><div class="card-val">3,847</div><div class="card-label">Total Log Entries</div></div>
+            <div class="card"><div class="card-icon blue"><i class="fas fa-check-circle"></i></div><div class="card-val">3,210</div><div class="card-label">Approved Tasks</div></div>
+            <div class="card"><div class="card-icon amber"><i class="fas fa-map-marker-alt"></i></div><div class="card-val">96%</div><div class="card-label">GPS Compliance</div></div>
+            <div class="card"><div class="card-icon green"><i class="fas fa-percentage"></i></div><div class="card-val">71%</div><div class="card-label">Avg. Progress</div></div>
+          </div>
+          <div class="section-card"><div class="section-head"><h3>Export Reports</h3></div><div class="section-body" style="display:flex;gap:12px;flex-wrap:wrap">
+            <button class="btn btn-outline"><i class="fas fa-file-excel"></i> Student Report (XLSX)</button>
+            <button class="btn btn-outline"><i class="fas fa-file-pdf"></i> Supervisor Summary (PDF)</button>
+            <button class="btn btn-outline"><i class="fas fa-file-csv"></i> GPS Attendance Log (CSV)</button>
+            <button class="btn btn-primary"><i class="fas fa-chart-bar"></i> Full Programme Report</button>
+          </div></div>
+        </div>
+
+        <!-- SETTINGS TAB -->
+        <div id="admin-tab-settings" class="tab-content">
+          <div class="page-header"><h2>Settings</h2></div>
+          <div class="settings-grid">
+            <div class="section-card"><div class="section-head"><h3>System Theme</h3></div><div class="section-body">
+              <div class="form-group"><label>Theme</label><div class="theme-options">
+                <div class="theme-option active" style="background:linear-gradient(135deg,#1a6b4a,#22874f)" onclick="setTheme('default',this)"></div>
+                <div class="theme-option" style="background:linear-gradient(135deg,#0f1a14,#1c2b22)" onclick="setTheme('dark',this)"></div>
+                <div class="theme-option" style="background:linear-gradient(135deg,#1a5f8a,#2176ae)" onclick="setTheme('ocean',this)"></div>
+              </div></div>
+            </div></div>
+            <div class="section-card"><div class="section-head"><h3>Programme Settings</h3></div><div class="section-body">
+              <div class="form-group"><label>Internship Start Date</label><input type="date" value="2026-01-13"></div>
+              <div class="form-group"><label>Internship End Date</label><input type="date" value="2026-04-21"></div>
+              <div class="form-group"><label>Institution Name</label><input type="text" value="Makerere University"></div>
+              <button class="btn btn-primary btn-sm"><i class="fas fa-save"></i> Save Settings</button>
+            </div></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!--  MODALS                                                       -->
+<!-- ============================================================ -->
+
+<!-- Approval Request Modal -->
+<div class="modal-overlay" id="approval-modal">
+  <div class="modal">
+    <div class="modal-head"><h3><i class="fas fa-user-check" style="color:var(--primary);margin-right:8px"></i>Request Supervisor Approval</h3><div class="modal-close" onclick="closeModal('approval-modal')"><i class="fas fa-times"></i></div></div>
+    <p class="sub-text" style="margin-bottom:18px">Select a task to send for industry supervisor approval. The supervisor will be notified immediately.</p>
+    <div class="form-group"><label>Select Task</label><select><option>Mar 02 — API integration testing & documentation</option><option>Mar 01 — Remote bug fix on payment gateway</option></select></div>
+    <div class="form-group"><label>Message to Supervisor (optional)</label><textarea placeholder="Add a note for the supervisor..."></textarea></div>
+    <div style="display:flex;gap:10px;justify-content:flex-end">
+      <button class="btn btn-outline" onclick="closeModal('approval-modal')">Cancel</button>
+      <button class="btn btn-primary" onclick="closeModal('approval-modal')"><i class="fas fa-paper-plane"></i> Send Request</button>
+    </div>
+  </div>
+</div>
+
+<!-- Log Detail Modal -->
+<div class="modal-overlay" id="log-detail-modal">
+  <div class="modal">
+    <div class="modal-head"><h3>Log Entry Detail</h3><div class="modal-close" onclick="closeModal('log-detail-modal')"><i class="fas fa-times"></i></div></div>
+    <div style="background:var(--bg2);border-radius:var(--radius-sm);padding:16px;margin-bottom:18px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px"><span class="tag onsite">Onsite</span><span class="gps-badge"><i class="fas fa-check"></i> GPS Verified · 0.3476°N, 32.5825°E</span></div>
+      <h4 style="font-size:1.05rem;margin-bottom:6px">Database schema design for client module</h4>
+      <div style="font-size:.82rem;color:var(--text2)">Mar 03, 2026 · 6 hours</div>
+    </div>
+    <div class="form-group"><label>Description</label><div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px;font-size:.9rem;line-height:1.7;color:var(--text2)">Worked on designing the entity-relationship diagram for the client management module. Collaborated with the senior developer to normalise the schema to 3NF. Created SQL scripts for table creation and added appropriate constraints and indexes for performance optimisation.</div></div>
+    <div class="form-group"><label>Skills Applied</label><div style="font-size:.9rem">SQL, Database Design, PostgreSQL, Communication</div></div>
+    <div class="form-group"><label>Status</label><span class="tag approved">Approved by Mr. Ouma · Mar 04, 2026</span></div>
+    <div class="form-group"><label>Supervisor Comment</label><div style="font-style:italic;color:var(--text2);font-size:.9rem">"Well structured schema that meets all requirements. Good use of normalisation principles."</div></div>
+    <button class="btn btn-outline" onclick="closeModal('log-detail-modal')"><i class="fas fa-times"></i> Close</button>
+  </div>
+</div>
+
+<!-- Student Profile Modal (School Supervisor) -->
+<div class="modal-overlay" id="student-profile-modal">
+  <div class="modal" style="max-width:640px">
+    <div class="modal-head"><h3>Student Profile</h3><div class="modal-close" onclick="closeModal('student-profile-modal')"><i class="fas fa-times"></i></div></div>
+    <div class="profile-header">
+      <div class="profile-avatar">AK</div>
+      <div class="profile-info">
+        <h3>Amina Kibuuka</h3>
+        <p>2021/BSC/042 · BSc Computer Science · Year 3</p>
+        <div class="profile-meta">
+          <div class="profile-meta-item"><i class="fas fa-building" style="margin-right:4px"></i>Placement: <span>Stanbic Bank Uganda</span></div>
+          <div class="profile-meta-item"><i class="fas fa-envelope" style="margin-right:4px"></i><span>a.kibuuka@students.mak.ac.ug</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="cards-grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:20px">
+      <div class="card" style="padding:16px"><div class="card-val" style="font-size:1.5rem">24</div><div class="card-label">Total Logs</div></div>
+      <div class="card" style="padding:16px"><div class="card-val" style="font-size:1.5rem">19</div><div class="card-label">Approved</div></div>
+      <div class="card" style="padding:16px"><div class="card-val" style="font-size:1.5rem">72%</div><div class="card-label">Progress</div></div>
+    </div>
+    <div class="form-group"><label>Overall Progress</label><div class="prog-bar" style="height:12px"><div class="prog-fill" style="width:72%"></div></div><div style="font-size:.8rem;color:var(--text3);margin-top:4px">72% · 38/56 days completed</div></div>
+    <div class="section-head" style="margin-bottom:12px"><h3>Recent Log Entries</h3></div>
+    <div class="table-wrap"><table><thead><tr><th>Date</th><th>Task</th><th>Status</th></tr></thead>
+      <tbody>
+        <tr><td>Mar 03</td><td>Database schema design</td><td><span class="tag approved">Approved</span></td></tr>
+        <tr><td>Mar 02</td><td>API integration testing</td><td><span class="tag pending">Pending</span></td></tr>
+        <tr><td>Mar 01</td><td>Remote bug fix</td><td><span class="tag pending">Pending</span></td></tr>
+      </tbody>
+    </table></div>
+    <div style="display:flex;gap:10px;margin-top:18px;flex-wrap:wrap">
+      <button class="btn btn-primary btn-sm"><i class="fas fa-comment"></i> Send Message</button>
+      <button class="btn btn-outline btn-sm"><i class="fas fa-file-download"></i> Download Report</button>
+      <button class="btn btn-outline btn-sm" onclick="closeModal('student-profile-modal')">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- Approval Detail Modal (Industry Supervisor) -->
+<div class="modal-overlay" id="approval-detail-modal">
+  <div class="modal" style="max-width:600px">
+    <div class="modal-head"><h3>Review Task Submission</h3><div class="modal-close" onclick="closeModal('approval-detail-modal')"><i class="fas fa-times"></i></div></div>
+    <div style="display:flex;align-items:center;gap:14px;padding:16px;background:var(--bg2);border-radius:var(--radius-sm);margin-bottom:18px">
+      <div class="avatar avatar-lg">AK</div>
+      <div><h4>Amina Kibuuka</h4><p class="sub-text">2021/BSC/042 · Stanbic Bank Uganda</p></div>
+      <div style="margin-left:auto"><span class="tag pending">Pending Review</span></div>
+    </div>
+    <div class="form-group"><label>Task</label><div style="font-size:1.05rem;font-weight:700">Database schema design for client module</div></div>
+    <div class="form-group"><label>Type & Duration</label><div style="display:flex;gap:10px;align-items:center"><span class="tag onsite">Onsite</span> <span>6 hours · March 03, 2026</span></div></div>
+    <div class="form-group"><label>GPS Verification</label><span class="gps-badge"><i class="fas fa-check"></i> Verified at placement site · 0.3476°N, 32.5825°E</span></div>
+    <div class="form-group"><label>Description</label><div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px;font-size:.9rem;line-height:1.7;color:var(--text2)">Worked on designing the ER diagram for the client module. Collaborated with the senior developer to normalise the schema to 3NF. Created SQL scripts for table creation with appropriate constraints and indexes.</div></div>
+    <div class="form-group"><label>Proof / Evidence</label><div style="background:var(--bg2);border-radius:8px;padding:12px;display:flex;align-items:center;gap:10px;font-size:.88rem;color:var(--text2)"><i class="fas fa-image" style="font-size:1.2rem;color:var(--primary)"></i> schema_diagram.png &nbsp; <span style="color:var(--text3)">· 1.2 MB</span></div></div>
+    <div class="form-group"><label>Your Comment</label><textarea placeholder="Add feedback or comment for the student (optional)..."></textarea></div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end">
+      <button class="btn btn-outline btn-danger btn-sm" style="border-color:var(--danger);color:var(--danger)" onclick="closeModal('approval-detail-modal')"><i class="fas fa-undo"></i> Return for Revision</button>
+      <button class="btn btn-primary" onclick="closeModal('approval-detail-modal')"><i class="fas fa-check-circle"></i> Approve Task</button>
+    </div>
+  </div>
+</div>
+
+<script src="js/script.js" defer></script>
+
+</body>
+</html>
