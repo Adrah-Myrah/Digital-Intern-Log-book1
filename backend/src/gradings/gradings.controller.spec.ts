@@ -1,0 +1,18 @@
+import { Test, TestingModule } from '@nestjs/testing';
+import { GradingsController } from './gradings.controller';
+
+describe('GradingsController', () => {
+  let controller: GradingsController;
+
+  beforeEach(async () => {
+    const module: TestingModule = await Test.createTestingModule({
+      controllers: [GradingsController],
+    }).compile();
+
+    controller = module.get<GradingsController>(GradingsController);
+  });
+
+  it('should be defined', () => {
+    expect(controller).toBeDefined();
+  });
+});

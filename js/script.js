@@ -1,3 +1,83 @@
+const API_URL = 'http://localhost:3000/api';
+
+function getToken() {
+  return sessionStorage.getItem('token') || localStorage.getItem('token');
+}
+
+function getUserId() {
+  return sessionStorage.getItem('userId') || localStorage.getItem('userId');
+}
+
+async function handleRegister() {
+  const role = document.getElementById('reg-role').value;
+
+  if (!role) {
+    alert('Please select your role.');
+    return;
+  }
+
+  const password = document.getElementById('reg-pw').value;
+  const confirmPw = document.getElementById('reg-cpw').value;
+
+  if (!password || password !== confirmPw) {
+    alert('Passwords do not match.');
+    return;
+  }
+
+  let data = { role, password };
+
+  if (role === 'student') {
+    data = {
+      ...data,
+      fullName: document.getElementById('reg-fullname').value,
+      registrationNumber: document.getElementById('reg-regnumber').value,
+      yearOfStudy: document.getElementById('reg-year').value,
+      internshipAttempt: document.getElementById('reg-attempt').value,
+      course: document.getElementById('reg-course').value,
+      placementCompany: document.getElementById('reg-placement').value,
+      country: document.getElementById('reg-country').value,
+      email: document.getElementById('reg-email').value,
+    };
+  } else {
+    data = {
+      ...data,
+      fullName: document.getElementById('reg-fullname').value,
+      staffId: document.getElementById('reg-staffid').value,
+      email: document.getElementById('reg-sup-email').value,
+      department: role !== 'admin'
+        ? document.getElementById('reg-department').value
+        : null,
+    };
+  }
+
+  const btn = document.getElementById('register-btn');
+  btn.innerHTML = '<span class="spinner"></span> Creating account...';
+  btn.disabled = true;
+
+  try {
+    const response = await fetch(`${API_URL}/auth/register`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      alert(result.message || 'Registration failed. Please try again.');
+      return;
+    }
+
+    alert('Account created successfully! Please sign in.');
+    goToLogin();
+
+  } catch (err) {
+    alert('Could not connect to server. Make sure the backend is running.');
+  } finally {
+    btn.innerHTML = '<i class="fas fa-user-plus"></i> Create Account';
+    btn.disabled = false;
+  }
+}
 /* ===== PAGE NAVIGATION ===== */
 let currentLoginRole = 'student';
 
@@ -17,7 +97,20 @@ function toggleRegFields() {
   else document.getElementById('dept-field').style.display = 'block';
 }
 
-function goToLogin() { showPage('page-login'); }
+function goToLogin() {
+  sessionStorage.removeItem('isLoggedIn');
+  sessionStorage.removeItem('activePage');
+  sessionStorage.removeItem('userRole');
+  sessionStorage.removeItem('token');
+  sessionStorage.removeItem('userName');
+  sessionStorage.removeItem('userId');
+  localStorage.removeItem('activeTab');
+  localStorage.removeItem('activeTabPrefix');
+  localStorage.removeItem('token');
+  localStorage.removeItem('userName');
+  localStorage.removeItem('userId');
+  showPage('page-login');
+}
 
 function setLoginRole(role, el) {
   currentLoginRole = role;
@@ -29,17 +122,263 @@ function setLoginRole(role, el) {
   document.getElementById('login-id').placeholder = placeholders[role];
 }
 
-function handleLogin() {
+
+async function handleLogin() {
+  const id = document.getElementById('login-id').value.trim();
+  const pw = document.getElementById('login-pw').value.trim();
+
+  if (!id || !pw) {
+    alert('Please enter your ID and password to continue.');
+    return;
+  }
+
   const btn = document.getElementById('login-btn');
   btn.innerHTML = '<span class="spinner"></span> Signing in...';
   btn.disabled = true;
-  setTimeout(() => {
+
+  try {
+    const response = await fetch(`${API_URL}/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        identifier: id,
+        password: pw,
+        role: currentLoginRole,
+      }),
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      alert(result.message || 'Invalid credentials. Please try again.');
+      return;
+    }
+
+    // Save real session data
+    sessionStorage.setItem('isLoggedIn', 'true');
+    sessionStorage.setItem('token', result.token);
+    sessionStorage.setItem('userRole', result.role);
+    sessionStorage.setItem('userName', result.name);
+    sessionStorage.setItem('userId', String(result.id));
+
+    // these survive page reopen
+    localStorage.setItem('token', result.token);
+    localStorage.setItem('userName', result.name);
+    localStorage.setItem('userId', String(result.id));
+
+    const pages = {
+      student: 'page-student',
+      'school-supervisor': 'page-school-supervisor',
+      'industry-supervisor': 'page-industry-supervisor',
+      admin: 'page-admin',
+    };
+
+    const page = pages[result.role] || 'page-student';
+    sessionStorage.setItem('activePage', page);
+
+    localStorage.setItem('activeTab', 'dashboard');
+    localStorage.setItem('activeTabPrefix',
+      result.role === 'school-supervisor' ? 'school' :
+        result.role === 'industry-supervisor' ? 'industry' :
+          result.role === 'admin' ? 'admin' : 'student'
+    );
+
+    loadUserDashboard();
+
+    showPage(page);
+
+  } catch (err) {
+    alert('Could not connect to server. Make sure the backend is running.');
+  } finally {
     btn.innerHTML = '<i class="fas fa-sign-in-alt"></i> <span>Sign In</span>';
     btn.disabled = false;
-    const pages = { student: 'page-student', school: 'page-school-supervisor', industry: 'page-industry-supervisor', admin: 'page-admin' };
-    showPage(pages[currentLoginRole] || 'page-student');
-  }, 1200);
+  }
 }
+
+// wire student dashboard with real data
+function loadUserDashboard() {
+  const userName = sessionStorage.getItem('userName') || localStorage.getItem('userName');
+  const userId = getUserId();
+  const userRole = sessionStorage.getItem('userRole') || localStorage.getItem('userRole');
+
+  if (!userName) return;
+
+  // Get first name only for greeting
+  const firstName = userName.split(' ')[0];
+
+  // Update student dashboard
+  if (userRole === 'student') {
+    // Update greeting
+    const greeting = document.querySelector('#student-tab-dashboard .welcome-banner h3');
+    if (greeting) greeting.textContent = `Good morning, ${firstName}! 👋`;
+
+    // Update sidebar name and role
+    const sidebarName = document.querySelector('#sidebar-student .sidebar-user-name');
+    const sidebarAvatar = document.querySelector('#sidebar-student .sidebar-user-avatar');
+    if (sidebarName) sidebarName.textContent = userName;
+    if (sidebarAvatar) {
+      // Get initials
+      const initials = userName.split(' ').map(n => n[0]).join('').toUpperCase();
+      sidebarAvatar.textContent = initials;
+    }
+
+    // Load student logs
+    loadStudentLogs(userId);
+    loadStudentCards(userId);
+  }
+
+  // Update school supervisor dashboard
+  if (userRole === 'school-supervisor') {
+    const greeting = document.querySelector('#school-tab-dashboard .welcome-banner h3');
+    if (greeting) greeting.textContent = `Welcome, ${firstName}! 🎓`;
+
+    const sidebarName = document.querySelector('#sidebar-school .sidebar-user-name');
+    const sidebarAvatar = document.querySelector('#sidebar-school .sidebar-user-avatar');
+    if (sidebarName) sidebarName.textContent = userName;
+    if (sidebarAvatar) {
+      const initials = userName.split(' ').map(n => n[0]).join('').toUpperCase();
+      sidebarAvatar.textContent = initials;
+    }
+  }
+
+  // Update industry supervisor dashboard
+  if (userRole === 'industry-supervisor') {
+    const greeting = document.querySelector('#industry-tab-dashboard .welcome-banner h3');
+    if (greeting) greeting.textContent = `Welcome, ${firstName}! 🏢`;
+
+    const sidebarName = document.querySelector('#sidebar-industry .sidebar-user-name');
+    const sidebarAvatar = document.querySelector('#sidebar-industry .sidebar-user-avatar');
+    if (sidebarName) sidebarName.textContent = userName;
+    if (sidebarAvatar) {
+      const initials = userName.split(' ').map(n => n[0]).join('').toUpperCase();
+      sidebarAvatar.textContent = initials;
+    }
+  }
+}
+
+// Wire Student logs
+async function loadStudentLogs(studentId) {
+  try {
+    const response = await fetch(`${API_URL}/logs/student/${studentId}`, {
+      headers: { 'Authorization': `Bearer ${getToken()}` }
+    });
+
+    const logs = await response.json();
+
+    // Update total logs count
+    const totalLogsEl = document.querySelector('#student-tab-dashboard .card-val');
+    if (totalLogsEl) totalLogsEl.textContent = logs.length;
+
+    // Update logs table in My Logs tab
+    const tbody = document.getElementById('logs-tbody');
+    if (!tbody || logs.length === 0) return;
+
+    tbody.innerHTML = logs.map((log, index) => `
+      <tr>
+        <td>${logs.length - index}</td>
+        <td>${new Date(log.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}</td>
+        <td>${log.taskName}</td>
+        <td><span class="tag ${log.workType === 'Onsite' ? 'onsite' : 'offsite'}">${log.workType}</span></td>
+        <td>${log.estimatedHours}h</td>
+        <td><span class="gps-badge"><i class="fas fa-check"></i> Verified</span></td>
+        <td><span class="tag ${log.status}">${log.status.charAt(0).toUpperCase() + log.status.slice(1)}</span></td>
+        <td><button class="btn btn-outline btn-sm" onclick="openModal('log-detail-modal')">Detail</button></td>
+      </tr>
+    `).join('');
+
+  } catch (err) {
+    console.error('Failed to load logs:', err);
+  }
+}
+
+// wiring dashboard cards
+// async function loadStudentCards(studentId) {
+//   try {
+//     const response = await fetch(`${API_URL}/logs/student/${studentId}`, {
+//       headers: { 'Authorization': `Bearer ${getToken()}` }
+//     });
+
+//     const logs = await response.json();
+
+//     const total = logs.length;
+//     const approved = logs.filter(l => l.status === 'approved').length;
+//     const pending = logs.filter(l => l.status === 'pending').length;
+
+//     // Total log entries card
+//     const cards = document.querySelectorAll('#student-tab-dashboard .card-val');
+//     if (cards[0]) cards[0].textContent = total;
+
+//     // Approved tasks card
+//     if (cards[3]) cards[3].textContent = approved;
+
+//     // Update pending badge in sidebar
+//     const logsBadge = document.querySelector('#sidebar-student .nav-item:nth-child(2) .badge');
+//     if (logsBadge) logsBadge.textContent = pending;
+
+//     // Update welcome banner pending count
+//     const bannerText = document.querySelector('#student-tab-dashboard .welcome-banner p');
+//     if (bannerText) {
+//       bannerText.innerHTML = `You have <strong>${pending} pending tasks</strong> awaiting industry supervisor approval.`;
+//     }
+
+//   } catch (err) {
+//     console.error('Failed to load cards:', err);
+//   }
+// }
+async function loadStudentCards(studentId) {
+  try {
+    const [logsRes, settingsRes] = await Promise.all([
+      fetch(`${API_URL}/logs/student/${studentId}`, {
+        headers: { 'Authorization': `Bearer ${getToken()}` }
+      }),
+      fetch(`${API_URL}/settings`)
+    ]);
+
+    const logs = await logsRes.json();
+    const settings = await settingsRes.json();
+
+    // Define these FIRST before using them
+    const total = logs.length;
+    const approved = logs.filter(l => l.status === 'approved').length;
+    const pending = logs.filter(l => l.status === 'pending').length;
+
+    // Get dates from settings
+    const endSetting = settings.find(s => s.key === 'internship_end');
+    const endDate = endSetting ? new Date(endSetting.value) : new Date('2026-04-21');
+    const today = new Date();
+
+    // Calculate days left
+    const daysLeft = Math.max(0, Math.ceil((endDate - today) / (1000 * 60 * 60 * 24)));
+
+    // Progress based on approved logs
+    const timeProgress = total > 0 ? Math.round((approved / total) * 100) : 0;
+
+    // Update cards
+    const cards = document.querySelectorAll('#student-tab-dashboard .card-val');
+    if (cards[0]) cards[0].textContent = total;
+    if (cards[1]) cards[1].textContent = daysLeft;
+    if (cards[2]) cards[2].textContent = timeProgress + '%';
+    if (cards[3]) cards[3].textContent = approved;
+
+    // Update progress bar
+    const progFill = document.querySelector('#student-tab-dashboard .prog-fill');
+    if (progFill) progFill.style.width = timeProgress + '%';
+
+    // Update pending badge
+    const logsBadge = document.querySelector('#sidebar-student .nav-item:nth-child(2) .badge');
+    if (logsBadge) logsBadge.textContent = pending;
+
+    // Update welcome banner
+    const bannerText = document.querySelector('#student-tab-dashboard .welcome-banner p');
+    if (bannerText) {
+      bannerText.innerHTML = `You have <strong>${pending} pending tasks</strong> awaiting industry supervisor approval. Keep up the great work!`;
+    }
+
+  } catch (err) {
+    console.error('Failed to load cards:', err);
+  }
+}
+
 
 /* ===== SIDEBAR ===== */
 function openSidebar(sidebarId, overlayId) {
@@ -53,6 +392,8 @@ function closeSidebar(sidebarId, overlayId) {
 
 /* ===== TAB SWITCHING ===== */
 function switchTab(prefix, tabName, navEl) {
+  localStorage.setItem("activeTab", tabName);
+  localStorage.setItem("activeTabPrefix", prefix);
   document.querySelectorAll(`#page-${prefix === 'industry' ? 'industry-supervisor' : prefix === 'school' ? 'school-supervisor' : prefix} .tab-content`).forEach(t => t.classList.remove('active'));
   const tab = document.getElementById(`${prefix}-tab-${tabName}`);
   if (tab) tab.classList.add('active');
@@ -64,6 +405,14 @@ function switchTab(prefix, tabName, navEl) {
   if (sidebar) {
     sidebar.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
     if (navEl) navEl.classList.add('active');
+  }
+  // Fallback: highlight by matching onclick attribute
+  if (!navEl && sidebar) {
+    sidebar.querySelectorAll('.nav-item').forEach(n => {
+      if (n.getAttribute('onclick') && n.getAttribute('onclick').includes(`'${tabName}'`)) {
+        n.classList.add('active');
+      }
+    });
   }
   if (window.innerWidth <= 768) {
     const overlayId = `overlay-${prefix === 'industry' ? 'industry' : prefix === 'school' ? 'school' : prefix}`;
@@ -83,7 +432,7 @@ function switchInnerTab(prefix, tabName, el) {
 /* ===== MODALS ===== */
 function openModal(id) { document.getElementById(id).classList.add('open'); }
 function closeModal(id) { document.getElementById(id).classList.remove('open'); }
-document.querySelectorAll('.modal-overlay').forEach(o => o.addEventListener('click', function(e) { if (e.target === this) this.classList.remove('open'); }));
+document.querySelectorAll('.modal-overlay').forEach(o => o.addEventListener('click', function (e) { if (e.target === this) this.classList.remove('open'); }));
 
 /* ===== PASSWORD TOGGLE ===== */
 function togglePw(id, el) {
@@ -104,7 +453,7 @@ function toggleNotif(id) {
   document.querySelectorAll('.notif-panel').forEach(n => n.classList.remove('open'));
   if (!isOpen) panel.classList.add('open');
 }
-document.addEventListener('click', function(e) {
+document.addEventListener('click', function (e) {
   if (!e.target.closest('.topbar-btn') && !e.target.closest('.notif-panel')) {
     document.querySelectorAll('.notif-panel').forEach(n => n.classList.remove('open'));
   }
@@ -135,6 +484,7 @@ function chatEnter(e) { if (e.key === 'Enter') sendChat(); }
 
 /* ===== THEME ===== */
 function setTheme(theme, el) {
+  localStorage.setItem("savedTheme", theme);
   document.documentElement.setAttribute('data-theme', theme === 'default' ? '' : theme);
   if (theme === 'purple') {
     document.documentElement.style.setProperty('--primary', '#7c3aed');
@@ -183,7 +533,7 @@ if (uploadArea) {
 function loadGradingForm() {
   const select = document.getElementById('grading-student-select');
   const container = document.getElementById('grading-form-container');
-  
+
   if (select.value) {
     container.style.display = 'block';
     // Here you would typically fetch student data via AJAX
@@ -197,7 +547,7 @@ function submitGrading() {
   alert('Grading submitted successfully!');
   // Add your submission logic here
 }
-/*====== SCHOOL SUPERVISION SCHEDULING ======*/ 
+/*====== SCHOOL SUPERVISION SCHEDULING ======*/
 // Student data
 const students = [
   { id: 'AK', name: 'Amina Kibuuka', regNo: '2021/BSC/042', country: 'Uganda', email: 'amina@mak.ac.ug', placement: 'Stanbic Bank Uganda Ltd' },
@@ -346,7 +696,7 @@ function submitAssessment() {
 }
 
 // Initialize on page load
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
   console.log('Supervision tab initialized');
 });
 
@@ -401,7 +751,7 @@ function closeReportModal() {
 }
 
 // Handle Checkbox Change
-document.getElementById('confirm-checkbox')?.addEventListener('change', function() {
+document.getElementById('confirm-checkbox')?.addEventListener('change', function () {
   document.getElementById('btn-submit-report').disabled = !this.checked;
 });
 
@@ -418,7 +768,7 @@ function submitReport() {
     document.getElementById('success-section').style.display = 'block';
     document.getElementById('report-status-badge').className = 'tag approved';
     document.getElementById('report-status-badge').textContent = 'Submitted';
-    
+
     // Set submission date
     const now = new Date();
     document.getElementById('submission-date').textContent = now.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
@@ -439,7 +789,7 @@ function submitReport() {
 }
 
 // Initialize on page load
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
   if (isReportSubmitted) {
     document.getElementById('upload-section').style.display = 'none';
     document.getElementById('success-section').style.display = 'block';
@@ -448,3 +798,30 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 });
 
+window.addEventListener("load", function () {
+  const savedTheme = localStorage.getItem("savedTheme");
+  if (savedTheme) {
+    const themeOption = document.querySelector(`.theme-option[onclick*="'${savedTheme}'"]`);
+    setTheme(savedTheme, themeOption || null);
+  }
+
+  // read auth from session storage
+  const loggedIn = sessionStorage.getItem("isLoggedIn");
+  const page = sessionStorage.getItem("activePage");
+  const activeTab = localStorage.getItem("activeTab");
+  const activeTabPrefix = localStorage.getItem("activeTabPrefix");
+
+  // Only restore session if truly logged in AND page is a real dashboard
+  if (loggedIn === "true" && page && page !== "page-login") {
+    showPage(page);
+    loadUserDashboard();
+    if (activeTab && activeTabPrefix) {
+      const navItem = document.querySelector(
+        `#sidebar-${activeTabPrefix} .nav-item[onclick*="'${activeTab}'"]`
+      );
+      switchTab(activeTabPrefix, activeTab, navItem || null);
+    }
+  } else {
+    showPage("page-login");
+  }
+});
