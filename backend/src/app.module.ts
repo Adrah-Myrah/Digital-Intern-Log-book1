@@ -59,6 +59,8 @@ import { ReportsModule } from './reports/reports.module';
 import { Report } from './reports/report.entity';
 import { SettingsModule } from './settings/settings.module';
 import { Setting } from './settings/setting.entity';
+import { MessagesModule } from './messages/messages.module';
+import { Message } from './messages/message.entity';
 
 @Module({
   imports: [
@@ -72,7 +74,7 @@ import { Setting } from './settings/setting.entity';
         username: config.get('DB_USER'),
         password: config.get('DB_PASSWORD'),
         database: config.get('DB_NAME'),
-        entities: [User,Log, Supervision, Grading, Report, Setting],
+        entities: [User,Log, Supervision, Grading, Report, Setting, Message],
         autoLoadEntities: true,
         synchronize: true,
       }),
@@ -85,6 +87,7 @@ import { Setting } from './settings/setting.entity';
     GradingsModule,
     ReportsModule,
     SettingsModule,
+    MessagesModule,
   ],
 })
 export class AppModule {}

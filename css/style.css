@@ -463,6 +463,12 @@ ul {
   font-size: .9rem
 }
 
+#supervision-form-container,
+#grading-form-container {
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
 /* ===== BUTTONS ===== */
 .btn {
   display: inline-flex;

@@ -30,4 +30,16 @@ export class UsersService {
     const user = this.usersRepository.create(data);
     return this.usersRepository.save(user);
   }
+
+  async findById(id: number): Promise<User | null> {
+    return this.usersRepository.findOne({ where: { id } });
+  }
+
+  async findAllStudents(): Promise<User[]> {
+    return this.usersRepository.find({ 
+      where: { role: 'student' },
+      order: { fullName: 'ASC' }
+    });
+  }
 }
+
