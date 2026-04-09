@@ -6,6 +6,7 @@ import { extname } from 'path';
 import { Report } from './report.entity';
 import { ReportsService } from './reports.service';
 import { ReportsController } from './reports.controller';
+import { JwtModule } from '@nestjs/jwt';
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { ReportsController } from './reports.controller';
       },
       limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
     }),
+    JwtModule,
   ],
   providers: [ReportsService],
   controllers: [ReportsController],

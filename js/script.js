@@ -8,6 +8,22 @@ function getUserId() {
   return sessionStorage.getItem('userId') || localStorage.getItem('userId');
 }
 
+function getUserRole() {
+  return sessionStorage.getItem('userRole') || localStorage.getItem('userRole');
+}
+
+function getAssignedStudentsEndpoint() {
+  const role = getUserRole();
+  const userId = getUserId();
+  if (role === 'school-supervisor' && userId) {
+    return `${API_URL}/users/students/assigned/school/${userId}`;
+  }
+  if (role === 'industry-supervisor' && userId) {
+    return `${API_URL}/users/students/assigned/industry/${userId}`;
+  }
+  return `${API_URL}/users/students`;
+}
+
 async function handleRegister() {
   const role = document.getElementById('reg-role').value;
 
@@ -24,26 +40,48 @@ async function handleRegister() {
     return;
   }
 
+  // Basic password policy to harden account security.
+  if (password.length < 8 || !/[A-Z]/.test(password) || !/[a-z]/.test(password) || !/\d/.test(password)) {
+    alert('Password must be at least 8 characters and include uppercase, lowercase, and a number.');
+    return;
+  }
+
   let data = { role, password };
 
   if (role === 'student') {
+    const fullName = document.getElementById('reg-fullname').value.trim();
+    const registrationNumber = document.getElementById('reg-regnumber').value.trim();
+    const email = document.getElementById('reg-email').value.trim();
+    if (!fullName || !registrationNumber || !email) {
+      alert('Please fill in full name, registration number, and email.');
+      return;
+    }
+
     data = {
       ...data,
-      fullName: document.getElementById('reg-fullname').value,
-      registrationNumber: document.getElementById('reg-regnumber').value,
+      fullName,
+      registrationNumber,
       yearOfStudy: document.getElementById('reg-year').value,
       internshipAttempt: document.getElementById('reg-attempt').value,
       course: document.getElementById('reg-course').value,
       placementCompany: document.getElementById('reg-placement').value,
       country: document.getElementById('reg-country').value,
-      email: document.getElementById('reg-email').value,
+      email,
     };
   } else {
+    const fullName = document.getElementById('reg-sup-fullname').value.trim();
+    const staffId = document.getElementById('reg-staffid').value.trim();
+    const email = document.getElementById('reg-sup-email').value.trim();
+    if (!fullName || !staffId || !email) {
+      alert('Please fill in full name, staff ID, and email.');
+      return;
+    }
+
     data = {
       ...data,
-      fullName: document.getElementById('reg-sup-fullname').value,
-      staffId: document.getElementById('reg-staffid').value,
-      email: document.getElementById('reg-sup-email').value,
+      fullName,
+      staffId,
+      email,
       department: role !== 'admin'
         ? document.getElementById('reg-department').value
         : null,
@@ -79,7 +117,6 @@ async function handleRegister() {
   }
 }
 /* ===== PAGE NAVIGATION ===== */
-let currentLoginRole = 'student';
 
 function showPage(id) {
   document.querySelectorAll('.page').forEach(p => { p.classList.remove('active'); p.style.display = 'none'; });
@@ -133,47 +170,8 @@ function goToLogin() {
   if (loginId) loginId.value = '';
   if (loginPw) loginPw.value = '';
 
-  // Reset login tab to student
-  currentLoginRole = 'student';
-  document.querySelectorAll('#page-login .auth-tab').forEach(t => t.classList.remove('active'));
-  const firstTab = document.querySelector('#page-login .auth-tab');
-  if (firstTab) firstTab.classList.add('active');
-
   showPage('page-login');
 }
-
-// function setLoginRole(role, el) {
-//   currentLoginRole = role;
-//   document.querySelectorAll('#page-login .auth-tab').forEach(t => t.classList.remove('active'));
-//   el.classList.add('active');
-//   const labels = { student: 'Registration Number', school: 'Staff ID', industry: 'Staff ID', admin: 'Admin ID' };
-//   const placeholders = { student: 'e.g. 2021/BSC/001', school: 'e.g. STAFF-014', industry: 'e.g. STAFF-042', admin: 'e.g. ADMIN-001' };
-//   document.getElementById('login-id-label').textContent = labels[role];
-//   document.getElementById('login-id').placeholder = placeholders[role];
-// }
-
-function setLoginRole(role, el) {
-  currentLoginRole = role;
-  document.querySelectorAll('#page-login .auth-tab').forEach(t => t.classList.remove('active'));
-  el.classList.add('active');
-
-  const labels = {
-    student: 'Registration Number',
-    'school-supervisor': 'Staff ID',
-    'industry-supervisor': 'Staff ID',
-    admin: 'Admin ID'
-  };
-  const placeholders = {
-    student: 'e.g. 23/UG/***/BIT-S',
-    'school-supervisor': 'e.g. STAFF-014',
-    'industry-supervisor': 'e.g. STAFF-042',
-    admin: 'e.g. ADMIN-001'
-  };
-
-  document.getElementById('login-id-label').textContent = labels[role];
-  document.getElementById('login-id').placeholder = placeholders[role];
-}
-
 
 async function handleLogin() {
   const id = document.getElementById('login-id').value.trim();
@@ -189,52 +187,28 @@ async function handleLogin() {
   btn.disabled = true;
 
   try {
-    // debug line
-    console.log('Sending login:', { identifier: id, password: pw, role: currentLoginRole });
-
     const response = await fetch(`${API_URL}/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        identifier: id,
-        password: pw,
-        role: currentLoginRole,
-      }),
+      body: JSON.stringify({ identifier: id, password: pw }),
     });
 
     const result = await response.json();
-
-    // DEBUG
-    console.log('Login response:', result);
-    console.log('Response ok:', response.ok);
-
     if (!response.ok) {
       alert(result.message || 'Invalid credentials. Please try again.');
       return;
     }
 
-    // Save real session data
     sessionStorage.setItem('isLoggedIn', 'true');
     sessionStorage.setItem('token', result.token);
     sessionStorage.setItem('userRole', result.role);
     sessionStorage.setItem('userName', result.name);
     sessionStorage.setItem('userId', String(result.id));
 
-    // these survive page reopen
     localStorage.setItem('token', result.token);
     localStorage.setItem('userName', result.name);
     localStorage.setItem('userId', String(result.id));
     localStorage.setItem('userRole', result.role);
-
-    // DEBUG
-    console.log('Session saved:', {
-      userName: sessionStorage.getItem('userName'),
-      userRole: sessionStorage.getItem('userRole'),
-      userId: sessionStorage.getItem('userId'),
-      localUserName: localStorage.getItem('userName'),
-      localRole: localStorage.getItem('userRole'),
-    });
-
 
     const pages = {
       student: 'page-student',
@@ -247,25 +221,16 @@ async function handleLogin() {
     sessionStorage.setItem('activePage', page);
 
     localStorage.setItem('activeTab', 'dashboard');
-    localStorage.setItem('activeTabPrefix',
-      result.role === 'school-supervisor' ? 'school' :
-        result.role === 'industry-supervisor' ? 'industry' :
-          result.role === 'admin' ? 'admin' : 'student'
-    );
+    const roleToPrefix = {
+      student: 'student',
+      'school-supervisor': 'school',
+      'industry-supervisor': 'industry',
+      admin: 'admin',
+    };
+    localStorage.setItem('activeTabPrefix', roleToPrefix[result.role] || 'student');
 
     loadUserDashboard();
-
     showPage(page);
-
-    // TEMPORARY DEBUG
-    setTimeout(() => {
-      console.log('After login check:');
-      console.log('sessionStorage userRole:', sessionStorage.getItem('userRole'));
-      console.log('localStorage userRole:', localStorage.getItem('userRole'));
-      console.log('sessionStorage userId:', sessionStorage.getItem('userId'));
-      console.log('localStorage userId:', localStorage.getItem('userId'));
-    }, 500);
-
   } catch (err) {
     alert('Could not connect to server. Make sure the backend is running.');
   } finally {
@@ -343,12 +308,27 @@ function loadUserDashboard() {
     loadPendingLogs();
     loadIndustryCards();
   }
+
+  // Update admin dashboard
+  if (userRole === 'admin') {
+    const greeting = document.querySelector('#admin-tab-dashboard .welcome-banner h3');
+    if (greeting) greeting.textContent = `Welcome, ${firstName}! 🛡️`;
+
+    const sidebarName = document.querySelector('#sidebar-admin .sidebar-user-name');
+    const sidebarRole = document.querySelector('#sidebar-admin .sidebar-user-role');
+    if (sidebarName) sidebarName.textContent = userName;
+    if (sidebarRole) sidebarRole.textContent = 'System Administrator';
+
+    loadAdminDashboardData();
+  }
 }
 
 // WIRE INDUSTRY SUPERVISOR APPROVAL
 async function loadPendingLogs() {
   try {
-    const response = await fetch(`${API_URL}/logs/pending`, {
+    const myId = getUserId();
+    const endpoint = myId ? `${API_URL}/logs/pending/${myId}` : `${API_URL}/logs/pending`;
+    const response = await fetch(endpoint, {
       headers: { 'Authorization': `Bearer ${getToken()}` }
     });
 
@@ -569,24 +549,30 @@ async function loadStudentCards(studentId) {
 // WIRING INDUSTRY-SUP CARDS
 async function loadIndustryCards() {
   try {
-    const [pendingRes, allLogsRes] = await Promise.all([
-      fetch(`${API_URL}/logs/pending`, {
+    const myId = getUserId();
+    const [pendingRes, allLogsRes, assignedStudentsRes] = await Promise.all([
+      fetch(myId ? `${API_URL}/logs/pending/${myId}` : `${API_URL}/logs/pending`, {
         headers: { 'Authorization': `Bearer ${getToken()}` }
       }),
       fetch(`${API_URL}/logs`, {
+        headers: { 'Authorization': `Bearer ${getToken()}` }
+      }),
+      fetch(getAssignedStudentsEndpoint(), {
         headers: { 'Authorization': `Bearer ${getToken()}` }
       })
     ]);
 
     const pendingLogs = await pendingRes.json();
-    const allLogs = await allLogsRes.json();
+    const allLogsRaw = await allLogsRes.json();
+    const assignedStudents = await assignedStudentsRes.json();
+    const assignedIds = new Set((assignedStudents || []).map(s => Number(s.id)));
+    const allLogs = allLogsRaw.filter(l => assignedIds.has(Number(l.studentId)));
 
     const pending = pendingLogs.length;
     const approved = allLogs.filter(l => l.status === 'approved').length;
     const rejected = allLogs.filter(l => l.status === 'rejected').length;
 
-    // Get unique student IDs
-    const activeInterns = [...new Set(allLogs.map(l => l.studentId))].length;
+    const activeInterns = assignedStudents.length;
 
     // Update cards
     const cards = document.querySelectorAll('#industry-tab-dashboard .card-val');
@@ -609,21 +595,24 @@ async function loadIndustryCards() {
 // WIRE SCHOOL-SUP CARDS
 async function loadSchoolCards() {
   try {
-    const [allLogsRes, reportsRes] = await Promise.all([
+    const [allLogsRes, reportsRes, studentsRes] = await Promise.all([
       fetch(`${API_URL}/logs`, {
         headers: { 'Authorization': `Bearer ${getToken()}` }
       }),
       fetch(`${API_URL}/reports`, {
+        headers: { 'Authorization': `Bearer ${getToken()}` }
+      }),
+      fetch(getAssignedStudentsEndpoint(), {
         headers: { 'Authorization': `Bearer ${getToken()}` }
       })
     ]);
 
     const allLogs = await allLogsRes.json();
     const allReports = await reportsRes.json();
+    const students = await studentsRes.json();
 
-    // Card 0 — unique students who have submitted logs
-    const studentIds = [...new Set(allLogs.map(l => l.studentId))];
-    const totalStudents = studentIds.length;
+    // Card 0 — all registered students (until assignment is introduced)
+    const totalStudents = students.length;
 
     // Card 1 — total logs reviewed (approved or rejected)
     const totalReviewed = allLogs.filter(l => l.status !== 'pending').length;
@@ -655,6 +644,9 @@ async function loadSchoolCards() {
     const studentsBadge = document.querySelector('#sidebar-school .nav-item[onclick*="students"] .badge');
     if (studentsBadge) studentsBadge.textContent = totalStudents;
 
+    const studentListTitle = document.querySelector('#school-tab-students .section-head h3');
+    if (studentListTitle) studentListTitle.textContent = `Student List (${totalStudents})`;
+
     // Remove supervision and grading badges
     const supervisionBadge = document.querySelector('#sidebar-school .nav-item[onclick*="supervision"] .badge');
     if (supervisionBadge) supervisionBadge.remove();
@@ -673,11 +665,12 @@ async function loadSchoolCards() {
 
 async function loadSchoolStudents() {
   try {
-    const response = await fetch(`${API_URL}/users/students`, {
+    const response = await fetch(getAssignedStudentsEndpoint(), {
       headers: { 'Authorization': `Bearer ${getToken()}` }
     });
 
     const students = await response.json();
+    const progressMap = await getStudentProgressMap();
 
     const tbody = document.querySelector('#school-tab-students .table-wrap tbody');
     if (!tbody) return;
@@ -720,8 +713,151 @@ async function loadSchoolStudents() {
       </tr>
     `).join('');
 
+    // Also update dashboard summary cards from live students list.
+    const summaryGrid = document.querySelector('#school-tab-dashboard .student-cards-grid');
+    if (summaryGrid) {
+      const topStudents = students.slice(0, 3);
+      summaryGrid.innerHTML = topStudents.map(student => {
+        const stats = progressMap.get(Number(student.id)) || { progress: 0 };
+        const initials = student.fullName.split(' ').map(n => n[0]).join('').toUpperCase();
+        const latestText = stats.progress > 0 ? 'Latest: Active' : 'Latest: No logs yet';
+        const fullName = (student.fullName || '').replace(/'/g, "\\'");
+        const regNo = (student.registrationNumber || '').replace(/'/g, "\\'");
+        const course = (student.course || '').replace(/'/g, "\\'");
+        const placement = (student.placementCompany || '').replace(/'/g, "\\'");
+        const email = (student.email || '').replace(/'/g, "\\'");
+        return `
+          <div class="student-card" onclick="openStudentProfile(${student.id}, '${fullName}', '${regNo}', '${course}', '${placement}', '${email}')">
+            <div class="student-card-top">
+              <div class="avatar avatar-lg">${initials}</div>
+              <div class="student-card-info">
+                <h4>${student.fullName}</h4>
+                <p>${student.registrationNumber || '—'}</p>
+              </div>
+            </div>
+            <div class="student-card-meta"><span><i class="fas fa-building" style="margin-right:4px"></i>${student.placementCompany || 'Not Placed'}</span><span><span class="approved-dot"></span>${latestText}</span></div>
+            <div style="font-size:.8rem;color:var(--text2);margin-bottom:6px">Progress</div>
+            <div class="prog-bar"><div class="prog-fill ${stats.progress > 0 && stats.progress < 60 ? 'amber' : ''}" style="width:${stats.progress}%"></div></div>
+            <div style="font-size:.78rem;color:var(--text3);margin-top:4px;text-align:right">${stats.progress}%</div>
+          </div>
+        `;
+      }).join('');
+    }
+
   } catch (err) {
     console.error('Failed to load school students:', err);
+  }
+}
+
+async function getStudentProgressMap() {
+  const progressMap = new Map();
+  try {
+    const logsResponse = await fetch(`${API_URL}/logs`, {
+      headers: { 'Authorization': `Bearer ${getToken()}` }
+    });
+    const allLogs = await logsResponse.json();
+
+    const grouped = new Map();
+    allLogs.forEach(log => {
+      if (!grouped.has(log.studentId)) grouped.set(log.studentId, []);
+      grouped.get(log.studentId).push(log);
+    });
+
+    grouped.forEach((studentLogs, studentId) => {
+      const total = studentLogs.length;
+      const approved = studentLogs.filter(l => l.status === 'approved').length;
+      const pending = studentLogs.filter(l => l.status === 'pending').length;
+      const progress = total > 0 ? Math.round((approved / total) * 100) : 0;
+      const latest = studentLogs[0] || null;
+      progressMap.set(Number(studentId), { total, approved, pending, progress, latest });
+    });
+  } catch (err) {
+    console.error('Failed to build progress map:', err);
+  }
+
+  return progressMap;
+}
+
+async function loadAdminDashboardData() {
+  try {
+    const [countsRes, studentsRes, supervisorsRes] = await Promise.all([
+      fetch(`${API_URL}/users/counts`, { headers: { 'Authorization': `Bearer ${getToken()}` } }),
+      fetch(`${API_URL}/users/students`, { headers: { 'Authorization': `Bearer ${getToken()}` } }),
+      fetch(`${API_URL}/users/supervisors`, { headers: { 'Authorization': `Bearer ${getToken()}` } }),
+    ]);
+
+    const counts = await countsRes.json();
+    const students = await studentsRes.json();
+    const supervisors = await supervisorsRes.json();
+    const progressMap = await getStudentProgressMap();
+
+    // Admin dashboard cards
+    const adminCards = document.querySelectorAll('#admin-tab-dashboard .card-val');
+    const notStarted = students.filter(s => !progressMap.has(Number(s.id))).length;
+    if (adminCards[0]) adminCards[0].textContent = String(counts.students || students.length);
+    if (adminCards[1]) adminCards[1].textContent = String(notStarted);
+    if (adminCards[2]) adminCards[2].textContent = String(counts.supervisors || 0);
+
+    // Admin summary table (dashboard)
+    const summaryTbody = document.querySelector('#admin-tab-dashboard .table-wrap tbody');
+    if (summaryTbody) {
+      const recent = students.slice(0, 6);
+      summaryTbody.innerHTML = recent.map(student => {
+        const stats = progressMap.get(Number(student.id)) || { progress: 0 };
+        const initials = student.fullName.split(' ').map(n => n[0]).join('').toUpperCase();
+        const statusTag = stats.progress >= 60 ? 'approved' : stats.progress > 0 ? 'pending' : 'rejected';
+        const statusText = stats.progress >= 60 ? 'Active' : stats.progress > 0 ? 'In Progress' : 'Not Started';
+        return `
+          <tr>
+            <td><div style="display:flex;align-items:center;gap:10px"><div class="avatar">${initials}</div>${student.fullName}</div></td>
+            <td>${student.registrationNumber || '—'}</td>
+            <td>—</td>
+            <td>${student.placementCompany || '<span style="color:var(--text3);font-style:italic">Not Placed</span>'}</td>
+            <td>
+              <div style="min-width:90px">
+                <div class="prog-bar"><div class="prog-fill ${stats.progress > 0 && stats.progress < 60 ? 'amber' : ''}" style="width:${stats.progress}%"></div></div>
+                <div style="font-size:.72rem;color:var(--text3);margin-top:2px">${stats.progress}%</div>
+              </div>
+            </td>
+            <td><span class="tag ${statusTag}">${statusText}</span></td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    // Admin students tab heading + table
+    const studentsTitle = document.querySelector('#admin-tab-students .section-head h3');
+    if (studentsTitle) studentsTitle.textContent = `Students (${students.length})`;
+
+    const studentsTbody = document.querySelector('#admin-tab-students .table-wrap tbody');
+    if (studentsTbody) {
+      studentsTbody.innerHTML = students.map(student => {
+        const stats = progressMap.get(Number(student.id)) || { progress: 0 };
+        const initials = student.fullName.split(' ').map(n => n[0]).join('').toUpperCase();
+        const statusTag = stats.progress >= 60 ? 'approved' : stats.progress > 0 ? 'pending' : 'rejected';
+        const statusText = stats.progress >= 60 ? 'Active' : stats.progress > 0 ? 'In Progress' : 'Not Started';
+        return `
+          <tr>
+            <td><div style="display:flex;align-items:center;gap:10px"><div class="avatar">${initials}</div>${student.fullName}</div></td>
+            <td>${student.registrationNumber || '—'}</td>
+            <td>${student.course || '—'}</td>
+            <td>—</td>
+            <td>${student.placementCompany || '—'}</td>
+            <td><div class="prog-bar" style="min-width:80px"><div class="prog-fill ${stats.progress > 0 && stats.progress < 60 ? 'amber' : ''}" style="width:${stats.progress}%"></div></div></td>
+            <td><span class="tag ${statusTag}">${statusText}</span></td>
+            <td><button class="btn btn-outline btn-sm">View</button></td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    // Admin supervisors tab counts
+    const schoolSvTab = document.querySelector('.tab-btn[onclick*="sv\',\'school"]');
+    const industrySvTab = document.querySelector('.tab-btn[onclick*="sv\',\'industry"]');
+    if (schoolSvTab) schoolSvTab.textContent = `School Supervisors (${supervisors.school?.length || 0})`;
+    if (industrySvTab) industrySvTab.textContent = `Industry Supervisors (${supervisors.industry?.length || 0})`;
+  } catch (err) {
+    console.error('Failed to load admin dashboard data:', err);
   }
 }
 
@@ -1306,7 +1442,7 @@ if (uploadArea) {
 // LOAD GRADING STUDENTS
 async function loadGradingStudents() {
   try {
-    const response = await fetch(`${API_URL}/users/students`, {
+    const response = await fetch(getAssignedStudentsEndpoint(), {
       headers: { 'Authorization': `Bearer ${getToken()}` }
     });
 
@@ -1419,7 +1555,7 @@ async function submitGrading() {
 // LOAD STUDENTS FROM THE DATABASE DYNAMICALLY
 async function loadSupervisionStudents() {
   try {
-    const response = await fetch(`${API_URL}/users/students`, {
+    const response = await fetch(getAssignedStudentsEndpoint(), {
       headers: { 'Authorization': `Bearer ${getToken()}` }
     });
 

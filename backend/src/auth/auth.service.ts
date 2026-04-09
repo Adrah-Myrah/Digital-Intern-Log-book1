@@ -33,10 +33,16 @@ export class AuthService {
   }
 
   async login(dto: LoginDto) {
-    // ✅ Tell TypeScript it can be a User or null
-let user: User | null = null;
+    let user: User | null = null;
 
-    if (dto.role === 'student') {
+    // Primary flow: no role supplied, auto-detect by identifier.
+    if (!dto.role) {
+      user = await this.usersService.findByRegNumber(dto.identifier);
+      if (!user) {
+        user = await this.usersService.findByStaffId(dto.identifier);
+      }
+    } else if (dto.role === 'student') {
+      // Backward-compatible flow if older frontend still sends role.
       user = await this.usersService.findByRegNumber(dto.identifier);
     } else {
       user = await this.usersService.findByStaffId(dto.identifier);

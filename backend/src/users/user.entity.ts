@@ -52,4 +52,10 @@ export class User {
 
   @Column({ nullable: true })
   internshipEndDate: string;
+
+  @Column({ type: 'int', nullable: true })
+schoolSupervisorId: number | null;
+
+@Column({ type: 'int', nullable: true })
+industrySupervisorId: number | null;
 }

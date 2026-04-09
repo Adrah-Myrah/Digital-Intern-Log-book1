@@ -74,7 +74,13 @@ import { Message } from './messages/message.entity';
         username: config.get('DB_USER'),
         password: config.get('DB_PASSWORD'),
         database: config.get('DB_NAME'),
-        entities: [User,Log, Supervision, Grading, Report, Setting, Message],
+        ssl: true,                          
+        extra: {
+          ssl: {
+            rejectUnauthorized: false,      
+          },
+        },
+        entities: [User, Log, Supervision, Grading, Report, Setting, Message],
         autoLoadEntities: true,
         synchronize: true,
       }),
@@ -90,4 +96,4 @@ import { Message } from './messages/message.entity';
     MessagesModule,
   ],
 })
-export class AppModule {}
+export class AppModule { }
