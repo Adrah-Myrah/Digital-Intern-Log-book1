@@ -40,7 +40,7 @@ export class User {
   @Column({ nullable: true, type: 'decimal', precision: 10, scale: 7 })
   placementLongitude: number | null;
 
-  @Column({ nullable: true, default: 200 })
+  @Column({ nullable: true, type: 'int', default: 200 })
   geofenceRadiusMeters: number | null;
 
   @Column({ nullable: true })
