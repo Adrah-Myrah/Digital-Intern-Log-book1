@@ -8,6 +8,22 @@ function getUserId() {
   return sessionStorage.getItem('userId') || localStorage.getItem('userId');
 }
 
+function getUserRole() {
+  return sessionStorage.getItem('userRole') || localStorage.getItem('userRole');
+}
+
+function getAssignedStudentsEndpoint() {
+  const role = getUserRole();
+  const userId = getUserId();
+  if (role === 'school-supervisor' && userId) {
+    return `${API_URL}/users/students/assigned/school/${userId}`;
+  }
+  if (role === 'industry-supervisor' && userId) {
+    return `${API_URL}/users/students/assigned/industry/${userId}`;
+  }
+  return `${API_URL}/users/students`;
+}
+
 async function handleRegister() {
   const role = document.getElementById('reg-role').value;
 
@@ -24,26 +40,48 @@ async function handleRegister() {
     return;
   }
 
+  // Basic password policy to harden account security.
+  if (password.length < 8 || !/[A-Z]/.test(password) || !/[a-z]/.test(password) || !/\d/.test(password)) {
+    alert('Password must be at least 8 characters and include uppercase, lowercase, and a number.');
+    return;
+  }
+
   let data = { role, password };
 
   if (role === 'student') {
+    const fullName = document.getElementById('reg-fullname').value.trim();
+    const registrationNumber = document.getElementById('reg-regnumber').value.trim();
+    const email = document.getElementById('reg-email').value.trim();
+    if (!fullName || !registrationNumber || !email) {
+      alert('Please fill in full name, registration number, and email.');
+      return;
+    }
+
     data = {
       ...data,
-      fullName: document.getElementById('reg-fullname').value,
-      registrationNumber: document.getElementById('reg-regnumber').value,
+      fullName,
+      registrationNumber,
       yearOfStudy: document.getElementById('reg-year').value,
       internshipAttempt: document.getElementById('reg-attempt').value,
       course: document.getElementById('reg-course').value,
       placementCompany: document.getElementById('reg-placement').value,
       country: document.getElementById('reg-country').value,
-      email: document.getElementById('reg-email').value,
+      email,
     };
   } else {
+    const fullName = document.getElementById('reg-sup-fullname').value.trim();
+    const staffId = document.getElementById('reg-staffid').value.trim();
+    const email = document.getElementById('reg-sup-email').value.trim();
+    if (!fullName || !staffId || !email) {
+      alert('Please fill in full name, staff ID, and email.');
+      return;
+    }
+
     data = {
       ...data,
-      fullName: document.getElementById('reg-fullname').value,
-      staffId: document.getElementById('reg-staffid').value,
-      email: document.getElementById('reg-sup-email').value,
+      fullName,
+      staffId,
+      email,
       department: role !== 'admin'
         ? document.getElementById('reg-department').value
         : null,
@@ -79,7 +117,6 @@ async function handleRegister() {
   }
 }
 /* ===== PAGE NAVIGATION ===== */
-let currentLoginRole = 'student';
 
 function showPage(id) {
   document.querySelectorAll('.page').forEach(p => { p.classList.remove('active'); p.style.display = 'none'; });
@@ -97,31 +134,44 @@ function toggleRegFields() {
   else document.getElementById('dept-field').style.display = 'block';
 }
 
+// function goToLogin() {
+//   sessionStorage.removeItem('isLoggedIn');
+//   sessionStorage.removeItem('activePage');
+//   localStorage.removeItem('userRole');
+//   sessionStorage.removeItem('token');
+//   sessionStorage.removeItem('userName');
+//   sessionStorage.removeItem('userId');
+//   localStorage.removeItem('activeTab');
+//   localStorage.removeItem('activeTabPrefix');
+//   localStorage.removeItem('token');
+//   localStorage.removeItem('userName');
+//   localStorage.removeItem('userId');
+//   showPage('page-login');
+// }
 function goToLogin() {
+  // Clear all session and local storage
   sessionStorage.removeItem('isLoggedIn');
   sessionStorage.removeItem('activePage');
   sessionStorage.removeItem('userRole');
   sessionStorage.removeItem('token');
   sessionStorage.removeItem('userName');
   sessionStorage.removeItem('userId');
+  sessionStorage.removeItem('currentSupervisionId');
   localStorage.removeItem('activeTab');
   localStorage.removeItem('activeTabPrefix');
   localStorage.removeItem('token');
   localStorage.removeItem('userName');
   localStorage.removeItem('userId');
+  localStorage.removeItem('userRole');
+
+  // Clear login form fields
+  const loginId = document.getElementById('login-id');
+  const loginPw = document.getElementById('login-pw');
+  if (loginId) loginId.value = '';
+  if (loginPw) loginPw.value = '';
+
   showPage('page-login');
 }
-
-function setLoginRole(role, el) {
-  currentLoginRole = role;
-  document.querySelectorAll('#page-login .auth-tab').forEach(t => t.classList.remove('active'));
-  el.classList.add('active');
-  const labels = { student: 'Registration Number', school: 'Staff ID', industry: 'Staff ID', admin: 'Admin ID' };
-  const placeholders = { student: 'e.g. 2021/BSC/001', school: 'e.g. STAFF-014', industry: 'e.g. STAFF-042', admin: 'e.g. ADMIN-001' };
-  document.getElementById('login-id-label').textContent = labels[role];
-  document.getElementById('login-id').placeholder = placeholders[role];
-}
-
 
 async function handleLogin() {
   const id = document.getElementById('login-id').value.trim();
@@ -140,31 +190,25 @@ async function handleLogin() {
     const response = await fetch(`${API_URL}/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        identifier: id,
-        password: pw,
-        role: currentLoginRole,
-      }),
+      body: JSON.stringify({ identifier: id, password: pw }),
     });
 
     const result = await response.json();
-
     if (!response.ok) {
       alert(result.message || 'Invalid credentials. Please try again.');
       return;
     }
 
-    // Save real session data
     sessionStorage.setItem('isLoggedIn', 'true');
     sessionStorage.setItem('token', result.token);
     sessionStorage.setItem('userRole', result.role);
     sessionStorage.setItem('userName', result.name);
     sessionStorage.setItem('userId', String(result.id));
 
-    // these survive page reopen
     localStorage.setItem('token', result.token);
     localStorage.setItem('userName', result.name);
     localStorage.setItem('userId', String(result.id));
+    localStorage.setItem('userRole', result.role);
 
     const pages = {
       student: 'page-student',
@@ -177,16 +221,16 @@ async function handleLogin() {
     sessionStorage.setItem('activePage', page);
 
     localStorage.setItem('activeTab', 'dashboard');
-    localStorage.setItem('activeTabPrefix',
-      result.role === 'school-supervisor' ? 'school' :
-        result.role === 'industry-supervisor' ? 'industry' :
-          result.role === 'admin' ? 'admin' : 'student'
-    );
+    const roleToPrefix = {
+      student: 'student',
+      'school-supervisor': 'school',
+      'industry-supervisor': 'industry',
+      admin: 'admin',
+    };
+    localStorage.setItem('activeTabPrefix', roleToPrefix[result.role] || 'student');
 
     loadUserDashboard();
-
     showPage(page);
-
   } catch (err) {
     alert('Could not connect to server. Make sure the backend is running.');
   } finally {
@@ -195,13 +239,14 @@ async function handleLogin() {
   }
 }
 
-// wire student dashboard with real data
+// WIRE USER DASHBOARDS WITH REAL DATA
+
 function loadUserDashboard() {
   const userName = sessionStorage.getItem('userName') || localStorage.getItem('userName');
   const userId = getUserId();
   const userRole = sessionStorage.getItem('userRole') || localStorage.getItem('userRole');
 
-  if (!userName) return;
+  if (!userName || !userId || !userRole) return;
 
   // Get first name only for greeting
   const firstName = userName.split(' ')[0];
@@ -225,6 +270,8 @@ function loadUserDashboard() {
     // Load student logs
     loadStudentLogs(userId);
     loadStudentCards(userId);
+    loadStudentProfile(userId);
+    loadStudentReport(userId);
   }
 
   // Update school supervisor dashboard
@@ -239,9 +286,14 @@ function loadUserDashboard() {
       const initials = userName.split(' ').map(n => n[0]).join('').toUpperCase();
       sidebarAvatar.textContent = initials;
     }
+    loadSchoolCards();
+    loadSupervisionStudents();
+    loadGradingStudents();
+    loadSchoolStudents();
   }
 
-  // Update industry supervisor dashboard
+  // update industry supervisor dashboard
+
   if (userRole === 'industry-supervisor') {
     const greeting = document.querySelector('#industry-tab-dashboard .welcome-banner h3');
     if (greeting) greeting.textContent = `Welcome, ${firstName}! 🏢`;
@@ -253,6 +305,123 @@ function loadUserDashboard() {
       const initials = userName.split(' ').map(n => n[0]).join('').toUpperCase();
       sidebarAvatar.textContent = initials;
     }
+    loadPendingLogs();
+    loadIndustryCards();
+  }
+
+  // Update admin dashboard
+  if (userRole === 'admin') {
+    const greeting = document.querySelector('#admin-tab-dashboard .welcome-banner h3');
+    if (greeting) greeting.textContent = `Welcome, ${firstName}! 🛡️`;
+
+    const sidebarName = document.querySelector('#sidebar-admin .sidebar-user-name');
+    const sidebarRole = document.querySelector('#sidebar-admin .sidebar-user-role');
+    if (sidebarName) sidebarName.textContent = userName;
+    if (sidebarRole) sidebarRole.textContent = 'System Administrator';
+
+    loadAdminDashboardData();
+  }
+}
+
+// WIRE INDUSTRY SUPERVISOR APPROVAL
+async function loadPendingLogs() {
+  try {
+    const myId = getUserId();
+    const endpoint = myId ? `${API_URL}/logs/pending/${myId}` : `${API_URL}/logs/pending`;
+    const response = await fetch(endpoint, {
+      headers: { 'Authorization': `Bearer ${getToken()}` }
+    });
+
+    const logs = await response.json();
+
+    // Update pending count card
+    const cards = document.querySelectorAll('#industry-tab-dashboard .card-val');
+    if (cards[0]) cards[0].textContent = logs.length;
+
+    // Update sidebar badge
+    const badge = document.querySelector('#sidebar-industry .nav-item:nth-child(2) .badge');
+    if (badge) badge.textContent = logs.length;
+
+    // Update request list in dashboard
+    const requestList = document.querySelector('#industry-tab-dashboard .request-list');
+    if (requestList && logs.length > 0) {
+      requestList.innerHTML = logs.map(log => `
+        <div class="request-card">
+          <div class="avatar">S${log.studentId}</div>
+          <div class="request-card-body">
+            <h4>${log.taskName}</h4>
+            <p>Student ID: ${log.studentId}</p>
+            <div class="request-card-meta">
+              <span class="tag ${log.workType === 'Onsite' ? 'onsite' : 'offsite'}">${log.workType}</span>
+              &nbsp; ${log.estimatedHours} hours &nbsp; · &nbsp;
+              ${new Date(log.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px">
+            <span class="tag pending">Pending</span>
+            <div style="display:flex;gap:6px">
+              <button class="btn btn-primary btn-sm" onclick="approveLog(${log.id}, 'approved')">
+                <i class="fas fa-check"></i> Approve
+              </button>
+              <button class="btn btn-outline btn-sm" style="border-color:var(--danger);color:var(--danger)" onclick="approveLog(${log.id}, 'rejected')">
+                <i class="fas fa-times"></i> Reject
+              </button>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    } else if (requestList) {
+      requestList.innerHTML = '<p style="padding:20px;color:var(--text2)">No pending approvals.</p>';
+    }
+
+    // Also update the requests tab
+    const requestsTab = document.querySelector('#industry-tab-requests .request-list');
+    if (requestsTab) requestsTab.innerHTML = requestList ? requestList.innerHTML : '';
+
+  } catch (err) {
+    console.error('Failed to load pending logs:', err);
+  }
+}
+
+// APPROVING LOGS
+async function approveLog(logId, status) {
+  const comment = status === 'rejected'
+    ? prompt('Enter reason for rejection (optional):')
+    : null;
+
+  const supervisorId = getUserId();
+
+  try {
+    const response = await fetch(`${API_URL}/logs/${logId}/approve`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${getToken()}`
+      },
+      body: JSON.stringify({
+        status,
+        supervisorComment: comment,
+        approvedBy: Number(supervisorId),
+      }),
+    });
+
+    if (!response.ok) {
+      alert('Failed to update log status.');
+      return;
+    }
+
+    // Show toast
+    const toast = document.createElement('div');
+    toast.style.cssText = 'position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:var(--success);color:#fff;padding:12px 24px;border-radius:10px;font-weight:600;z-index:9999';
+    toast.innerHTML = `<i class="fas fa-check-circle"></i> Log ${status} successfully!`;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 3000);
+
+    // Refresh pending logs
+    loadPendingLogs();
+
+  } catch (err) {
+    alert('Could not connect to server.');
   }
 }
 
@@ -265,66 +434,65 @@ async function loadStudentLogs(studentId) {
 
     const logs = await response.json();
 
-    // Update total logs count
-    const totalLogsEl = document.querySelector('#student-tab-dashboard .card-val');
-    if (totalLogsEl) totalLogsEl.textContent = logs.length;
+    // ── RECENT LOGS TABLE (dashboard) ──
+    const recentTbody = document.querySelector('#student-tab-dashboard .table-wrap tbody');
+    if (recentTbody) {
+      if (logs.length === 0) {
+        recentTbody.innerHTML = `
+          <tr>
+            <td colspan="6" style="text-align:center;color:var(--text2);padding:20px">
+              No log entries yet. Submit your first log above.
+            </td>
+          </tr>`;
+      } else {
+        // Show only the 4 most recent
+        const recent = logs.slice(0, 4);
+        recentTbody.innerHTML = recent.map(log => `
+          <tr>
+            <td>${new Date(log.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</td>
+            <td>${log.taskName}</td>
+            <td><span class="tag ${log.workType === 'Onsite' ? 'onsite' : 'offsite'}">${log.workType}</span></td>
+            <td>${log.estimatedHours}h</td>
+            <td><span class="tag ${log.status}">${log.status.charAt(0).toUpperCase() + log.status.slice(1)}</span></td>
+            <td><button class="btn btn-outline btn-sm" onclick="openModal('log-detail-modal')">View</button></td>
+          </tr>
+        `).join('');
+      }
+    }
 
-    // Update logs table in My Logs tab
+    // ── ALL LOGS TABLE (My Logs tab) ──
     const tbody = document.getElementById('logs-tbody');
-    if (!tbody || logs.length === 0) return;
-
-    tbody.innerHTML = logs.map((log, index) => `
-      <tr>
-        <td>${logs.length - index}</td>
-        <td>${new Date(log.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}</td>
-        <td>${log.taskName}</td>
-        <td><span class="tag ${log.workType === 'Onsite' ? 'onsite' : 'offsite'}">${log.workType}</span></td>
-        <td>${log.estimatedHours}h</td>
-        <td><span class="gps-badge"><i class="fas fa-check"></i> Verified</span></td>
-        <td><span class="tag ${log.status}">${log.status.charAt(0).toUpperCase() + log.status.slice(1)}</span></td>
-        <td><button class="btn btn-outline btn-sm" onclick="openModal('log-detail-modal')">Detail</button></td>
-      </tr>
-    `).join('');
+    if (tbody) {
+      if (logs.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="8" style="text-align:center;color:var(--text2);padding:20px">
+              No log entries yet.
+            </td>
+          </tr>`;
+      } else {
+        tbody.innerHTML = logs.map((log, index) => `
+          <tr>
+            <td>${logs.length - index}</td>
+            <td>${new Date(log.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}</td>
+            <td>${log.taskName}</td>
+            <td><span class="tag ${log.workType === 'Onsite' ? 'onsite' : 'offsite'}">${log.workType}</span></td>
+            <td>${log.estimatedHours}h</td>
+            <td><span class="gps-badge"><i class="fas fa-check"></i> ${log.gpsLatitude ? 'Verified' : 'No GPS'}</span></td>
+            <td><span class="tag ${log.status}">${log.status.charAt(0).toUpperCase() + log.status.slice(1)}</span></td>
+            <td><button class="btn btn-outline btn-sm" onclick="openModal('log-detail-modal')">Detail</button></td>
+          </tr>
+        `).join('');
+      }
+    }
 
   } catch (err) {
     console.error('Failed to load logs:', err);
   }
 }
 
-// wiring dashboard cards
-// async function loadStudentCards(studentId) {
-//   try {
-//     const response = await fetch(`${API_URL}/logs/student/${studentId}`, {
-//       headers: { 'Authorization': `Bearer ${getToken()}` }
-//     });
+// WIRING STUDENTS CARD
 
-//     const logs = await response.json();
-
-//     const total = logs.length;
-//     const approved = logs.filter(l => l.status === 'approved').length;
-//     const pending = logs.filter(l => l.status === 'pending').length;
-
-//     // Total log entries card
-//     const cards = document.querySelectorAll('#student-tab-dashboard .card-val');
-//     if (cards[0]) cards[0].textContent = total;
-
-//     // Approved tasks card
-//     if (cards[3]) cards[3].textContent = approved;
-
-//     // Update pending badge in sidebar
-//     const logsBadge = document.querySelector('#sidebar-student .nav-item:nth-child(2) .badge');
-//     if (logsBadge) logsBadge.textContent = pending;
-
-//     // Update welcome banner pending count
-//     const bannerText = document.querySelector('#student-tab-dashboard .welcome-banner p');
-//     if (bannerText) {
-//       bannerText.innerHTML = `You have <strong>${pending} pending tasks</strong> awaiting industry supervisor approval.`;
-//     }
-
-//   } catch (err) {
-//     console.error('Failed to load cards:', err);
-//   }
-// }
 async function loadStudentCards(studentId) {
   try {
     const [logsRes, settingsRes] = await Promise.all([
@@ -365,9 +533,8 @@ async function loadStudentCards(studentId) {
     if (progFill) progFill.style.width = timeProgress + '%';
 
     // Update pending badge
-    const logsBadge = document.querySelector('#sidebar-student .nav-item:nth-child(2) .badge');
-    if (logsBadge) logsBadge.textContent = pending;
-
+    const logsBadge = document.querySelector('#sidebar-student .nav-item[onclick*="logs"] .badge');
+    if (logsBadge) logsBadge.textContent = total;
     // Update welcome banner
     const bannerText = document.querySelector('#student-tab-dashboard .welcome-banner p');
     if (bannerText) {
@@ -379,6 +546,668 @@ async function loadStudentCards(studentId) {
   }
 }
 
+// WIRING INDUSTRY-SUP CARDS
+async function loadIndustryCards() {
+  try {
+    const myId = getUserId();
+    const [pendingRes, allLogsRes, assignedStudentsRes] = await Promise.all([
+      fetch(myId ? `${API_URL}/logs/pending/${myId}` : `${API_URL}/logs/pending`, {
+        headers: { 'Authorization': `Bearer ${getToken()}` }
+      }),
+      fetch(`${API_URL}/logs`, {
+        headers: { 'Authorization': `Bearer ${getToken()}` }
+      }),
+      fetch(getAssignedStudentsEndpoint(), {
+        headers: { 'Authorization': `Bearer ${getToken()}` }
+      })
+    ]);
+
+    const pendingLogs = await pendingRes.json();
+    const allLogsRaw = await allLogsRes.json();
+    const assignedStudents = await assignedStudentsRes.json();
+    const assignedIds = new Set((assignedStudents || []).map(s => Number(s.id)));
+    const allLogs = allLogsRaw.filter(l => assignedIds.has(Number(l.studentId)));
+
+    const pending = pendingLogs.length;
+    const approved = allLogs.filter(l => l.status === 'approved').length;
+    const rejected = allLogs.filter(l => l.status === 'rejected').length;
+
+    const activeInterns = assignedStudents.length;
+
+    // Update cards
+    const cards = document.querySelectorAll('#industry-tab-dashboard .card-val');
+    if (cards[0]) cards[0].textContent = pending;
+    if (cards[1]) cards[1].textContent = approved;
+    if (cards[2]) cards[2].textContent = activeInterns;
+    if (cards[3]) cards[3].textContent = rejected;
+
+    // Update welcome banner
+    const bannerText = document.querySelector('#industry-tab-dashboard .welcome-banner p');
+    if (bannerText) {
+      bannerText.innerHTML = `You have <strong>${pending} tasks pending your approval</strong> from student interns.`;
+    }
+
+  } catch (err) {
+    console.error('Failed to load industry cards:', err);
+  }
+}
+
+// WIRE SCHOOL-SUP CARDS
+async function loadSchoolCards() {
+  try {
+    const [allLogsRes, reportsRes, studentsRes] = await Promise.all([
+      fetch(`${API_URL}/logs`, {
+        headers: { 'Authorization': `Bearer ${getToken()}` }
+      }),
+      fetch(`${API_URL}/reports`, {
+        headers: { 'Authorization': `Bearer ${getToken()}` }
+      }),
+      fetch(getAssignedStudentsEndpoint(), {
+        headers: { 'Authorization': `Bearer ${getToken()}` }
+      })
+    ]);
+
+    const allLogs = await allLogsRes.json();
+    const allReports = await reportsRes.json();
+    const students = await studentsRes.json();
+
+    // Card 0 — all registered students (until assignment is introduced)
+    const totalStudents = students.length;
+
+    // Card 1 — total logs reviewed (approved or rejected)
+    const totalReviewed = allLogs.filter(l => l.status !== 'pending').length;
+
+    // Card 2 — reports submitted but not yet reviewed
+    const reportsDue = allReports.filter(r => r.status === 'submitted').length;
+
+    // Card 3 — average progress across all students
+    const totalLogs = allLogs.length;
+    const approvedLogs = allLogs.filter(l => l.status === 'approved').length;
+    const avgProgress = totalLogs > 0
+      ? Math.round((approvedLogs / totalLogs) * 100)
+      : 0;
+
+    // Update cards
+    const cards = document.querySelectorAll('#school-tab-dashboard .card-val');
+    if (cards[0]) cards[0].textContent = totalStudents;
+    if (cards[1]) cards[1].textContent = totalReviewed;
+    if (cards[2]) cards[2].textContent = reportsDue;
+    if (cards[3]) cards[3].textContent = avgProgress + '%';
+
+    // Update welcome banner
+    const bannerText = document.querySelector('#school-tab-dashboard .welcome-banner p');
+    if (bannerText) {
+      bannerText.innerHTML = `You are supervising <strong>${totalStudents} active student interns</strong>. ${reportsDue} students have progress reports due.`;
+    }
+
+    // Students badge — total students
+    const studentsBadge = document.querySelector('#sidebar-school .nav-item[onclick*="students"] .badge');
+    if (studentsBadge) studentsBadge.textContent = totalStudents;
+
+    const studentListTitle = document.querySelector('#school-tab-students .section-head h3');
+    if (studentListTitle) studentListTitle.textContent = `Student List (${totalStudents})`;
+
+    // Remove supervision and grading badges
+    const supervisionBadge = document.querySelector('#sidebar-school .nav-item[onclick*="supervision"] .badge');
+    if (supervisionBadge) supervisionBadge.remove();
+
+    const gradingBadge = document.querySelector('#sidebar-school .nav-item[onclick*="grading"] .badge');
+    if (gradingBadge) gradingBadge.remove();
+
+    // Remove messages badge for now
+    const messagesBadge = document.querySelector('#sidebar-school .nav-item[onclick*="messages"] .badge');
+    if (messagesBadge) messagesBadge.remove();
+
+  } catch (err) {
+    console.error('Failed to load school cards:', err);
+  }
+}
+
+async function loadSchoolStudents() {
+  try {
+    const response = await fetch(getAssignedStudentsEndpoint(), {
+      headers: { 'Authorization': `Bearer ${getToken()}` }
+    });
+
+    const students = await response.json();
+    const progressMap = await getStudentProgressMap();
+
+    const tbody = document.querySelector('#school-tab-students .table-wrap tbody');
+    if (!tbody) return;
+
+    if (students.length === 0) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="7" style="text-align:center;color:var(--text2);padding:20px">
+            No students found.
+          </td>
+        </tr>`;
+      return;
+    }
+
+    tbody.innerHTML = students.map(student => `
+      <tr>
+        <td>
+          <div style="display:flex;align-items:center;gap:10px">
+            <div class="avatar">${student.fullName.split(' ').map(n => n[0]).join('').toUpperCase()}</div>
+            ${student.fullName}
+          </div>
+        </td>
+        <td>${student.registrationNumber || '—'}</td>
+        <td>${student.placementCompany || '—'}</td>
+        <td>
+          <div style="min-width:90px">
+            <div class="prog-bar">
+              <div class="prog-fill" style="width:0%"></div>
+            </div>
+            <div style="font-size:.75rem;color:var(--text3);margin-top:2px">0%</div>
+          </div>
+        </td>
+        <td>—</td>
+        <td><span class="tag approved">Active</span></td>
+        <td>
+          <button class="btn btn-outline btn-sm" onclick="openStudentProfile(${student.id}, '${student.fullName}', '${student.registrationNumber}', '${student.course}', '${student.placementCompany}', '${student.email}')">
+            View Profile
+          </button>
+        </td>
+      </tr>
+    `).join('');
+
+    // Also update dashboard summary cards from live students list.
+    const summaryGrid = document.querySelector('#school-tab-dashboard .student-cards-grid');
+    if (summaryGrid) {
+      const topStudents = students.slice(0, 3);
+      summaryGrid.innerHTML = topStudents.map(student => {
+        const stats = progressMap.get(Number(student.id)) || { progress: 0 };
+        const initials = student.fullName.split(' ').map(n => n[0]).join('').toUpperCase();
+        const latestText = stats.progress > 0 ? 'Latest: Active' : 'Latest: No logs yet';
+        const fullName = (student.fullName || '').replace(/'/g, "\\'");
+        const regNo = (student.registrationNumber || '').replace(/'/g, "\\'");
+        const course = (student.course || '').replace(/'/g, "\\'");
+        const placement = (student.placementCompany || '').replace(/'/g, "\\'");
+        const email = (student.email || '').replace(/'/g, "\\'");
+        return `
+          <div class="student-card" onclick="openStudentProfile(${student.id}, '${fullName}', '${regNo}', '${course}', '${placement}', '${email}')">
+            <div class="student-card-top">
+              <div class="avatar avatar-lg">${initials}</div>
+              <div class="student-card-info">
+                <h4>${student.fullName}</h4>
+                <p>${student.registrationNumber || '—'}</p>
+              </div>
+            </div>
+            <div class="student-card-meta"><span><i class="fas fa-building" style="margin-right:4px"></i>${student.placementCompany || 'Not Placed'}</span><span><span class="approved-dot"></span>${latestText}</span></div>
+            <div style="font-size:.8rem;color:var(--text2);margin-bottom:6px">Progress</div>
+            <div class="prog-bar"><div class="prog-fill ${stats.progress > 0 && stats.progress < 60 ? 'amber' : ''}" style="width:${stats.progress}%"></div></div>
+            <div style="font-size:.78rem;color:var(--text3);margin-top:4px;text-align:right">${stats.progress}%</div>
+          </div>
+        `;
+      }).join('');
+    }
+
+  } catch (err) {
+    console.error('Failed to load school students:', err);
+  }
+}
+
+async function getStudentProgressMap() {
+  const progressMap = new Map();
+  try {
+    const logsResponse = await fetch(`${API_URL}/logs`, {
+      headers: { 'Authorization': `Bearer ${getToken()}` }
+    });
+    const allLogs = await logsResponse.json();
+
+    const grouped = new Map();
+    allLogs.forEach(log => {
+      if (!grouped.has(log.studentId)) grouped.set(log.studentId, []);
+      grouped.get(log.studentId).push(log);
+    });
+
+    grouped.forEach((studentLogs, studentId) => {
+      const total = studentLogs.length;
+      const approved = studentLogs.filter(l => l.status === 'approved').length;
+      const pending = studentLogs.filter(l => l.status === 'pending').length;
+      const progress = total > 0 ? Math.round((approved / total) * 100) : 0;
+      const latest = studentLogs[0] || null;
+      progressMap.set(Number(studentId), { total, approved, pending, progress, latest });
+    });
+  } catch (err) {
+    console.error('Failed to build progress map:', err);
+  }
+
+  return progressMap;
+}
+
+async function loadAdminDashboardData() {
+  try {
+    const [countsRes, studentsRes, supervisorsRes] = await Promise.all([
+      fetch(`${API_URL}/users/counts`, { headers: { 'Authorization': `Bearer ${getToken()}` } }),
+      fetch(`${API_URL}/users/students`, { headers: { 'Authorization': `Bearer ${getToken()}` } }),
+      fetch(`${API_URL}/users/supervisors`, { headers: { 'Authorization': `Bearer ${getToken()}` } }),
+    ]);
+
+    const counts = await countsRes.json();
+    const students = await studentsRes.json();
+    const supervisors = await supervisorsRes.json();
+    const progressMap = await getStudentProgressMap();
+
+    // Admin dashboard cards
+    const adminCards = document.querySelectorAll('#admin-tab-dashboard .card-val');
+    const notStarted = students.filter(s => !progressMap.has(Number(s.id))).length;
+    if (adminCards[0]) adminCards[0].textContent = String(counts.students || students.length);
+    if (adminCards[1]) adminCards[1].textContent = String(notStarted);
+    if (adminCards[2]) adminCards[2].textContent = String(counts.supervisors || 0);
+
+    // Admin summary table (dashboard)
+    const summaryTbody = document.querySelector('#admin-tab-dashboard .table-wrap tbody');
+    if (summaryTbody) {
+      const recent = students.slice(0, 6);
+      summaryTbody.innerHTML = recent.map(student => {
+        const stats = progressMap.get(Number(student.id)) || { progress: 0 };
+        const initials = student.fullName.split(' ').map(n => n[0]).join('').toUpperCase();
+        const statusTag = stats.progress >= 60 ? 'approved' : stats.progress > 0 ? 'pending' : 'rejected';
+        const statusText = stats.progress >= 60 ? 'Active' : stats.progress > 0 ? 'In Progress' : 'Not Started';
+        return `
+          <tr>
+            <td><div style="display:flex;align-items:center;gap:10px"><div class="avatar">${initials}</div>${student.fullName}</div></td>
+            <td>${student.registrationNumber || '—'}</td>
+            <td>—</td>
+            <td>${student.placementCompany || '<span style="color:var(--text3);font-style:italic">Not Placed</span>'}</td>
+            <td>
+              <div style="min-width:90px">
+                <div class="prog-bar"><div class="prog-fill ${stats.progress > 0 && stats.progress < 60 ? 'amber' : ''}" style="width:${stats.progress}%"></div></div>
+                <div style="font-size:.72rem;color:var(--text3);margin-top:2px">${stats.progress}%</div>
+              </div>
+            </td>
+            <td><span class="tag ${statusTag}">${statusText}</span></td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    // Admin students tab heading + table
+    const studentsTitle = document.querySelector('#admin-tab-students .section-head h3');
+    if (studentsTitle) studentsTitle.textContent = `Students (${students.length})`;
+
+    const studentsTbody = document.querySelector('#admin-tab-students .table-wrap tbody');
+    if (studentsTbody) {
+      studentsTbody.innerHTML = students.map(student => {
+        const stats = progressMap.get(Number(student.id)) || { progress: 0 };
+        const initials = student.fullName.split(' ').map(n => n[0]).join('').toUpperCase();
+        const statusTag = stats.progress >= 60 ? 'approved' : stats.progress > 0 ? 'pending' : 'rejected';
+        const statusText = stats.progress >= 60 ? 'Active' : stats.progress > 0 ? 'In Progress' : 'Not Started';
+        return `
+          <tr>
+            <td><div style="display:flex;align-items:center;gap:10px"><div class="avatar">${initials}</div>${student.fullName}</div></td>
+            <td>${student.registrationNumber || '—'}</td>
+            <td>${student.course || '—'}</td>
+            <td>—</td>
+            <td>${student.placementCompany || '—'}</td>
+            <td><div class="prog-bar" style="min-width:80px"><div class="prog-fill ${stats.progress > 0 && stats.progress < 60 ? 'amber' : ''}" style="width:${stats.progress}%"></div></div></td>
+            <td><span class="tag ${statusTag}">${statusText}</span></td>
+            <td><button class="btn btn-outline btn-sm">View</button></td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    // Admin supervisors tab counts
+    const schoolSvTab = document.querySelector('.tab-btn[onclick*="sv\',\'school"]');
+    const industrySvTab = document.querySelector('.tab-btn[onclick*="sv\',\'industry"]');
+    if (schoolSvTab) schoolSvTab.textContent = `School Supervisors (${supervisors.school?.length || 0})`;
+    if (industrySvTab) industrySvTab.textContent = `Industry Supervisors (${supervisors.industry?.length || 0})`;
+  } catch (err) {
+    console.error('Failed to load admin dashboard data:', err);
+  }
+}
+
+function toggleSchoolChat() {
+  document.getElementById('school-chat-box').classList.toggle('open');
+}
+
+function schoolChatEnter(e) {
+  if (e.key === 'Enter') sendSchoolChat();
+}
+
+async function sendSchoolChat() {
+  const input = document.getElementById('school-chat-input');
+  const msg = input.value.trim();
+  if (!msg) return;
+
+  const myId = getUserId();
+  const chatMessages = document.getElementById('school-chat-messages');
+  const partnerId = chatMessages?.dataset.partnerId;
+
+  if (!partnerId) {
+    alert('Please select a student first from My Students tab.');
+    return;
+  }
+
+  try {
+    const response = await fetch(`${API_URL}/messages`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${getToken()}`
+      },
+      body: JSON.stringify({
+        senderId: Number(myId),
+        receiverId: Number(partnerId),
+        content: msg,
+      }),
+    });
+
+    if (!response.ok) return;
+
+    const div = document.createElement('div');
+    div.className = 'msg out';
+    div.innerHTML = `${msg}<div class="msg-time">Just now</div>`;
+    chatMessages.appendChild(div);
+    input.value = '';
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+
+  } catch (err) {
+    console.error('Failed to send message:', err);
+  }
+}
+
+// LOAD 2 WAY CONVERSATION 
+// Load conversation between two users
+async function loadConversation(otherUserId, otherUserName) {
+  const myId = getUserId();
+
+  try {
+    const response = await fetch(
+      `${API_URL}/messages/conversation/${myId}/${otherUserId}`,
+      { headers: { 'Authorization': `Bearer ${getToken()}` } }
+    );
+
+    const messages = await response.json();
+
+    // Mark messages as read
+    await fetch(`${API_URL}/messages/read/${otherUserId}/${myId}`, {
+      method: 'PATCH',
+      headers: { 'Authorization': `Bearer ${getToken()}` }
+    });
+
+    // Find the chat messages container
+    const chatMessages = document.querySelector('.chat-messages');
+    if (!chatMessages) return;
+
+    // Update chat header
+    const chatHead = document.querySelector('.chat-head-info h4');
+    if (chatHead) chatHead.textContent = otherUserName;
+
+    // Store current chat partner id for sending
+    chatMessages.dataset.partnerId = otherUserId;
+    chatMessages.dataset.partnerName = otherUserName;
+
+    if (messages.length === 0) {
+      chatMessages.innerHTML = `
+        <div class="msg in">
+          Start your conversation with ${otherUserName}
+          <div class="msg-time">Now</div>
+        </div>`;
+      return;
+    }
+
+    chatMessages.innerHTML = messages.map(msg => `
+      <div class="msg ${Number(msg.senderId) === Number(myId) ? 'out' : 'in'}">
+        ${msg.content}
+        <div class="msg-time">
+          ${new Date(msg.sentAt).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}
+        </div>
+      </div>
+    `).join('');
+
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+
+  } catch (err) {
+    console.error('Failed to load conversation:', err);
+  }
+}
+
+// Send a real message
+async function sendChat() {
+  const input = document.getElementById('chat-input');
+  const msg = input.value.trim();
+  if (!msg) return;
+
+  const myId = getUserId();
+  const chatMessages = document.querySelector('.chat-messages');
+  const partnerId = chatMessages?.dataset.partnerId;
+
+  if (!partnerId) {
+    // Fallback to old mock behavior if no partner selected
+    const msgs = document.querySelector('.chat-messages');
+    const div = document.createElement('div');
+    div.className = 'msg out';
+    div.innerHTML = msg + '<div class="msg-time">Just now</div>';
+    msgs.appendChild(div);
+    input.value = '';
+    msgs.scrollTop = msgs.scrollHeight;
+    return;
+  }
+
+  try {
+    const response = await fetch(`${API_URL}/messages`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${getToken()}`
+      },
+      body: JSON.stringify({
+        senderId: Number(myId),
+        receiverId: Number(partnerId),
+        content: msg,
+      }),
+    });
+
+    if (!response.ok) return;
+
+    // Add message to UI immediately
+    const div = document.createElement('div');
+    div.className = 'msg out';
+    div.innerHTML = `${msg}<div class="msg-time">Just now</div>`;
+    chatMessages.appendChild(div);
+    input.value = '';
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+
+  } catch (err) {
+    console.error('Failed to send message:', err);
+  }
+}
+
+async function openStudentProfile(studentId, fullName, regNumber, course, placement, email) {
+  // Update modal header
+  const avatar = document.querySelector('#student-profile-modal .profile-avatar');
+  const nameEl = document.querySelector('#student-profile-modal .profile-info h3');
+  const subEl = document.querySelector('#student-profile-modal .profile-info p');
+  const placementEl = document.querySelector('#student-profile-modal .profile-meta-item:first-child span');
+  const emailEl = document.querySelector('#student-profile-modal .profile-meta-item:last-child span');
+
+  if (avatar) avatar.textContent = fullName.split(' ').map(n => n[0]).join('').toUpperCase();
+  if (nameEl) nameEl.textContent = fullName;
+  if (subEl) subEl.textContent = `${regNumber} · ${course || 'N/A'}`;
+  if (placementEl) placementEl.textContent = placement || 'N/A';
+  if (emailEl) emailEl.textContent = email || 'N/A';
+
+  // Wire download button immediately
+  const downloadBtn = document.getElementById('download-report-btn');
+  if (downloadBtn) {
+    downloadBtn.onclick = () => downloadStudentReport(studentId, fullName);
+  }
+
+  // Wire send message button
+  const sendMsgBtn = document.getElementById('send-message-btn');
+if (sendMsgBtn) {
+  sendMsgBtn.onclick = async () => {
+    closeModal('student-profile-modal');
+    
+    // Load conversation into school chat
+    const chatMessages = document.getElementById('school-chat-messages');
+    const chatHead = document.querySelector('#school-chat-box .chat-head-info h4');
+    
+    if (chatMessages) chatMessages.dataset.partnerId = studentId;
+    if (chatHead) chatHead.textContent = fullName;
+
+    // Load existing messages
+    await loadSchoolConversation(studentId, fullName);
+    
+    // Open chat
+    toggleSchoolChat();
+  };
+}
+
+  // Fetch student logs
+  try {
+    const response = await fetch(`${API_URL}/logs/student/${studentId}`, {
+      headers: { 'Authorization': `Bearer ${getToken()}` }
+    });
+
+    const logs = await response.json();
+    const total = logs.length;
+    const approved = logs.filter(l => l.status === 'approved').length;
+    const progress = total > 0 ? Math.round((approved / total) * 100) : 0;
+
+    // Update stats cards in modal
+    const modalCards = document.querySelectorAll('#student-profile-modal .card-val');
+    if (modalCards[0]) modalCards[0].textContent = total;
+    if (modalCards[1]) modalCards[1].textContent = approved;
+    if (modalCards[2]) modalCards[2].textContent = progress + '%';
+
+    // Update progress bar
+    const progFill = document.querySelector('#student-profile-modal .prog-fill');
+    if (progFill) progFill.style.width = progress + '%';
+
+    const progText = document.querySelector('#student-profile-modal .prog-bar + div');
+    if (progText) progText.textContent = `${progress}% · ${approved}/${total} tasks approved`;
+
+    // Update recent logs table in modal
+    const tbody = document.querySelector('#student-profile-modal tbody');
+    if (tbody) {
+      if (logs.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="3" style="text-align:center;color:var(--text2)">No logs yet</td></tr>`;
+      } else {
+        tbody.innerHTML = logs.slice(0, 5).map(log => `
+          <tr>
+            <td>${new Date(log.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}</td>
+            <td>${log.taskName}</td>
+            <td><span class="tag ${log.status}">${log.status.charAt(0).toUpperCase() + log.status.slice(1)}</span></td>
+          </tr>
+        `).join('');
+      }
+    }
+
+  } catch (err) {
+    console.error('Failed to load student profile data:', err);
+  }
+
+  openModal('student-profile-modal');
+}
+
+
+async function loadStudentProfile(userId) {
+  try {
+    const response = await fetch(`${API_URL}/users/${userId}`, {
+      headers: { 'Authorization': `Bearer ${getToken()}` }
+    });
+
+    const user = await response.json();
+    if (!user) return;
+
+    // Update placement in welcome banner
+    const placementBadge = document.querySelector('#student-tab-dashboard .wb-badge');
+    if (placementBadge) {
+      placementBadge.innerHTML = `<i class="fas fa-map-marker-alt"></i> Placed at: ${user.placementCompany || 'Not set'} · ${user.country || ''}`;
+    }
+
+    // Update sidebar role info
+    const sidebarRole = document.querySelector('#sidebar-student .sidebar-user-role');
+    if (sidebarRole) {
+      sidebarRole.textContent = `${user.course || ''} · ${user.yearOfStudy || ''}`;
+    }
+
+    // Update settings profile tab
+    const settingsName = document.querySelector('#student-tab-settings input[type="text"]');
+    if (settingsName) settingsName.value = user.fullName || '';
+
+    const settingsReg = document.querySelectorAll('#student-tab-settings input[type="text"]');
+    if (settingsReg[1]) settingsReg[1].value = user.registrationNumber || '';
+    if (settingsReg[2]) settingsReg[2].value = user.placementCompany || '';
+
+    const settingsEmail = document.querySelector('#student-tab-settings input[type="email"]');
+    if (settingsEmail) settingsEmail.value = user.email || '';
+
+  } catch (err) {
+    console.error('Failed to load profile:', err);
+  }
+}
+
+async function downloadStudentReport(studentId, studentName) {
+  try {
+    const response = await fetch(`${API_URL}/reports/student/${studentId}`, {
+      headers: { 'Authorization': `Bearer ${getToken()}` }
+    });
+
+    const report = await response.json();
+
+    if (!report || !report.id) {
+      alert(`${studentName} has not submitted a report yet.`);
+      return;
+    }
+
+    // Open file in new tab
+    window.open(`http://localhost:3000/${report.fileUrl}`, '_blank');
+
+  } catch (err) {
+    alert('Could not fetch report. Make sure the backend is running.');
+  }
+}
+
+async function loadSchoolConversation(otherUserId, otherUserName) {
+  const myId = getUserId();
+  const chatMessages = document.getElementById('school-chat-messages');
+  if (!chatMessages) return;
+
+  try {
+    const response = await fetch(
+      `${API_URL}/messages/conversation/${myId}/${otherUserId}`,
+      { headers: { 'Authorization': `Bearer ${getToken()}` } }
+    );
+
+    const messages = await response.json();
+
+    // Mark as read
+    await fetch(`${API_URL}/messages/read/${otherUserId}/${myId}`, {
+      method: 'PATCH',
+      headers: { 'Authorization': `Bearer ${getToken()}` }
+    });
+
+    if (messages.length === 0) {
+      chatMessages.innerHTML = `
+        <div class="msg in">
+          Start your conversation with ${otherUserName}
+          <div class="msg-time">Now</div>
+        </div>`;
+      return;
+    }
+
+    chatMessages.innerHTML = messages.map(msg => `
+      <div class="msg ${Number(msg.senderId) === Number(myId) ? 'out' : 'in'}">
+        ${msg.content}
+        <div class="msg-time">
+          ${new Date(msg.sentAt).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}
+        </div>
+      </div>
+    `).join('');
+
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+
+  } catch (err) {
+    console.error('Failed to load conversation:', err);
+  }
+}
 
 /* ===== SIDEBAR ===== */
 function openSidebar(sidebarId, overlayId) {
@@ -507,18 +1336,99 @@ function showUpload(input) {
 }
 
 /* ===== LOG SUBMIT ===== */
-function submitLog() {
+async function submitLog() {
+  const taskName = document.querySelector('#student-tab-dashboard input[placeholder="Brief title of what you did"]').value.trim();
+  const workType = document.querySelector('#student-tab-dashboard select').value;
+  const description = document.querySelector('#student-tab-dashboard textarea').value.trim();
+  const skillsApplied = document.querySelector('#student-tab-dashboard input[placeholder="e.g. SQL, Communication, Excel"]').value.trim();
+  const estimatedHours = document.querySelector('#student-tab-dashboard input[type="number"]').value;
+
+  if (!taskName || !description || !workType) {
+    alert('Please fill in Task Name, Work Type and Description.');
+    return;
+  }
+
+  if (!estimatedHours || estimatedHours < 1) {
+    alert('Please enter estimated hours.');
+    return;
+  }
+
+  const userId = getUserId();
+  if (!userId) {
+    alert('Session expired. Please log in again.');
+    return;
+  }
+
   const btn = event.target;
   btn.innerHTML = '<span class="spinner"></span> Submitting...';
-  setTimeout(() => {
-    btn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit Log Entry';
-    // Show a toast
+  btn.disabled = true;
+
+  try {
+    // Get GPS coordinates
+    let gpsLatitude = null;
+    let gpsLongitude = null;
+
+    if (navigator.geolocation) {
+      await new Promise((resolve) => {
+        navigator.geolocation.getCurrentPosition(
+          (pos) => {
+            gpsLatitude = pos.coords.latitude;
+            gpsLongitude = pos.coords.longitude;
+            resolve();
+          },
+          () => resolve() // continue even if GPS fails
+        );
+      });
+    }
+
+    const response = await fetch(`${API_URL}/logs`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${getToken()}`
+      },
+      body: JSON.stringify({
+        studentId: Number(userId),
+        taskName,
+        workType,
+        description,
+        skillsApplied,
+        estimatedHours: Number(estimatedHours),
+        gpsLatitude,
+        gpsLongitude,
+      }),
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      alert(result.message || 'Failed to submit log.');
+      return;
+    }
+
+    // Show success toast
     const toast = document.createElement('div');
     toast.style.cssText = 'position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:var(--success);color:#fff;padding:12px 24px;border-radius:10px;font-weight:600;z-index:9999;animation:fadeUp .3s ease';
     toast.innerHTML = '<i class="fas fa-check-circle"></i> Log entry submitted successfully!';
     document.body.appendChild(toast);
     setTimeout(() => toast.remove(), 3000);
-  }, 1000);
+
+    // Clear form fields
+    document.querySelector('#student-tab-dashboard input[placeholder="Brief title of what you did"]').value = '';
+    document.querySelector('#student-tab-dashboard textarea').value = '';
+    document.querySelector('#student-tab-dashboard input[placeholder="e.g. SQL, Communication, Excel"]').value = '';
+    document.querySelector('#student-tab-dashboard input[type="number"]').value = '';
+
+    // Refresh cards and logs
+    loadStudentCards(userId);
+    loadStudentLogs(userId);
+
+  } catch (err) {
+    alert('Could not connect to server. Make sure the backend is running.');
+  } finally {
+    btn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit Log Entry';
+    btn.disabled = false;
+  }
 }
 
 /* ===== DRAG & DROP UPLOAD ===== */
@@ -528,36 +1438,143 @@ if (uploadArea) {
   uploadArea.addEventListener('dragleave', () => { uploadArea.style.borderColor = ''; uploadArea.style.background = ''; });
   uploadArea.addEventListener('drop', e => { e.preventDefault(); uploadArea.style.borderColor = ''; uploadArea.style.background = ''; });
 }
-/* ==== LOAD gRADING FORM =====*/
 
-function loadGradingForm() {
-  const select = document.getElementById('grading-student-select');
-  const container = document.getElementById('grading-form-container');
+// LOAD GRADING STUDENTS
+async function loadGradingStudents() {
+  try {
+    const response = await fetch(getAssignedStudentsEndpoint(), {
+      headers: { 'Authorization': `Bearer ${getToken()}` }
+    });
 
-  if (select.value) {
-    container.style.display = 'block';
-    // Here you would typically fetch student data via AJAX
-    // For now, we just show the form
-  } else {
-    alert('Please select a student first');
+    const students = await response.json();
+
+    const select = document.getElementById('grading-student-select');
+    if (!select) return;
+
+    select.innerHTML = '<option value="">Select Student...</option>';
+    students.forEach(student => {
+      select.innerHTML += `<option value="${student.id}">${student.fullName} (${student.registrationNumber})</option>`;
+    });
+
+  } catch (err) {
+    console.error('Failed to load grading students:', err);
   }
 }
 
-function submitGrading() {
-  alert('Grading submitted successfully!');
-  // Add your submission logic here
+
+/* ==== LOAD gRADING FORM =====*/
+
+async function loadGradingForm() {
+  const select = document.getElementById('grading-student-select');
+  const container = document.getElementById('grading-form-container');
+
+  if (!select.value) {
+    alert('Please select a student first');
+    return;
+  }
+
+  // Update student name in form header
+  const selectedOption = select.options[select.selectedIndex];
+  const studentName = selectedOption.text.split('(')[0].trim();
+  const nameHeader = document.querySelector('#grading-form-container h4');
+  if (nameHeader) nameHeader.textContent = studentName;
+
+  if (container) container.style.display = 'block';
 }
+
+async function submitGrading() {
+  const studentSelect = document.getElementById('grading-student-select');
+  const studentId = studentSelect.value;
+
+  if (!studentId) {
+    alert('Please select a student first.');
+    return;
+  }
+
+  const supervisorId = getUserId();
+
+  // Gather all grading fields
+  const gradingInputs = document.querySelectorAll('#grading-form-container input[type="number"]');
+  const gradingSelects = document.querySelectorAll('#grading-form-container select');
+  const gradingTextareas = document.querySelectorAll('#grading-form-container textarea');
+
+  const data = {
+    supervisorId: Number(supervisorId),
+    studentId: Number(studentId),
+    attendanceRate: Number(gradingInputs[0]?.value) || null,
+    attendanceComments: gradingTextareas[0]?.value || null,
+    logQuality: gradingSelects[0]?.value || null,
+    logConsistency: Number(document.querySelector('#grading-form-container input[type="range"]')?.value) || null,
+    reportGrade: gradingSelects[1]?.value || null,
+    reportFeedback: gradingTextareas[1]?.value || null,
+    communicationRating: Number(gradingInputs[1]?.value) || null,
+    communicationObservations: gradingTextareas[2]?.value || null,
+    industryPerformance: gradingSelects[2]?.value || null,
+    industryComments: gradingTextareas[3]?.value || null,
+    overallGrade: document.querySelector('#grading-form-container .card-val')?.textContent || null,
+    finalComments: gradingTextareas[4]?.value || null,
+  };
+
+  try {
+    const response = await fetch(`${API_URL}/gradings`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${getToken()}`
+      },
+      body: JSON.stringify(data),
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      alert(result.message || 'Failed to submit grading.');
+      return;
+    }
+
+    alert('Grading submitted successfully!');
+    document.getElementById('grading-form-container').style.display = 'none';
+    document.getElementById('grading-student-select').value = '';
+
+  } catch (err) {
+    alert('Could not connect to server. Make sure the backend is running.');
+  }
+}
+
+
 /*====== SCHOOL SUPERVISION SCHEDULING ======*/
 // Student data
-const students = [
-  { id: 'AK', name: 'Amina Kibuuka', regNo: '2021/BSC/042', country: 'Uganda', email: 'amina@mak.ac.ug', placement: 'Stanbic Bank Uganda Ltd' },
-  { id: 'JM', name: 'Jonah Mwangi', regNo: '2021/BSC/019', country: 'Uganda', email: 'jonah@mak.ac.ug', placement: 'MTN Uganda HQ' },
-  { id: 'PN', name: 'Patience Nantale', regNo: '2021/BSC/031', country: 'Uganda', email: 'patience@mak.ac.ug', placement: 'Airtel Uganda' },
-  { id: 'INTL1', name: 'John Doe', regNo: '2021/BSC/050', country: 'Kenya', email: 'john@university.ac.ke', placement: 'Safaricom Kenya' },
-  { id: 'INTL2', name: 'Jane Smith', regNo: '2021/BSC/051', country: 'Nigeria', email: 'jane@university.ac.ng', placement: 'MTN Nigeria' },
-];
+// const students = [
+//   { id: 'AK', name: 'Amina Kibuuka', regNo: '2021/BSC/042', country: 'Uganda', email: 'amina@mak.ac.ug', placement: 'Stanbic Bank Uganda Ltd' },
+//   { id: 'JM', name: 'Jonah Mwangi', regNo: '2021/BSC/019', country: 'Uganda', email: 'jonah@mak.ac.ug', placement: 'MTN Uganda HQ' },
+//   { id: 'PN', name: 'Patience Nantale', regNo: '2021/BSC/031', country: 'Uganda', email: 'patience@mak.ac.ug', placement: 'Airtel Uganda' },
+//   { id: 'INTL1', name: 'John Doe', regNo: '2021/BSC/050', country: 'Kenya', email: 'john@university.ac.ke', placement: 'Safaricom Kenya' },
+//   { id: 'INTL2', name: 'Jane Smith', regNo: '2021/BSC/051', country: 'Nigeria', email: 'jane@university.ac.ng', placement: 'MTN Nigeria' },
+// ];
 
-// Load Supervision Form
+// LOAD STUDENTS FROM THE DATABASE DYNAMICALLY
+async function loadSupervisionStudents() {
+  try {
+    const response = await fetch(getAssignedStudentsEndpoint(), {
+      headers: { 'Authorization': `Bearer ${getToken()}` }
+    });
+
+    const students = await response.json();
+
+    const select = document.getElementById('supervision-student-select');
+    if (!select) return;
+
+    select.innerHTML = '<option value="">Select Student...</option>';
+    students.forEach(student => {
+      select.innerHTML += `<option value="${student.id}">${student.fullName} (${student.registrationNumber})</option>`;
+    });
+
+  } catch (err) {
+    console.error('Failed to load students:', err);
+  }
+}
+
+// LOAD SUPERVISION FORM
 function loadSupervisionForm() {
   const select = document.getElementById('supervision-student-select');
   const container = document.getElementById('supervision-form-container');
@@ -568,11 +1585,22 @@ function loadSupervisionForm() {
     return;
   }
 
-  const student = students.find(s => s.id === studentId);
-  if (student) {
-    updateStudentInfo(student);
-    checkZoomAvailability(student.country);
-    if (container) container.style.display = 'block';
+  // Show the form
+  if (container) container.style.display = 'block';
+
+  // Update student info from selected option text
+  const selectedOption = select.options[select.selectedIndex];
+  const studentName = selectedOption.text.split('(')[0].trim();
+
+  const nameHeader = document.querySelector('#supervision-form-container h4');
+  if (nameHeader) nameHeader.textContent = studentName;
+
+  // Default to onground for all — zoom only for international
+  // For now set mode to onground by default
+  const modeSelect = document.getElementById('supervision-mode');
+  if (modeSelect) {
+    modeSelect.value = 'onground';
+    handleModeChange({ target: modeSelect });
   }
 }
 
@@ -634,14 +1662,16 @@ function handleModeChange(e) {
 }
 
 // Schedule Supervision (Part 1)
-function scheduleSupervision() {
+async function scheduleSupervision() {
   const dateInput = document.getElementById('supervision-date');
   const timeInput = document.getElementById('supervision-time');
   const modeSelect = document.getElementById('supervision-mode');
   const locationInput = document.getElementById('supervision-location');
   const zoomLinkInput = document.getElementById('zoom-link');
+  const durationSelect = document.getElementById('supervision-duration');
+  const notesInput = document.getElementById('supervision-notes-before');
+  const studentSelect = document.getElementById('supervision-student-select');
 
-  // Validate required fields
   if (!dateInput.value || !timeInput.value) {
     alert('Please select date and time');
     return;
@@ -657,26 +1687,68 @@ function scheduleSupervision() {
     return;
   }
 
-  // Show success message
-  alert('Supervision scheduled successfully! Student has been notified.');
+  const supervisorId = getUserId();
+  const studentId = studentSelect.value;
 
-  // Auto-fill assessment form with scheduled date
-  const actualDateInput = document.getElementById('assessment-actual-date');
-  if (actualDateInput) {
-    actualDateInput.value = dateInput.value + ' at ' + timeInput.value;
+  if (!supervisorId || !studentId) {
+    alert('Session expired or no student selected. Please try again.');
+    return;
+  }
+
+  try {
+    const response = await fetch(`${API_URL}/supervisions`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${getToken()}`
+      },
+      body: JSON.stringify({
+        supervisorId: Number(supervisorId),
+        studentId: Number(studentId),
+        mode: modeSelect.value,
+        supervisionDate: dateInput.value,
+        supervisionTime: timeInput.value,
+        durationMinutes: Number(durationSelect.value),
+        location: locationInput.value,
+        zoomLink: zoomLinkInput.value || null,
+        notesBefore: notesInput ? notesInput.value : null,
+      }),
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      alert(result.message || 'Failed to schedule supervision.');
+      return;
+    }
+
+    alert('Supervision scheduled successfully! Student has been notified.');
+
+    // Store the supervision id for assessment submission
+    sessionStorage.setItem('currentSupervisionId', String(result.id));
+    localStorage.setItem('currentSupervisionId', String(result.id));
+
+    // Auto fill assessment date
+    const actualDateInput = document.getElementById('assessment-actual-date');
+    if (actualDateInput) {
+      actualDateInput.value = dateInput.value + ' at ' + timeInput.value;
+    }
+
+  } catch (err) {
+    alert('Could not connect to server. Make sure the backend is running.');
   }
 }
 
 // Submit Assessment (Part 2)
-function submitAssessment() {
+async function submitAssessment() {
   const statusSelect = document.getElementById('assessment-status');
   const performanceSelect = document.getElementById('assessment-performance');
   const technicalInput = document.getElementById('assessment-technical');
   const professionalismInput = document.getElementById('assessment-professionalism');
   const improvementInput = document.getElementById('assessment-improvement');
   const finalCommentsInput = document.getElementById('assessment-final-comments');
+  const actualDateInput = document.getElementById('assessment-actual-date');
 
-  // Validate required fields
   if (statusSelect.value !== 'completed') {
     alert('Please mark supervision as completed before submitting assessment');
     return;
@@ -687,12 +1759,47 @@ function submitAssessment() {
     return;
   }
 
-  // Show success message
-  alert('Assessment submitted successfully!');
+  const supervisionId = sessionStorage.getItem('currentSupervisionId') || localStorage.getItem('currentSupervisionId');
+  if (!supervisionId) {
+    alert('No supervision session found. Please schedule first.');
+    return;
+  }
 
-  // Reset form
-  document.getElementById('supervision-form-container').style.display = 'none';
-  document.getElementById('supervision-student-select').value = '';
+  try {
+    const response = await fetch(`${API_URL}/supervisions/${supervisionId}/assessment`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${getToken()}`
+      },
+      body: JSON.stringify({
+        status: statusSelect.value,
+        actualDateTime: actualDateInput.value,
+        performanceRating: performanceSelect.value,
+        technicalSkills: technicalInput.value,
+        professionalism: professionalismInput.value,
+        areasOfImprovement: improvementInput.value,
+        finalComments: finalCommentsInput.value,
+      }),
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      alert(result.message || 'Failed to submit assessment.');
+      return;
+    }
+
+    alert('Assessment submitted successfully!');
+
+    // Reset form
+    document.getElementById('supervision-form-container').style.display = 'none';
+    document.getElementById('supervision-student-select').value = '';
+    sessionStorage.removeItem('currentSupervisionId');
+
+  } catch (err) {
+    alert('Could not connect to server. Make sure the backend is running.');
+  }
 }
 
 // Initialize on page load
@@ -756,14 +1863,37 @@ document.getElementById('confirm-checkbox')?.addEventListener('change', function
 });
 
 // Submit Report
-function submitReport() {
-  // Simulate upload
+async function submitReport() {
   const submitBtn = document.getElementById('btn-submit-report');
   submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading...';
   submitBtn.disabled = true;
 
-  setTimeout(() => {
-    // Hide upload section, show success
+  const userId = getUserId();
+  if (!userId) {
+    alert('Session expired. Please log in again.');
+    return;
+  }
+
+  try {
+    const formData = new FormData();
+    formData.append('file', selectedFile);
+
+    const response = await fetch(`${API_URL}/reports/upload?studentId=${userId}`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${getToken()}`
+      },
+      body: formData,
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      alert(result.message || 'Failed to upload report.');
+      return;
+    }
+
+    // Hide upload section show success
     document.getElementById('upload-section').style.display = 'none';
     document.getElementById('success-section').style.display = 'block';
     document.getElementById('report-status-badge').className = 'tag approved';
@@ -771,21 +1901,56 @@ function submitReport() {
 
     // Set submission date
     const now = new Date();
-    document.getElementById('submission-date').textContent = now.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+    document.getElementById('submission-date').textContent = now.toLocaleDateString('en-GB', {
+      day: 'numeric', month: 'short', year: 'numeric'
+    });
 
-    // Close modal
     closeReportModal();
 
-    // Reset file input
     document.getElementById('report-file').value = '';
     document.getElementById('file-name').textContent = '';
     document.getElementById('btn-confirm-upload').disabled = true;
 
-    // Set state
     isReportSubmitted = true;
+    selectedFile = null;
 
     alert('Report submitted successfully!');
-  }, 1500);
+
+  } catch (err) {
+    alert('Could not connect to server. Make sure the backend is running.');
+  } finally {
+    submitBtn.innerHTML = 'Submit Report';
+    submitBtn.disabled = false;
+  }
+}
+
+// CHECK WHETHER STUDENT ALREADY SUBMITTED REPORT
+async function loadStudentReport(studentId) {
+  try {
+    const response = await fetch(`${API_URL}/reports/student/${studentId}`, {
+      headers: { 'Authorization': `Bearer ${getToken()}` }
+    });
+
+    const report = await response.json();
+
+    if (report && report.id) {
+      // Already submitted — show success section
+      document.getElementById('upload-section').style.display = 'none';
+      document.getElementById('success-section').style.display = 'block';
+      document.getElementById('report-status-badge').className = 'tag approved';
+      document.getElementById('report-status-badge').textContent = 'Submitted';
+
+      const date = new Date(report.submittedAt);
+      document.getElementById('submission-date').textContent = date.toLocaleDateString('en-GB', {
+        day: 'numeric', month: 'short', year: 'numeric'
+      });
+
+      isReportSubmitted = true;
+    }
+
+  } catch (err) {
+    console.error('Failed to load report status:', err);
+  }
 }
 
 // Initialize on page load
@@ -799,6 +1964,7 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 
 window.addEventListener("load", function () {
+  // restore theme
   const savedTheme = localStorage.getItem("savedTheme");
   if (savedTheme) {
     const themeOption = document.querySelector(`.theme-option[onclick*="'${savedTheme}'"]`);

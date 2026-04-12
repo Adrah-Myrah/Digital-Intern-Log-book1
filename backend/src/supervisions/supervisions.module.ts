@@ -13,9 +13,12 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Supervision } from './supervision.entity';
 import { SupervisionsService } from './supervisions.service';
 import { SupervisionsController } from './supervisions.controller';
+import { JwtModule } from '@nestjs/jwt';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Supervision])],
+  imports: [TypeOrmModule.forFeature([Supervision]),
+  JwtModule,
+],
   providers: [SupervisionsService],
   controllers: [SupervisionsController],
   exports: [SupervisionsService],

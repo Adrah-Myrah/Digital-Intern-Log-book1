@@ -25,16 +25,6 @@
           <div class="auth-logo"><i class="fas fa-book-open"></i></div>
           <h1>InternLog</h1>
           <p>Smart Digital Logbook System with GPS Verification for Internship Programs</p>
-          <!-- <div class="auth-features">
-            <div class="auth-feature"><i class="fas fa-map-marker-alt"></i><span>GPS-verified attendance & placement
-                tracking</span></div>
-            <div class="auth-feature"><i class="fas fa-clipboard-check"></i><span>Digital task logging & supervisor
-                approval</span></div>
-            <div class="auth-feature"><i class="fas fa-chart-line"></i><span>Real-time progress monitoring &
-                analytics</span></div>
-            <div class="auth-feature"><i class="fas fa-comments"></i><span>Integrated supervisor communication</span>
-            </div>
-          </div> -->
         </div>
       </div>
       <div class="auth-right">
@@ -56,7 +46,8 @@
             <div class="form-row">
               <div class="form-group">
                 <label>Full Name</label>
-                <div class="input-icon"><i class="fas fa-user"></i><input type="text" id="reg-fullname" placeholder="Your full name">
+                <div class="input-icon"><i class="fas fa-user"></i><input type="text" id="reg-fullname"
+                    placeholder="Your full name">
                 </div>
               </div>
               <div class="form-group">
@@ -116,12 +107,14 @@
             <div class="form-row">
               <div class="form-group">
                 <label>Full Name</label>
-                <div class="input-icon"><i class="fas fa-user"></i><input type="text" id="reg-fullname" placeholder="Your full name">
+                <div class="input-icon"><i class="fas fa-user"></i><input type="text" id="reg-sup-fullname"
+                    placeholder="Your full name">
                 </div>
               </div>
               <div class="form-group">
                 <label>Staff ID</label>
-                <div class="input-icon"><i class="fas fa-id-badge"></i><input type="text" id="reg-staffid" placeholder="e.g. STAFF-042">
+                <div class="input-icon"><i class="fas fa-id-badge"></i><input type="text" id="reg-staffid"
+                    placeholder="e.g. STAFF-042">
                 </div>
               </div>
             </div>
@@ -132,7 +125,8 @@
             </div>
             <div class="form-group" id="dept-field">
               <label>Department</label>
-              <div class="input-icon"><i class="fas fa-sitemap"></i><input type="text" id="reg-department" placeholder="Department / Unit">
+              <div class="input-icon"><i class="fas fa-sitemap"></i><input type="text" id="reg-department"
+                  placeholder="Department / Unit">
               </div>
             </div>
           </div>
@@ -155,10 +149,10 @@
             <div class="form-group" style="margin-bottom:8px">
               <label
                 style="display:flex;align-items:center;gap:8px;cursor:pointer;text-transform:none;letter-spacing:0;font-size:.88rem;font-weight:400"><input
-                  type="checkbox" style="width:auto;accent-color:var(--primary)"> I agree to the Terms of Service and
-                Privacy Policy</label>
+                  type="checkbox" style="width:auto;accent-color:var(--primary)"> Remember me</label>
             </div>
-            <button class="btn btn-primary btn-full" id="register-btn" onclick="handleRegister()"><i class="fas fa-user-plus"></i> Create
+            <button class="btn btn-primary btn-full" id="register-btn" onclick="handleRegister()"><i
+                class="fas fa-user-plus"></i> Create
               Account</button>
           </div>
           <div class="auth-switch">Already have an account? <span class="link" onclick="showPage('page-login')">Sign
@@ -178,29 +172,16 @@
           <div class="auth-logo"><i class="fas fa-book-open"></i></div>
           <h1>Welcome Back</h1>
           <p>Sign in to continue tracking your internship journey with InternLog.</p>
-          <!-- <div class="auth-features">
-            <div class="auth-feature"><i class="fas fa-shield-alt"></i><span>Secure GPS-verified login & activity</span>
-            </div>
-            <div class="auth-feature"><i class="fas fa-bell"></i><span>Real-time approvals & notifications</span></div>
-            <div class="auth-feature"><i class="fas fa-mobile-alt"></i><span>Access from any device, anytime</span>
-            </div>
-          </div> -->
         </div>
       </div>
       <div class="auth-right">
         <div class="auth-card">
           <h2>Sign In</h2>
           <p class="sub">Enter your credentials to access your dashboard</p>
-          <div class="auth-tabs">
-            <div class="auth-tab active" onclick="setLoginRole('student',this)">Student</div>
-            <div class="auth-tab" onclick="setLoginRole('school',this)">School Sup.</div>
-            <div class="auth-tab" onclick="setLoginRole('industry',this)">Industry Sup.</div>
-            <div class="auth-tab" onclick="setLoginRole('admin',this)">Admin</div>
-          </div>
           <div class="form-group">
-            <label id="login-id-label">Registration Number</label>
+            <label>Registration Number / Staff ID / Admin ID</label>
             <div class="input-icon"><i class="fas fa-id-card"></i><input type="text" id="login-id"
-                placeholder="e.g. 2021/BSC/001"></div>
+                placeholder="Enter your ID"></div>
           </div>
           <div class="form-group">
             <label>Password</label>
@@ -241,15 +222,15 @@
           <div class="nav-item active" onclick="switchTab('student','dashboard',this)"><i class="fas fa-th-large"></i>
             Dashboard</div>
           <div class="nav-item" onclick="switchTab('student','logs',this)"><i class="fas fa-clipboard-list"></i> My Logs
-            <span class="badge">3</span></div>
+            <span class="badge">3</span>
+          </div>
           <div class="nav-item" onclick="switchTab('student','approved',this)"><i class="fas fa-check-circle"></i>
             Approved Tasks</div>
           <div class="nav-item" onclick="switchTab('student','reports',this)"><i class="fas fa-file-alt"></i> Reports
           </div>
-          <!-- <div class="nav-item" onclick="switchTab('student','attendance',this)"><i class="fas fa-calendar-check"></i> Attendance</div> -->
           <div class="sidebar-section">Account</div>
           <div class="nav-item" onclick="switchTab('student','settings',this)"><i class="fas fa-cog"></i> Settings</div>
-          <div class="nav-item logout-btn" onclick="showPage('page-login')"><i class="fas fa-sign-out-alt"></i> Logout
+          <div class="nav-item logout-btn" onclick="goToLogin()"><i class="fas fa-sign-out-alt"></i> Logout
           </div>
         </div>
       </nav>
@@ -383,12 +364,12 @@
                     </div>
                   </div>
                 </div>
-                <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:8px">
+                <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:8px;justify-content:center">
                   <button class="btn btn-primary" onclick="submitLog()"><i class="fas fa-paper-plane"></i> Submit Log
                     Entry</button>
-                  <button class="btn btn-outline" onclick="openModal('approval-modal')"><i
+                  <!-- <button class="btn btn-outline" onclick="openModal('approval-modal')"><i
                       class="fas fa-user-check"></i> Request Supervisor Approval</button>
-                  <button class="btn btn-outline"><i class="fas fa-save"></i> Save as Draft</button>
+                  <button class="btn btn-outline"><i class="fas fa-save"></i> Save as Draft</button> -->
                 </div>
               </div>
             </div>
@@ -458,7 +439,7 @@
             </div>
             <div class="section-card">
               <div class="section-head">
-                <h3>All Entries (24)</h3>
+                <h3>All Entries </h3>
                 <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
                   <div class="search-bar"><i class="fas fa-search"></i><input type="text" placeholder="Search logs...">
                   </div>
@@ -684,34 +665,7 @@
             </div>
           </div>
 
-          <!-- TAB: ATTENDANCE
-        <div id="student-tab-attendance" class="tab-content">
-          <div class="page-header"><h2>Attendance</h2><p>GPS-verified daily check-ins at your placement</p></div>
-          <div class="cards-grid" style="grid-template-columns:repeat(3,1fr)">
-            <div class="card"><div class="card-icon green"><i class="fas fa-map-marker-alt"></i></div><div class="card-val">38</div><div class="card-label">Days Present</div></div>
-            <div class="card"><div class="card-icon red"><i class="fas fa-times"></i></div><div class="card-val">2</div><div class="card-label">Absent Days</div></div>
-            <div class="card"><div class="card-icon amber"><i class="fas fa-percentage"></i></div><div class="card-val">95%</div><div class="card-label">Attendance Rate</div></div>
-          </div>
-          <div class="section-card">
-            <div class="section-head"><h3>March 2026 — Attendance Calendar</h3><div class="gps-badge"><i class="fas fa-satellite-dish"></i> GPS Verified Records</div></div>
-            <div class="section-body">
-              <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:8px;text-align:center">
-                <div style="font-size:.75rem;font-weight:700;color:var(--text3)">Mon</div><div style="font-size:.75rem;font-weight:700;color:var(--text3)">Tue</div><div style="font-size:.75rem;font-weight:700;color:var(--text3)">Wed</div><div style="font-size:.75rem;font-weight:700;color:var(--text3)">Thu</div><div style="font-size:.75rem;font-weight:700;color:var(--text3)">Fri</div><div style="font-size:.75rem;font-weight:700;color:var(--text3)">Sat</div><div style="font-size:.75rem;font-weight:700;color:var(--text3)">Sun</div>
-                <div style="padding:10px 5px;border-radius:8px;background:rgba(26,107,74,.12);color:var(--primary);font-size:.88rem;font-weight:600">1</div>
-                <div style="padding:10px 5px;border-radius:8px;background:var(--bg2);color:var(--text3);font-size:.88rem">2</div>
-                <div style="padding:10px 5px;border-radius:8px;background:rgba(26,107,74,.12);color:var(--primary);font-size:.88rem;font-weight:600">3</div>
-                <div style="padding:10px 5px;border-radius:8px;background:rgba(229,62,62,.12);color:var(--danger);font-size:.88rem;font-weight:600">4</div>
-                <div style="padding:10px 5px;border-radius:8px;background:rgba(26,107,74,.12);color:var(--primary);font-size:.88rem;font-weight:600">5</div>
-                <div style="padding:10px 5px;border-radius:8px;background:var(--bg2);color:var(--text3);font-size:.88rem">6</div><div style="padding:10px 5px;border-radius:8px;background:var(--bg2);color:var(--text3);font-size:.88rem">7</div>
-              </div>
-              <div style="display:flex;gap:16px;margin-top:16px;flex-wrap:wrap">
-                <div style="display:flex;align-items:center;gap:6px;font-size:.82rem"><div style="width:14px;height:14px;border-radius:4px;background:rgba(26,107,74,.2)"></div> Present</div>
-                <div style="display:flex;align-items:center;gap:6px;font-size:.82rem"><div style="width:14px;height:14px;border-radius:4px;background:rgba(229,62,62,.2)"></div> Absent</div>
-                <div style="display:flex;align-items:center;gap:6px;font-size:.82rem"><div style="width:14px;height:14px;border-radius:4px;background:var(--bg2)"></div> Weekend</div>
-              </div>
-            </div>
-          </div>
-        </div> -->
+
 
           <!-- TAB: SETTINGS -->
           <div id="student-tab-settings" class="tab-content">
@@ -889,10 +843,11 @@
           <div class="nav-item" onclick="switchTab('school','grading',this)"><i class="fas fa-star"></i> Grading <span
               class="badge">3</span></div>
           <div class="nav-item" onclick="switchTab('school','messages',this)"><i class="fas fa-comments"></i> Messages
-            <span class="badge">2</span></div>
+            <span class="badge">2</span>
+          </div>
           <div class="sidebar-section">Account</div>
           <div class="nav-item" onclick="switchTab('school','settings',this)"><i class="fas fa-cog"></i> Settings</div>
-          <div class="nav-item logout-btn" onclick="showPage('page-login')"><i class="fas fa-sign-out-alt"></i> Logout
+          <div class="nav-item logout-btn" onclick="goToLogin()"><i class="fas fa-sign-out-alt"></i> Logout
           </div>
         </div>
       </nav>
@@ -1643,10 +1598,33 @@
               </div>
             </div>
           </div>
-
-
-
         </div>
+      </div>
+    </div>
+
+    <!-- CHAT WIDGET - School Supervisor -->
+    <div class="chat-panel">
+      <div class="chat-box" id="school-chat-box">
+        <div class="chat-head">
+          <div class="avatar avatar-sm" style="background:rgba(255,255,255,.25);font-size:.75rem">ST</div>
+          <div class="chat-head-info">
+            <h4>Student</h4>
+            <p>Select a student to chat</p>
+          </div>
+          <i class="fas fa-times chat-close" onclick="toggleSchoolChat()"></i>
+        </div>
+        <div class="chat-messages" id="school-chat-messages">
+          <div class="msg in">Select a student and click Send Message to start chatting
+            <div class="msg-time">Now</div>
+          </div>
+        </div>
+        <div class="chat-input-row">
+          <input type="text" id="school-chat-input" placeholder="Type a message..." onkeypress="schoolChatEnter(event)">
+          <div class="chat-send" onclick="sendSchoolChat()"><i class="fas fa-paper-plane"></i></div>
+        </div>
+      </div>
+      <div class="chat-bubble-btn" onclick="toggleSchoolChat()" title="Chat with Student">
+        <i class="fas fa-comment-dots"></i>
       </div>
     </div>
   </div>
@@ -1681,7 +1659,7 @@
           <div class="sidebar-section">Account</div>
           <div class="nav-item" onclick="switchTab('industry','settings',this)"><i class="fas fa-cog"></i> Settings
           </div>
-          <div class="nav-item logout-btn" onclick="showPage('page-login')"><i class="fas fa-sign-out-alt"></i> Logout
+          <div class="nav-item logout-btn" onclick="goToLogin()"><i class="fas fa-sign-out-alt"></i> Logout
           </div>
         </div>
       </nav>
@@ -1988,7 +1966,7 @@
           </div>
           <div class="sidebar-section">Account</div>
           <div class="nav-item" onclick="switchTab('admin','settings',this)"><i class="fas fa-cog"></i> Settings</div>
-          <div class="nav-item logout-btn" onclick="showPage('page-login')"><i class="fas fa-sign-out-alt"></i> Logout
+          <div class="nav-item logout-btn" onclick="goToLogin()"><i class="fas fa-sign-out-alt"></i> Logout
           </div>
         </div>
       </nav>
@@ -2584,7 +2562,8 @@
           <p>2021/BSC/042 · BSc Computer Science · Year 3</p>
           <div class="profile-meta">
             <div class="profile-meta-item"><i class="fas fa-building" style="margin-right:4px"></i>Placement:
-              <span>Stanbic Bank Uganda</span></div>
+              <span>Stanbic Bank Uganda</span>
+            </div>
             <div class="profile-meta-item"><i class="fas fa-envelope"
                 style="margin-right:4px"></i><span>a.kibuuka@students.mak.ac.ug</span></div>
           </div>
@@ -2642,8 +2621,10 @@
         </table>
       </div>
       <div style="display:flex;gap:10px;margin-top:18px;flex-wrap:wrap">
-        <button class="btn btn-primary btn-sm"><i class="fas fa-comment"></i> Send Message</button>
-        <button class="btn btn-outline btn-sm"><i class="fas fa-file-download"></i> Download Report</button>
+        <button class="btn btn-primary btn-sm" id="send-message-btn"><i class="fas fa-comment"></i> Send
+          Message</button>
+        <button class="btn btn-outline btn-sm" id="download-report-btn"><i class="fas fa-file-download"></i> Download
+          Report</button>
         <button class="btn btn-outline btn-sm" onclick="closeModal('student-profile-modal')">Close</button>
       </div>
     </div>
@@ -2684,7 +2665,8 @@
         <div
           style="background:var(--bg2);border-radius:8px;padding:12px;display:flex;align-items:center;gap:10px;font-size:.88rem;color:var(--text2)">
           <i class="fas fa-image" style="font-size:1.2rem;color:var(--primary)"></i> schema_diagram.png &nbsp; <span
-            style="color:var(--text3)">· 1.2 MB</span></div>
+            style="color:var(--text3)">· 1.2 MB</span>
+        </div>
       </div>
       <div class="form-group"><label>Your Comment</label><textarea
           placeholder="Add feedback or comment for the student (optional)..."></textarea></div>
