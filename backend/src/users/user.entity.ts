@@ -34,6 +34,15 @@ export class User {
   @Column({ nullable: true })
   placementCompany: string;     // Company / Organisation name
 
+  @Column({ nullable: true, type: 'decimal', precision: 10, scale: 7 })
+  placementLatitude: number | null;
+
+  @Column({ nullable: true, type: 'decimal', precision: 10, scale: 7 })
+  placementLongitude: number | null;
+
+  @Column({ nullable: true, default: 200 })
+  geofenceRadiusMeters: number | null;
+
   @Column({ nullable: true })
   country: string;              // Uganda, Kenya, etc.
 
@@ -54,8 +63,8 @@ export class User {
   internshipEndDate: string;
 
   @Column({ type: 'int', nullable: true })
-schoolSupervisorId: number | null;
+  schoolSupervisorId: number | null;
 
-@Column({ type: 'int', nullable: true })
-industrySupervisorId: number | null;
+  @Column({ type: 'int', nullable: true })
+  industrySupervisorId: number | null;
 }

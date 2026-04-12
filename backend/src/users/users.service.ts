@@ -26,13 +26,17 @@ export class UsersService {
     return this.usersRepository.findOne({ where: { email } });
   }
 
+  async findById(id: number): Promise<User | null> {
+    return this.usersRepository.findOne({ where: { id } });
+  }
+
   async createUser(data: Partial<User>): Promise<User> {
     const user = this.usersRepository.create(data);
     return this.usersRepository.save(user);
   }
 
-  async findById(id: number): Promise<User | null> {
-    return this.usersRepository.findOne({ where: { id } });
+  async saveUser(user: User): Promise<User> {
+    return this.usersRepository.save(user);
   }
 
   async findAllStudents(): Promise<User[]> {
@@ -99,4 +103,3 @@ export class UsersService {
     return this.usersRepository.save(student);
   }
 }
-
