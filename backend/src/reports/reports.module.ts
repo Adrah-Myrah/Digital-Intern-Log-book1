@@ -1,12 +1,13 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { MulterModule } from '@nestjs/platform-express';
+import { JwtModule } from '@nestjs/jwt';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
 import { Report } from './report.entity';
 import { ReportsService } from './reports.service';
 import { ReportsController } from './reports.controller';
-import { JwtModule } from '@nestjs/jwt';
 
 @Module({
   imports: [
@@ -26,9 +27,16 @@ import { JwtModule } from '@nestjs/jwt';
           cb(new Error('Only PDF files are allowed'), false);
         }
       },
-      limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
+      limits: { fileSize: 10 * 1024 * 1024 },
     }),
-    JwtModule,
+    JwtModule.registerAsync({
+      imports: [ConfigModule],
+      useFactory: (config: ConfigService) => ({
+        secret: config.get<string>('JWT_SECRET'),
+        signOptions: { expiresIn: '8h' },
+      }),
+      inject: [ConfigService],
+    }),
   ],
   providers: [ReportsService],
   controllers: [ReportsController],

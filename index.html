@@ -281,28 +281,27 @@
           <!-- TAB: DASHBOARD -->
           <div id="student-tab-dashboard" class="tab-content active">
             <div class="welcome-banner">
-              <h3>Good morning, Amina! 👋</h3>
-              <p>You have <strong>3 pending tasks</strong> awaiting industry supervisor approval. Keep up the great
-                work!</p>
-              <div class="wb-badge"><i class="fas fa-map-marker-alt"></i> Placed at: Stanbic Bank Uganda Ltd · Kampala
+              <h3>Good morning! 👋</h3>
+              <p>Loading your dashboard...</p>
+              <div class="wb-badge"><i class="fas fa-map-marker-alt"></i> Loading placement...
               </div>
             </div>
             <div class="cards-grid">
               <div class="card">
                 <div class="card-icon green"><i class="fas fa-clipboard-list"></i></div>
-                <div class="card-val">24</div>
+                <div class="card-val">-</div>
                 <div class="card-label">Total Log Entries</div>
                 <div class="card-trend"><i class="fas fa-arrow-up"></i> 3 this week</div>
               </div>
               <div class="card">
                 <div class="card-icon amber"><i class="fas fa-calendar-alt"></i></div>
-                <div class="card-val">18</div>
+                <div class="card-val">-</div>
                 <div class="card-label">Days Left</div>
                 <div class="card-trend down"><i class="fas fa-clock"></i> Internship ends Apr 12</div>
               </div>
               <div class="card">
                 <div class="card-icon blue"><i class="fas fa-chart-pie"></i></div>
-                <div class="card-val">72%</div>
+                <div class="card-val">-</div>
                 <div class="card-label">Progress</div>
                 <div style="margin-top:8px">
                   <div class="prog-bar">
@@ -312,9 +311,9 @@
               </div>
               <div class="card">
                 <div class="card-icon green"><i class="fas fa-check-double"></i></div>
-                <div class="card-val">19</div>
+                <div class="card-val">-</div>
                 <div class="card-label">Approved Tasks</div>
-                <div class="card-trend"><i class="fas fa-thumbs-up"></i> 3 pending</div>
+                <div class="card-trend"><i class="fas fa-thumbs-up"></i> - pending</div>
               </div>
             </div>
 
@@ -393,7 +392,7 @@
                     </tr>
                   </thead>
                   <tbody>
-                    <tr>
+                    <!-- <tr>
                       <td>Mar 03, 2026</td>
                       <td>Database schema design for client module</td>
                       <td><span class="tag onsite">Onsite</span></td>
@@ -424,7 +423,7 @@
                       <td>8h</td>
                       <td><span class="tag approved">Approved</span></td>
                       <td><button class="btn btn-outline btn-sm">View</button></td>
-                    </tr>
+                    </tr> -->
                   </tbody>
                 </table>
               </div>
@@ -467,7 +466,7 @@
                     </tr>
                   </thead>
                   <tbody id="logs-tbody">
-                    <tr>
+                    <!-- <tr>
                       <td>24</td>
                       <td>Mar 03</td>
                       <td>Database schema design</td>
@@ -510,7 +509,7 @@
                       <td><span class="tag approved">Approved</span></td>
                       <td><button class="btn btn-outline btn-sm" onclick="openModal('log-detail-modal')">Detail</button>
                       </td>
-                    </tr>
+                    </tr> -->
                   </tbody>
                 </table>
               </div>
@@ -526,17 +525,17 @@
             <div class="cards-grid" style="grid-template-columns:repeat(3,1fr)">
               <div class="card">
                 <div class="card-icon green"><i class="fas fa-check-circle"></i></div>
-                <div class="card-val">19</div>
+                <div class="card-val">0</div>
                 <div class="card-label">Approved Tasks</div>
               </div>
               <div class="card">
                 <div class="card-icon amber"><i class="fas fa-clock"></i></div>
-                <div class="card-val">3</div>
+                <div class="card-val">0</div>
                 <div class="card-label">Pending Approval</div>
               </div>
               <div class="card">
                 <div class="card-icon red"><i class="fas fa-times-circle"></i></div>
-                <div class="card-val">2</div>
+                <div class="card-val">0</div>
                 <div class="card-label">Rejected / Revised</div>
               </div>
             </div>
@@ -556,7 +555,7 @@
                     </tr>
                   </thead>
                   <tbody>
-                    <tr>
+                    <!-- <tr>
                       <td>Mar 03</td>
                       <td>Database schema design</td>
                       <td>6h</td>
@@ -576,7 +575,7 @@
                       <td>5h</td>
                       <td>Mr. Ouma (Industry Sup.)</td>
                       <td><em style="color:var(--text3)">Excellent communication skills shown</em></td>
-                    </tr>
+                    </tr> -->
                   </tbody>
                 </table>
               </div>
@@ -756,7 +755,7 @@
                     style="background:rgba(26,107,74,.08);border:1px solid rgba(26,107,74,.2);border-radius:10px;padding:14px;margin-bottom:16px">
                     <div style="font-weight:700;margin-bottom:4px;color:var(--primary)"><i
                         class="fas fa-map-marker-alt"></i> Current Placement Location</div>
-                    <div class="sub-text">Stanbic Bank — Plot 45 Kampala Rd, Kampala, Uganda</div>
+                    <div class="sub-text">Loading location...</div>
                     <div class="sub-text" style="margin-top:4px">Radius: 200m · Status: <span
                         style="color:var(--success);font-weight:600">Active</span></div>
                   </div>
@@ -788,19 +787,17 @@
         <div class="chat-head">
           <div class="avatar avatar-sm" style="background:rgba(255,255,255,.25);font-size:.75rem">SS</div>
           <div class="chat-head-info">
-            <h4>Dr. Ssekandi</h4>
+            <h4>Loading supervisor...</h4>
             <p>School Supervisor · Online</p>
           </div>
           <i class="fas fa-times chat-close" onclick="toggleChat()"></i>
         </div>
         <div class="chat-messages">
-          <div class="msg in">Hello Amina! How is the internship going? <div class="msg-time">10:22 AM</div>
+          <div class="msg in">Loading message... <div class="msg-time">10:22 AM</div>
           </div>
-          <div class="msg out">Good morning Dr. Ssekandi! It's going very well. I've been working on the database module
-            this week. <div class="msg-time">10:25 AM</div>
+          <div class="msg out">Loading message... <div class="msg-time">10:25 AM</div>
           </div>
-          <div class="msg in">Excellent! Remember to log your activities daily and get them approved. Your progress
-            report is due next Friday. <div class="msg-time">10:27 AM</div>
+          <div class="msg in">Loading message... <div class="msg-time">10:27 AM</div>
           </div>
         </div>
         <div class="chat-input-row">
@@ -825,8 +822,8 @@
           <div class="sidebar-logo-text">InternLog <span>School Supervisor</span></div>
         </div>
         <div class="sidebar-user">
-          <div class="sidebar-user-avatar">DS</div>
-          <div class="sidebar-user-name">Dr. Ssekandi</div>
+          <div class="sidebar-user-avatar">LS</div>
+          <div class="sidebar-user-name">Loading supervisor...</div>
           <div class="sidebar-user-role">School Supervisor</div>
         </div>
         <div class="sidebar-nav">
@@ -834,16 +831,15 @@
           <div class="nav-item active" onclick="switchTab('school','dashboard',this)"><i class="fas fa-th-large"></i>
             Dashboard</div>
           <div class="nav-item" onclick="switchTab('school','students',this)"><i class="fas fa-user-graduate"></i> My
-            Students <span class="badge">7</span></div>
+            Students <span class="badge">0</span></div>
           <div class="nav-item" onclick="switchTab('school','reports',this)"><i class="fas fa-chart-bar"></i> Reports
           </div>
           <div class="nav-item" onclick="switchTab('school','supervision',this)">
-            <i class="fas fa-user-check"></i> Supervision <span class="badge">5</span>
+            <i class="fas fa-user-check"></i> Supervision 
           </div>
-          <div class="nav-item" onclick="switchTab('school','grading',this)"><i class="fas fa-star"></i> Grading <span
-              class="badge">3</span></div>
+          <div class="nav-item" onclick="switchTab('school','grading',this)"><i class="fas fa-star"></i> Grading </div>
           <div class="nav-item" onclick="switchTab('school','messages',this)"><i class="fas fa-comments"></i> Messages
-            <span class="badge">2</span>
+            <span class="badge">-</span>
           </div>
           <div class="sidebar-section">Account</div>
           <div class="nav-item" onclick="switchTab('school','settings',this)"><i class="fas fa-cog"></i> Settings</div>
@@ -870,9 +866,9 @@
                   <div class="notif-icon" style="background:rgba(245,166,35,.12);color:var(--warning)"><i
                       class="fas fa-file-alt"></i></div>
                   <div class="notif-text">
-                    <h5>Progress Report Due</h5>
-                    <p>Amina Kibuuka — report pending</p>
-                    <div class="notif-time">Today</div>
+                    <h5>Loading notification...</h5>
+                    <p>Loading notification...</p>
+                    <div class="notif-time">Loading time...</div>
                   </div>
                 </div>
                 <div class="notif-item">
@@ -880,8 +876,8 @@
                       class="fas fa-comment"></i></div>
                   <div class="notif-text">
                     <h5>Student Message</h5>
-                    <p>Jonah Mwangi sent a message</p>
-                    <div class="notif-time">1 hr ago</div>
+                    <p>Loading message...</p>
+                    <div class="notif-time">Loading time...</div>
                   </div>
                 </div>
               </div>
@@ -893,31 +889,30 @@
           <!-- DASHBOARD TAB -->
           <div id="school-tab-dashboard" class="tab-content active">
             <div class="welcome-banner">
-              <h3>Welcome, Dr. Ssekandi! 🎓</h3>
-              <p>You are supervising <strong>7 active student interns</strong>. Two students have progress reports due
-                this week.</p>
-              <div class="wb-badge"><i class="fas fa-graduation-cap"></i> School of Computing & IT · Makerere University
+              <h3>Welcome ! 🎓</h3>
+              <p>Loading dashboard...</p>
+              <div class="wb-badge"><i class="fas fa-graduation-cap"></i> Loading University...
               </div>
             </div>
             <div class="cards-grid">
               <div class="card">
                 <div class="card-icon green"><i class="fas fa-user-graduate"></i></div>
-                <div class="card-val">7</div>
+                <div class="card-val">-</div>
                 <div class="card-label">Assigned Students</div>
               </div>
               <div class="card">
                 <div class="card-icon blue"><i class="fas fa-clipboard-check"></i></div>
-                <div class="card-val">142</div>
+                <div class="card-val">-</div>
                 <div class="card-label">Total Logs Reviewed</div>
               </div>
               <div class="card">
                 <div class="card-icon amber"><i class="fas fa-exclamation-circle"></i></div>
-                <div class="card-val">2</div>
+                <div class="card-val">-</div>
                 <div class="card-label">Reports Due</div>
               </div>
               <div class="card">
                 <div class="card-icon green"><i class="fas fa-star"></i></div>
-                <div class="card-val">4.6</div>
+                <div class="card-val">-%</div>
                 <div class="card-label">Avg. Student Progress</div>
               </div>
             </div>
@@ -932,50 +927,50 @@
                     <div class="student-card-top">
                       <div class="avatar avatar-lg">AK</div>
                       <div class="student-card-info">
-                        <h4>Amina Kibuuka</h4>
-                        <p>2021/BSC/042</p>
+                        <h4>Loading student...</h4>
+                        <p>Loading registration number...</p>
                       </div>
                     </div>
-                    <div class="student-card-meta"><span><i class="fas fa-building" style="margin-right:4px"></i>Stanbic
-                        Bank Uganda</span><span><span class="approved-dot"></span>Latest: Approved</span></div>
+                    <div class="student-card-meta"><span><i class="fas fa-building" style="margin-right:4px"></i>Loading placement...
+                    </span><span><span class="approved-dot"></span>Latest: Loading status...</span></div>
                     <div style="font-size:.8rem;color:var(--text2);margin-bottom:6px">Progress</div>
                     <div class="prog-bar">
                       <div class="prog-fill" style="width:72%"></div>
                     </div>
-                    <div style="font-size:.78rem;color:var(--text3);margin-top:4px;text-align:right">72%</div>
+                    <div style="font-size:.78rem;color:var(--text3);margin-top:4px;text-align:right">-</div>
                   </div>
                   <div class="student-card" onclick="openModal('student-profile-modal')">
                     <div class="student-card-top">
-                      <div class="avatar avatar-lg" style="background:linear-gradient(135deg,#2176ae,#3182ce)">JM</div>
+                      <div class="avatar avatar-lg" style="background:linear-gradient(135deg,#2176ae,#3182ce)">LS</div>
                       <div class="student-card-info">
-                        <h4>Jonah Mwangi</h4>
-                        <p>2021/BSC/019</p>
+                        <h4>Loading student...</h4>
+                        <p>Loading registration number...</p>
                       </div>
                     </div>
-                    <div class="student-card-meta"><span><i class="fas fa-building" style="margin-right:4px"></i>MTN
-                        Uganda HQ</span><span><span class="status-dot pending" style="margin-right:4px"></span>Latest:
-                        Pending</span></div>
+                    <div class="student-card-meta"><span><i class="fas fa-building" style="margin-right:4px"></i>Loading placement...
+                    </span><span><span class="status-dot pending" style="margin-right:4px"></span>Latest:
+                        Loading status...</span></div>
                     <div style="font-size:.8rem;color:var(--text2);margin-bottom:6px">Progress</div>
                     <div class="prog-bar">
                       <div class="prog-fill amber" style="width:58%"></div>
                     </div>
-                    <div style="font-size:.78rem;color:var(--text3);margin-top:4px;text-align:right">58%</div>
+                    <div style="font-size:.78rem;color:var(--text3);margin-top:4px;text-align:right">-</div>
                   </div>
                   <div class="student-card" onclick="openModal('student-profile-modal')">
                     <div class="student-card-top">
                       <div class="avatar avatar-lg" style="background:linear-gradient(135deg,#d97706,#f59e0b)">PN</div>
                       <div class="student-card-info">
-                        <h4>Patience Nantale</h4>
-                        <p>2021/BSC/031</p>
+                        <h4>Loading student...</h4>
+                        <p>Loading registration number...</p>
                       </div>
                     </div>
-                    <div class="student-card-meta"><span><i class="fas fa-building" style="margin-right:4px"></i>Airtel
-                        Uganda</span><span><span class="approved-dot"></span>Latest: Approved</span></div>
+                    <div class="student-card-meta"><span><i class="fas fa-building" style="margin-right:4px"></i>Loading placement...
+                    </span><span><span class="approved-dot"></span>Latest: Loading status...</span></div>
                     <div style="font-size:.8rem;color:var(--text2);margin-bottom:6px">Progress</div>
                     <div class="prog-bar">
                       <div class="prog-fill" style="width:85%"></div>
                     </div>
-                    <div style="font-size:.78rem;color:var(--text3);margin-top:4px;text-align:right">85%</div>
+                    <div style="font-size:.78rem;color:var(--text3);margin-top:4px;text-align:right">-</div>
                   </div>
                 </div>
               </div>
@@ -986,11 +981,11 @@
           <div id="school-tab-students" class="tab-content">
             <div class="page-header">
               <h2>My Students</h2>
-              <p>All students assigned to your supervision</p>
+              <p>All students assigned to supervision</p>
             </div>
             <div class="section-card">
               <div class="section-head">
-                <h3>Student List (7)</h3>
+                <h3>Student List (-)</h3>
                 <div class="search-bar"><i class="fas fa-search"></i><input type="text"
                     placeholder="Search students..."></div>
               </div>
@@ -1008,46 +1003,45 @@
                     </tr>
                   </thead>
                   <tbody>
-                    <tr>
+                    <!-- <tr>
                       <td>
                         <div style="display:flex;align-items:center;gap:10px">
-                          <div class="avatar">AK</div>Amina Kibuuka
+                          <div class="avatar">LS</div>Loading student...
                         </div>
                       </td>
-                      <td>2021/BSC/042</td>
-                      <td>Stanbic Bank Uganda</td>
+                      <td>Loading registration number...</td>
+                      <td>Loading placement...</td>
                       <td>
                         <div style="min-width:90px">
                           <div class="prog-bar">
                             <div class="prog-fill" style="width:72%"></div>
                           </div>
-                          <div style="font-size:.75rem;color:var(--text3);margin-top:2px">72%</div>
+                          <div style="font-size:.75rem;color:var(--text3);margin-top:2px">-</div>
                         </div>
                       </td>
-                      <td>Mar 03, 2026</td>
-                      <td><span class="tag approved">Active</span></td>
+                      <td>Loading last log...</td>
+                      <td><span class="tag approved">Loading status...</span></td>
                       <td><button class="btn btn-outline btn-sm" onclick="openModal('student-profile-modal')">View
                           Profile</button></td>
                     </tr>
                     <tr>
                       <td>
                         <div style="display:flex;align-items:center;gap:10px">
-                          <div class="avatar" style="background:linear-gradient(135deg,#2176ae,#3182ce)">JM</div>Jonah
-                          Mwangi
+                          <div class="avatar" style="background:linear-gradient(135deg,#2176ae,#3182ce)">LS</div>Loading student...              
                         </div>
                       </td>
-                      <td>2021/BSC/019</td>
-                      <td>MTN Uganda HQ</td>
+                      <td>Loading registration number...</td>
+                      <td>Loading placement...</td>
                       <td>
                         <div style="min-width:90px">
                           <div class="prog-bar">
                             <div class="prog-fill amber" style="width:58%"></div>
                           </div>
-                          <div style="font-size:.75rem;color:var(--text3);margin-top:2px">58%</div>
+                          <div style="font-size:.75rem;color:var(--text3);margin-top:2px">-</div>
                         </div>
                       </td>
-                      <td>Mar 02, 2026</td>
-                      <td><span class="tag pending">Behind</span></td>
+                      <td>Loading last log...</td>
+                      <td><span class="tag pending">Loading status...</span></td>
                       <td><button class="btn btn-outline btn-sm" onclick="openModal('student-profile-modal')">View
                           Profile</button></td>
                     </tr>
@@ -1055,24 +1049,24 @@
                       <td>
                         <div style="display:flex;align-items:center;gap:10px">
                           <div class="avatar" style="background:linear-gradient(135deg,#d97706,#f59e0b)">PN</div>
-                          Patience Nantale
+                          Loading student...
                         </div>
                       </td>
-                      <td>2021/BSC/031</td>
-                      <td>Airtel Uganda</td>
+                      <td>Loading registration number...</td>
+                      <td>Loading placement...</td>
                       <td>
                         <div style="min-width:90px">
                           <div class="prog-bar">
                             <div class="prog-fill" style="width:85%"></div>
                           </div>
-                          <div style="font-size:.75rem;color:var(--text3);margin-top:2px">85%</div>
+                          <div style="font-size:.75rem;color:var(--text3);margin-top:2px">-</div>
                         </div>
                       </td>
-                      <td>Mar 04, 2026</td>
-                      <td><span class="tag approved">Active</span></td>
+                      <td>Loading last log...</td>
+                      <td><span class="tag approved">Loading status...</span></td>
                       <td><button class="btn btn-outline btn-sm" onclick="openModal('student-profile-modal')">View
                           Profile</button></td>
-                    </tr>
+                    </tr> -->
                   </tbody>
                 </table>
               </div>
@@ -1103,30 +1097,30 @@
                     </tr>
                   </thead>
                   <tbody>
-                    <tr>
-                      <td>Amina Kibuuka</td>
-                      <td>2021/BSC/042</td>
-                      <td>Week 7</td>
-                      <td>Mar 01</td>
-                      <td><span class="tag approved">A</span></td>
+                    <!-- <tr>
+                      <td>Loading student...</td>
+                      <td>Loading registration number...</td>
+                      <td>Loading week...</td>
+                      <td>Loading submitted...</td>
+                      <td><span class="tag approved">Loading grade...</span></td>
                       <td><button class="btn btn-outline btn-sm">View</button></td>
                     </tr>
                     <tr>
-                      <td>Patience Nantale</td>
-                      <td>2021/BSC/031</td>
-                      <td>Week 7</td>
-                      <td>Mar 02</td>
-                      <td><span class="tag approved">B+</span></td>
+                      <td>Loading student...</td>
+                      <td>Loading registration number...</td>
+                      <td>Loading week...</td>
+                      <td>Loading submitted...</td>
+                      <td><span class="tag approved">Loading grade...</span></td>
                       <td><button class="btn btn-outline btn-sm">View</button></td>
                     </tr>
                     <tr>
-                      <td>Jonah Mwangi</td>
-                      <td>2021/BSC/019</td>
-                      <td>Week 7</td>
-                      <td><span style="color:var(--warning)">Pending</span></td>
+                      <td>Loading student...</td>
+                      <td>Loading registration number...</td>
+                      <td>Loading week...</td>
+                      <td><span style="color:var(--warning)">Loading status...</span></td>
                       <td>—</td>
                       <td><button class="btn btn-outline btn-sm" style="opacity:.5" disabled>View</button></td>
-                    </tr>
+                    </tr> -->
                   </tbody>
                 </table>
               </div>
@@ -1147,11 +1141,6 @@
                   <select id="supervision-student-select"
                     style="padding:9px 14px;border:1.5px solid var(--border);border-radius:9px;font-size:.88rem;background:var(--surface2);color:var(--text);outline:none">
                     <option value="">Select Student...</option>
-                    <option value="AK" data-country="Uganda">Amina Kibuuka (2021/BSC/042) - Uganda</option>
-                    <option value="JM" data-country="Uganda">Jonah Mwangi (2021/BSC/019) - Uganda</option>
-                    <option value="PN" data-country="Uganda">Patience Nantale (2021/BSC/031) - Uganda</option>
-                    <option value="INTL1" data-country="Kenya">John Doe (2021/BSC/050) - Kenya</option>
-                    <option value="INTL2" data-country="Nigeria">Jane Smith (2021/BSC/051) - Nigeria</option>
                   </select>
                   <button class="btn btn-primary btn-sm" onclick="loadSupervisionForm()">
                     <i class="fas fa-search"></i> Load Form
@@ -1164,12 +1153,12 @@
                   style="display:flex;align-items:center;gap:16px;margin-bottom:24px;padding-bottom:16px;border-bottom:1px solid var(--border)">
                   <div class="avatar avatar-lg">AK</div>
                   <div>
-                    <h4 style="margin:0 0 4px 0">Amina Kibuuka</h4>
-                    <p style="margin:0;color:var(--text2);font-size:.88rem">2021/BSC/042 · BSc Computer Science</p>
-                    <p style="margin:4px 0 0 0;color:var(--text2);font-size:.88rem">Placement: Stanbic Bank Uganda Ltd
+                    <h4 style="margin:0 0 4px 0">Loading student...</h4>
+                    <p style="margin:0;color:var(--text2);font-size:.88rem">Loading registration number...</p>
+                    <p style="margin:4px 0 0 0;color:var(--text2);font-size:.88rem">Placement: Loading placement...
                     </p>
                     <p style="margin:4px 0 0 0;color:var(--text2);font-size:.88rem">Country: <span
-                        id="student-country">Uganda</span></p>
+                        id="student-country">Loading country...</span></p>
                   </div>
                 </div>
 
@@ -1358,9 +1347,9 @@
                   style="display:flex;align-items:center;gap:16px;margin-bottom:24px;padding-bottom:16px;border-bottom:1px solid var(--border)">
                   <div class="avatar avatar-lg">AK</div>
                   <div>
-                    <h4 style="margin:0 0 4px 0">Amina Kibuuka</h4>
-                    <p style="margin:0;color:var(--text2);font-size:.88rem">2021/BSC/042 · BSc Computer Science</p>
-                    <p style="margin:4px 0 0 0;color:var(--text2);font-size:.88rem">Placement: Stanbic Bank Uganda Ltd
+                    <h4 style="margin:0 0 4px 0">Loading student...</h4>
+                    <p style="margin:0;color:var(--text2);font-size:.88rem">Loading registration number...</p>
+                    <p style="margin:4px 0 0 0;color:var(--text2);font-size:.88rem">Placement: Loading placement...
                     </p>
                   </div>
                 </div>
@@ -1696,30 +1685,31 @@
           <!-- DASHBOARD TAB -->
           <div id="industry-tab-dashboard" class="tab-content active">
             <div class="welcome-banner">
-              <h3>Welcome, Mr. Ouma! 🏢</h3>
+              <h3>Welcome, Loading supervisor! 🏢</h3>
               <p>You have <strong>5 tasks pending your approval</strong> from student interns at Stanbic Bank Uganda.
               </p>
-              <div class="wb-badge"><i class="fas fa-building"></i> Stanbic Bank Uganda Ltd · IT Department</div>
+              <div class="wb-badge"><i class="fas fa-building"></i> Loading placement... · Loading department...
+              </div>
             </div>
             <div class="cards-grid">
               <div class="card">
                 <div class="card-icon amber"><i class="fas fa-hourglass-half"></i></div>
-                <div class="card-val">5</div>
+                <div class="card-val">-</div>
                 <div class="card-label">Pending Approvals</div>
               </div>
               <div class="card">
                 <div class="card-icon green"><i class="fas fa-check-double"></i></div>
-                <div class="card-val">89</div>
+                <div class="card-val">-</div>
                 <div class="card-label">Total Approved</div>
               </div>
               <div class="card">
                 <div class="card-icon blue"><i class="fas fa-users"></i></div>
-                <div class="card-val">3</div>
+                <div class="card-val">-</div>
                 <div class="card-label">Active Interns</div>
               </div>
               <div class="card">
                 <div class="card-icon red"><i class="fas fa-times-circle"></i></div>
-                <div class="card-val">4</div>
+                <div class="card-val">-</div>
                 <div class="card-label">Returned for Revision</div>
               </div>
             </div>
@@ -1732,26 +1722,26 @@
               <div class="section-body">
                 <div class="request-list">
                   <div class="request-card" onclick="openModal('approval-detail-modal')">
-                    <div class="avatar">AK</div>
+                    <div class="avatar">LS</div>
                     <div class="request-card-body">
-                      <h4>Database schema design for client module</h4>
-                      <p>Amina Kibuuka · 2021/BSC/042</p>
+                      <h4>Loading task...</h4>
+                      <p>Loading student... · Loading registration number...</p>
                       <div class="request-card-meta"><span class="tag onsite">Onsite</span> &nbsp; 6 hours &nbsp; ·
-                        &nbsp; Mar 03, 2026</div>
+                        &nbsp; Loading last log...</div>
                     </div>
                     <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px"><span
-                        class="tag pending">Pending</span><button class="btn btn-primary btn-sm">Review</button></div>
+                        class="tag pending">Loading status...</span><button class="btn btn-primary btn-sm">Review</button></div>
                   </div>
                   <div class="request-card" onclick="openModal('approval-detail-modal')">
-                    <div class="avatar">AK</div>
+                    <div class="avatar">LS</div>
                     <div class="request-card-body">
-                      <h4>API integration testing & documentation</h4>
-                      <p>Amina Kibuuka · 2021/BSC/042</p>
+                      <h4>Loading task...</h4>
+                      <p>Loading student... · Loading registration number...</p>
                       <div class="request-card-meta"><span class="tag onsite">Onsite</span> &nbsp; 7 hours &nbsp; ·
-                        &nbsp; Mar 02, 2026</div>
+                        &nbsp; Loading last log...</div>
                     </div>
                     <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px"><span
-                        class="tag pending">Pending</span><button class="btn btn-primary btn-sm">Review</button></div>
+                        class="tag pending">Loading status...</span><button class="btn btn-primary btn-sm">Review</button></div>
                   </div>
                 </div>
               </div>
@@ -1766,37 +1756,37 @@
             </div>
             <div class="request-list">
               <div class="request-card" onclick="openModal('approval-detail-modal')">
-                <div class="avatar">AK</div>
+                <div class="avatar">LS</div>
                 <div class="request-card-body">
-                  <h4>Database schema design for client module</h4>
-                  <p>Amina Kibuuka · Stanbic Bank Uganda</p>
+                  <h4>Loading task...</h4>
+                  <p>Loading student... · Loading registration number...</p>
                   <div class="request-card-meta"><span class="tag onsite">Onsite</span> &nbsp; 6 hours &nbsp; · &nbsp;
-                    Mar 03, 2026</div>
+                    Loading last log...</div>
                 </div>
                 <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px"><span
-                    class="tag pending">Pending</span><button class="btn btn-primary btn-sm">Review</button></div>
+                    class="tag pending">Loading status...</span><button class="btn btn-primary btn-sm">Review</button></div>
               </div>
               <div class="request-card" onclick="openModal('approval-detail-modal')">
                 <div class="avatar">AK</div>
                 <div class="request-card-body">
-                  <h4>API integration testing & documentation</h4>
-                  <p>Amina Kibuuka · Stanbic Bank Uganda</p>
+                  <h4>Loading task...</h4>
+                  <p>Loading student... · Loading registration number...</p>
                   <div class="request-card-meta"><span class="tag onsite">Onsite</span> &nbsp; 7 hours &nbsp; · &nbsp;
-                    Mar 02, 2026</div>
+                    Loading last log...</div>
                 </div>
                 <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px"><span
-                    class="tag pending">Pending</span><button class="btn btn-primary btn-sm">Review</button></div>
+                    class="tag pending">Loading status...</span><button class="btn btn-primary btn-sm">Review</button></div>
               </div>
               <div class="request-card" onclick="openModal('approval-detail-modal')">
-                <div class="avatar" style="background:linear-gradient(135deg,#d97706,#f59e0b)">BN</div>
+                <div class="avatar" style="background:linear-gradient(135deg,#d97706,#f59e0b)">LS</div>
                 <div class="request-card-body">
-                  <h4>Network configuration & firewall setup</h4>
-                  <p>Brian Nakato · Stanbic Bank Uganda</p>
+                  <h4>Loading task...</h4>
+                  <p>Loading student... · Loading registration number...</p>
                   <div class="request-card-meta"><span class="tag onsite">Onsite</span> &nbsp; 8 hours &nbsp; · &nbsp;
-                    Mar 01, 2026</div>
+                    Loading last log...</div>
                 </div>
                 <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px"><span
-                    class="tag pending">Pending</span><button class="btn btn-primary btn-sm">Review</button></div>
+                    class="tag pending">Loading status...</span><button class="btn btn-primary btn-sm">Review</button></div>
               </div>
             </div>
           </div>
@@ -1823,27 +1813,27 @@
                     </tr>
                   </thead>
                   <tbody>
+                    <!-- <tr>
+                      <td>Loading last log...</td>
+                      <td>Loading student...</td>
+                      <td>Loading task...</td>
+                      <td><span class="tag approved">Loading status...</span></td>
+                      <td>Loading comment...</td>
+                    </tr>
                     <tr>
-                      <td>Mar 01</td>
+                      <td>Loading last log...</td>
+                      <td>Loading student...</td>
+                      <td>Loading task...</td>
+                      <td><span class="tag approved">Loading status...</span></td>
+                      <td>Loading comment...</td>
+                    </tr>
+                    <tr>
+                      <td>Loading last log...</td>
                       <td>Amina Kibuuka</td>
-                      <td>Sprint planning session</td>
-                      <td><span class="tag approved">Approved</span></td>
-                      <td>Good participation noted</td>
-                    </tr>
-                    <tr>
-                      <td>Feb 28</td>
-                      <td>Brian Nakato</td>
-                      <td>Server maintenance</td>
-                      <td><span class="tag approved">Approved</span></td>
-                      <td>Thorough and well-documented</td>
-                    </tr>
-                    <tr>
-                      <td>Feb 27</td>
-                      <td>Amina Kibuuka</td>
-                      <td>UI wireframes</td>
-                      <td><span class="tag rejected">Returned</span></td>
-                      <td>Needs more detail on user flows</td>
-                    </tr>
+                      <td>Loading task...</td>
+                      <td><span class="tag rejected">Loading status...</span></td>
+                      <td>Loading comment...</td>
+                    </tr> -->
                   </tbody>
                 </table>
               </div>
@@ -1861,28 +1851,28 @@
                 <div class="student-card-top">
                   <div class="avatar avatar-lg">AK</div>
                   <div class="student-card-info">
-                    <h4>Amina Kibuuka</h4>
-                    <p>2021/BSC/042 · BSc CS</p>
+                    <h4>Loading student...</h4>
+                    <p>Loading registration number... · Loading course...</p>
                   </div>
                 </div>
-                <div class="student-card-meta"><span>Makerere University</span><span><span
-                      class="approved-dot"></span>Active</span></div>
+                <div class="student-card-meta"><span>Loading placement...</span><span><span
+                        class="approved-dot"></span>Loading status...</span></div>
                 <div style="font-size:.8rem;color:var(--text2);margin-bottom:6px">Overall Progress</div>
                 <div class="prog-bar">
                   <div class="prog-fill" style="width:72%"></div>
                 </div>
-                <div style="font-size:.78rem;color:var(--text3);margin-top:4px;text-align:right">72%</div>
+                <div style="font-size:.78rem;color:var(--text3);margin-top:4px;text-align:right">-</div>
               </div>
               <div class="student-card">
                 <div class="student-card-top">
                   <div class="avatar avatar-lg" style="background:linear-gradient(135deg,#d97706,#f59e0b)">BN</div>
                   <div class="student-card-info">
-                    <h4>Brian Nakato</h4>
-                    <p>2021/BSC/055 · BSc IT</p>
+                    <h4>Loading student...</h4>
+                    <p>Loading registration number... · Loading course...</p>
                   </div>
                 </div>
-                <div class="student-card-meta"><span>Makerere University</span><span><span
-                      class="approved-dot"></span>Active</span></div>
+                <div class="student-card-meta"><span>Loading placement...</span><span><span
+                      class="approved-dot"></span>Loading status...</span></div>
                 <div style="font-size:.8rem;color:var(--text2);margin-bottom:6px">Overall Progress</div>
                 <div class="prog-bar">
                   <div class="prog-fill" style="width:61%"></div>
@@ -1947,8 +1937,8 @@
         </div>
         <div class="sidebar-user">
           <div class="sidebar-user-avatar">AD</div>
-          <div class="sidebar-user-name">Admin</div>
-          <div class="sidebar-user-role">System Administrator</div>
+          <div class="sidebar-user-name">Loading admin...</div>
+          <div class="sidebar-user-role">Loading system administrator...</div>
         </div>
         <div class="sidebar-nav">
           <div class="sidebar-section">Main Menu</div>
@@ -1990,8 +1980,8 @@
                       class="fas fa-user-plus"></i></div>
                   <div class="notif-text">
                     <h5>New Registration</h5>
-                    <p>3 students registered today</p>
-                    <div class="notif-time">Today</div>
+                    <p>Loading students registered today...</p>
+                    <div class="notif-time">Loading time...</div>
                   </div>
                 </div>
                 <div class="notif-item">
@@ -1999,8 +1989,8 @@
                       class="fas fa-exclamation-triangle"></i></div>
                   <div class="notif-text">
                     <h5>GPS Alert</h5>
-                    <p>2 students outside placement zone</p>
-                    <div class="notif-time">1 hr ago</div>
+                    <p>Loading students outside placement zone...</p>
+                    <div class="notif-time">Loading time...</div>
                   </div>
                 </div>
               </div>
@@ -2016,33 +2006,33 @@
               <h3>Welcome, Administrator! 🛡️</h3>
               <p>InternLog system is running smoothly. Internship programme ends in <strong>47 days</strong>. Monitor
                 student progress below.</p>
-              <div class="wb-badge"><i class="fas fa-university"></i> Makerere University · 2025/2026 Internship
+              <div class="wb-badge"><i class="fas fa-university"></i> Loading university... · 2025/2026 Internship
                 Programme</div>
             </div>
             <div class="cards-grid">
               <div class="card">
                 <div class="card-icon green"><i class="fas fa-user-graduate"></i></div>
-                <div class="card-val">142</div>
+                <div class="card-val">-</div>
                 <div class="card-label">Active Students</div>
-                <div class="card-trend"><i class="fas fa-arrow-up"></i> 8 joined this week</div>
+                <div class="card-trend"><i class="fas fa-arrow-up"></i> Loading students joined this week...</div>
               </div>
               <div class="card">
                 <div class="card-icon amber"><i class="fas fa-user-clock"></i></div>
-                <div class="card-val">23</div>
+                <div class="card-val">-</div>
                 <div class="card-label">Not Yet Started</div>
-                <div class="card-trend down"><i class="fas fa-exclamation"></i> Awaiting placement</div>
+                <div class="card-trend down"><i class="fas fa-exclamation"></i> Loading students awaiting placement...</div>
               </div>
               <div class="card">
                 <div class="card-icon blue"><i class="fas fa-chalkboard-teacher"></i></div>
-                <div class="card-val">18</div>
+                <div class="card-val">-</div>
                 <div class="card-label">Supervisors</div>
-                <div class="card-trend"><i class="fas fa-check"></i> 14 school · 4 industry</div>
+                <div class="card-trend"><i class="fas fa-check"></i> Loading supervisors...</div>
               </div>
               <div class="card">
                 <div class="card-icon red"><i class="fas fa-calendar-times"></i></div>
-                <div class="card-val">47</div>
+                <div class="card-val">-</div>
                 <div class="card-label">Days to End</div>
-                <div class="card-trend"><i class="fas fa-flag"></i> Programme ends Apr 21</div>
+                <div class="card-trend"><i class="fas fa-flag"></i> Loading programme ends...</div>
               </div>
             </div>
 
@@ -2070,7 +2060,7 @@
                     </tr>
                   </thead>
                   <tbody>
-                    <tr>
+                    <!-- <tr>
                       <td>
                         <div style="display:flex;align-items:center;gap:10px">
                           <div class="avatar">AK</div>Amina Kibuuka
@@ -2168,7 +2158,7 @@
                         </div>
                       </td>
                       <td><span class="tag rejected">Not Started</span></td>
-                    </tr>
+                    </tr> -->
                   </tbody>
                 </table>
               </div>
@@ -2183,7 +2173,7 @@
             </div>
             <div class="section-card">
               <div class="section-head">
-                <h3>Students (165)</h3>
+                <h3>Students (0)</h3>
                 <div style="display:flex;gap:10px;flex-wrap:wrap">
                   <div class="search-bar"><i class="fas fa-search"></i><input type="text" placeholder="Search..."></div>
                   <select
@@ -2211,7 +2201,7 @@
                     </tr>
                   </thead>
                   <tbody>
-                    <tr>
+                    <!-- <tr>
                       <td>
                         <div style="display:flex;align-items:center;gap:10px">
                           <div class="avatar">AK</div>Amina Kibuuka
@@ -2247,7 +2237,7 @@
                       </td>
                       <td><span class="tag pending">Behind</span></td>
                       <td><button class="btn btn-outline btn-sm">View</button></td>
-                    </tr>
+                    </tr> -->
                   </tbody>
                 </table>
               </div>
@@ -2261,8 +2251,8 @@
               <p>All registered school and industry supervisors</p>
             </div>
             <div class="tab-row">
-              <div class="tab-btn active" onclick="switchInnerTab('sv','school',this)">School Supervisors (14)</div>
-              <div class="tab-btn" onclick="switchInnerTab('sv','industry',this)">Industry Supervisors (4)</div>
+              <div class="tab-btn active" onclick="switchInnerTab('sv','school',this)">School Supervisors (0)</div>
+              <div class="tab-btn" onclick="switchInnerTab('sv','industry',this)">Industry Supervisors (0)</div>
             </div>
             <div id="sv-tab-school" class="tab-content active">
               <div class="student-cards-grid">
@@ -2270,25 +2260,25 @@
                   <div class="student-card-top">
                     <div class="avatar avatar-lg" style="background:linear-gradient(135deg,#1a5f8a,#2176ae)">DS</div>
                     <div class="student-card-info">
-                      <h4>Dr. James Ssekandi</h4>
-                      <p>STAFF-014</p>
+                      <h4>Loading supervisor...</h4>
+                      <p>Loading registration number...</p>
                     </div>
                   </div>
-                  <div class="student-card-meta"><span>School of Computing & IT</span><span><span
-                        class="approved-dot"></span>Active</span></div>
-                  <div style="font-size:.82rem;color:var(--text2)">Assigned Students: <strong>7</strong></div>
+                  <div class="student-card-meta"><span>Loading department...</span><span><span
+                        class="approved-dot"></span>Loading status...</span></div>
+                  <div style="font-size:.82rem;color:var(--text2)">Assigned Students: <strong>0</strong></div>
                 </div>
                 <div class="student-card">
                   <div class="student-card-top">
                     <div class="avatar avatar-lg" style="background:linear-gradient(135deg,#d97706,#f59e0b)">RN</div>
                     <div class="student-card-info">
-                      <h4>Dr. Ruth Namubiru</h4>
-                      <p>STAFF-022</p>
+                      <h4>Loading supervisor...</h4>
+                      <p>Loading registration number...</p>
                     </div>
                   </div>
-                  <div class="student-card-meta"><span>School of Computing & IT</span><span><span
-                        class="approved-dot"></span>Active</span></div>
-                  <div style="font-size:.82rem;color:var(--text2)">Assigned Students: <strong>9</strong></div>
+                  <div class="student-card-meta"><span>Loading department...</span><span><span
+                        class="approved-dot"></span>Loading status...</span></div>
+                  <div style="font-size:.82rem;color:var(--text2)">Assigned Students: <strong>0</strong></div>
                 </div>
               </div>
             </div>
@@ -2296,15 +2286,15 @@
               <div class="student-cards-grid">
                 <div class="student-card">
                   <div class="student-card-top">
-                    <div class="avatar avatar-lg">MO</div>
+                    <div class="avatar avatar-lg">LS</div>
                     <div class="student-card-info">
-                      <h4>Mr. Moses Ouma</h4>
-                      <p>Stanbic Bank Uganda</p>
+                      <h4>Loading supervisor...</h4>
+                      <p>Loading registration number...</p>
                     </div>
                   </div>
-                  <div class="student-card-meta"><span>IT Department</span><span><span
-                        class="approved-dot"></span>Active</span></div>
-                  <div style="font-size:.82rem;color:var(--text2)">Interns: <strong>3</strong></div>
+                  <div class="student-card-meta"><span>Loading department...</span><span><span
+                        class="approved-dot"></span>Loading status...</span></div>
+                  <div style="font-size:.82rem;color:var(--text2)">Interns: <strong>0</strong></div>
                 </div>
               </div>
             </div>
@@ -2371,7 +2361,7 @@
                     </tr>
                   </thead>
                   <tbody>
-                    <tr>
+                    <!-- <tr>
                       <td><strong>Stanbic Bank Uganda</strong></td>
                       <td>Plot 45 Kampala Rd, Kampala</td>
                       <td><span class="gps-badge"><i class="fas fa-crosshairs"></i> 0.3476°N, 32.5825°E</span></td>
@@ -2394,7 +2384,7 @@
                       <td>250m</td>
                       <td>4</td>
                       <td><span class="tag approved">Active</span></td>
-                    </tr>
+                    </tr> -->
                   </tbody>
                 </table>
               </div>
@@ -2409,22 +2399,22 @@
             <div class="cards-grid">
               <div class="card">
                 <div class="card-icon green"><i class="fas fa-clipboard-list"></i></div>
-                <div class="card-val">3,847</div>
+                <div class="card-val">-</div>
                 <div class="card-label">Total Log Entries</div>
               </div>
               <div class="card">
                 <div class="card-icon blue"><i class="fas fa-check-circle"></i></div>
-                <div class="card-val">3,210</div>
+                <div class="card-val">-</div>
                 <div class="card-label">Approved Tasks</div>
               </div>
               <div class="card">
                 <div class="card-icon amber"><i class="fas fa-map-marker-alt"></i></div>
-                <div class="card-val">96%</div>
+                <div class="card-val">-</div>
                 <div class="card-label">GPS Compliance</div>
               </div>
               <div class="card">
                 <div class="card-icon green"><i class="fas fa-percentage"></i></div>
-                <div class="card-val">71%</div>
+                <div class="card-val">-</div>
                 <div class="card-label">Avg. Progress</div>
               </div>
             </div>
@@ -2500,8 +2490,7 @@
       <p class="sub-text" style="margin-bottom:18px">Select a task to send for industry supervisor approval. The
         supervisor will be notified immediately.</p>
       <div class="form-group"><label>Select Task</label><select>
-          <option>Mar 02 — API integration testing & documentation</option>
-          <option>Mar 01 — Remote bug fix on payment gateway</option>
+          <option>Loading task...</option>
         </select></div>
       <div class="form-group"><label>Message to Supervisor (optional)</label><textarea
           placeholder="Add a note for the supervisor..."></textarea></div>
@@ -2524,24 +2513,21 @@
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px"><span
             class="tag onsite">Onsite</span><span class="gps-badge"><i class="fas fa-check"></i> GPS Verified ·
             0.3476°N, 32.5825°E</span></div>
-        <h4 style="font-size:1.05rem;margin-bottom:6px">Database schema design for client module</h4>
-        <div style="font-size:.82rem;color:var(--text2)">Mar 03, 2026 · 6 hours</div>
+        <h4 style="font-size:1.05rem;margin-bottom:6px">Loading task...</h4>
+        <div style="font-size:.82rem;color:var(--text2)">Loading last log...</div>
       </div>
       <div class="form-group"><label>Description</label>
         <div
           style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px;font-size:.9rem;line-height:1.7;color:var(--text2)">
-          Worked on designing the entity-relationship diagram for the client management module. Collaborated with the
-          senior developer to normalise the schema to 3NF. Created SQL scripts for table creation and added appropriate
-          constraints and indexes for performance optimisation.</div>
+          Loading description...</div>
       </div>
       <div class="form-group"><label>Skills Applied</label>
-        <div style="font-size:.9rem">SQL, Database Design, PostgreSQL, Communication</div>
+        <div style="font-size:.9rem">Loading skills...</div>
       </div>
-      <div class="form-group"><label>Status</label><span class="tag approved">Approved by Mr. Ouma · Mar 04, 2026</span>
+      <div class="form-group"><label>Status</label><span class="tag approved">Approved by Loading supervisor... · Loading last log...</span>
       </div>
       <div class="form-group"><label>Supervisor Comment</label>
-        <div style="font-style:italic;color:var(--text2);font-size:.9rem">"Well structured schema that meets all
-          requirements. Good use of normalisation principles."</div>
+        <div style="font-style:italic;color:var(--text2);font-size:.9rem">"Loading comment..."</div>
       </div>
       <button class="btn btn-outline" onclick="closeModal('log-detail-modal')"><i class="fas fa-times"></i>
         Close</button>
@@ -2558,28 +2544,28 @@
       <div class="profile-header">
         <div class="profile-avatar">AK</div>
         <div class="profile-info">
-          <h3>Amina Kibuuka</h3>
-          <p>2021/BSC/042 · BSc Computer Science · Year 3</p>
+          <h3>Loading student...</h3>
+          <p>Loading registration number... · Loading course... · Loading year...</p>
           <div class="profile-meta">
             <div class="profile-meta-item"><i class="fas fa-building" style="margin-right:4px"></i>Placement:
-              <span>Stanbic Bank Uganda</span>
+              <span>Loading placement...</span>
             </div>
             <div class="profile-meta-item"><i class="fas fa-envelope"
-                style="margin-right:4px"></i><span>a.kibuuka@students.mak.ac.ug</span></div>
+                style="margin-right:4px"></i><span>Loading email...</span></div>
           </div>
         </div>
       </div>
       <div class="cards-grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:20px">
         <div class="card" style="padding:16px">
-          <div class="card-val" style="font-size:1.5rem">24</div>
+          <div class="card-val" style="font-size:1.5rem">Loading total logs...</div>
           <div class="card-label">Total Logs</div>
         </div>
         <div class="card" style="padding:16px">
-          <div class="card-val" style="font-size:1.5rem">19</div>
+          <div class="card-val" style="font-size:1.5rem">Loading approved logs...</div>
           <div class="card-label">Approved</div>
         </div>
         <div class="card" style="padding:16px">
-          <div class="card-val" style="font-size:1.5rem">72%</div>
+          <div class="card-val" style="font-size:1.5rem">Loading progress...</div>
           <div class="card-label">Progress</div>
         </div>
       </div>
@@ -2587,7 +2573,7 @@
         <div class="prog-bar" style="height:12px">
           <div class="prog-fill" style="width:72%"></div>
         </div>
-        <div style="font-size:.8rem;color:var(--text3);margin-top:4px">72% · 38/56 days completed</div>
+        <div style="font-size:.8rem;color:var(--text3);margin-top:4px">Loading progress... · 38/56 days completed</div>
       </div>
       <div class="section-head" style="margin-bottom:12px">
         <h3>Recent Log Entries</h3>
@@ -2602,7 +2588,7 @@
             </tr>
           </thead>
           <tbody>
-            <tr>
+            <!-- <tr>
               <td>Mar 03</td>
               <td>Database schema design</td>
               <td><span class="tag approved">Approved</span></td>
@@ -2616,7 +2602,7 @@
               <td>Mar 01</td>
               <td>Remote bug fix</td>
               <td><span class="tag pending">Pending</span></td>
-            </tr>
+            </tr> -->
           </tbody>
         </table>
       </div>
@@ -2641,31 +2627,30 @@
         style="display:flex;align-items:center;gap:14px;padding:16px;background:var(--bg2);border-radius:var(--radius-sm);margin-bottom:18px">
         <div class="avatar avatar-lg">AK</div>
         <div>
-          <h4>Amina Kibuuka</h4>
-          <p class="sub-text">2021/BSC/042 · Stanbic Bank Uganda</p>
+          <h4>Loading student...</h4>
+          <p class="sub-text">Loading registration number... · Loading placement...</p>
         </div>
-        <div style="margin-left:auto"><span class="tag pending">Pending Review</span></div>
+        <div style="margin-left:auto"><span class="tag pending">Loading status...</span></div>
       </div>
       <div class="form-group"><label>Task</label>
-        <div style="font-size:1.05rem;font-weight:700">Database schema design for client module</div>
+        <div style="font-size:1.05rem;font-weight:700">Loading task...</div>
       </div>
       <div class="form-group"><label>Type & Duration</label>
-        <div style="display:flex;gap:10px;align-items:center"><span class="tag onsite">Onsite</span> <span>6 hours ·
-            March 03, 2026</span></div>
+        <div style="display:flex;gap:10px;align-items:center"><span class="tag onsite">Loading type...</span> <span>Loading duration... ·
+            Loading date...</span></div>
       </div>
       <div class="form-group"><label>GPS Verification</label><span class="gps-badge"><i class="fas fa-check"></i>
-          Verified at placement site · 0.3476°N, 32.5825°E</span></div>
+          Loading verification... · Loading GPS...</span></div>
       <div class="form-group"><label>Description</label>
         <div
           style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px;font-size:.9rem;line-height:1.7;color:var(--text2)">
-          Worked on designing the ER diagram for the client module. Collaborated with the senior developer to normalise
-          the schema to 3NF. Created SQL scripts for table creation with appropriate constraints and indexes.</div>
+          Loading description...</div>
       </div>
       <div class="form-group"><label>Proof / Evidence</label>
         <div
           style="background:var(--bg2);border-radius:8px;padding:12px;display:flex;align-items:center;gap:10px;font-size:.88rem;color:var(--text2)">
-          <i class="fas fa-image" style="font-size:1.2rem;color:var(--primary)"></i> schema_diagram.png &nbsp; <span
-            style="color:var(--text3)">· 1.2 MB</span>
+          <i class="fas fa-image" style="font-size:1.2rem;color:var(--primary)"></i> Loading proof... &nbsp; <span
+            style="color:var(--text3)">· Loading size...</span>
         </div>
       </div>
       <div class="form-group"><label>Your Comment</label><textarea
