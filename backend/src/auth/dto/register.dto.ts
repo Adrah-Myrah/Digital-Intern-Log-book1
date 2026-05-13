@@ -18,4 +18,5 @@ export class RegisterDto {
   // Supervisor / Admin only
   staffId?: string;
   department?: string;
+  maxCapacity?: number;
 }

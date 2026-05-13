@@ -121,7 +121,16 @@ async function handleRegister() {
 function showPage(id) {
   document.querySelectorAll('.page').forEach(p => { p.classList.remove('active'); p.style.display = 'none'; });
   const page = document.getElementById(id);
-  if (page) { page.style.display = 'flex'; setTimeout(() => page.classList.add('active'), 10); }
+  if (page) {
+    page.style.display = 'flex'; setTimeout(() => page.classList.add('active'), 10);
+    history.pushState({ page: id }, '', `#${id}`);
+    
+    // Scroll both window and all scrollable containers to top
+    window.scrollTo(0, 0);
+    document.querySelectorAll('.page-body, .main-content, .dash-wrap').forEach(el => {
+      el.scrollTop = 0;
+    });
+  }
   document.querySelectorAll('.notif-panel').forEach(n => n.classList.remove('open'));
 }
 
@@ -134,20 +143,7 @@ function toggleRegFields() {
   else document.getElementById('dept-field').style.display = 'block';
 }
 
-// function goToLogin() {
-//   sessionStorage.removeItem('isLoggedIn');
-//   sessionStorage.removeItem('activePage');
-//   localStorage.removeItem('userRole');
-//   sessionStorage.removeItem('token');
-//   sessionStorage.removeItem('userName');
-//   sessionStorage.removeItem('userId');
-//   localStorage.removeItem('activeTab');
-//   localStorage.removeItem('activeTabPrefix');
-//   localStorage.removeItem('token');
-//   localStorage.removeItem('userName');
-//   localStorage.removeItem('userId');
-//   showPage('page-login');
-// }
+
 function goToLogin() {
   // Clear all session and local storage
   sessionStorage.removeItem('isLoggedIn');
@@ -163,12 +159,19 @@ function goToLogin() {
   localStorage.removeItem('userName');
   localStorage.removeItem('userId');
   localStorage.removeItem('userRole');
+  localStorage.removeItem('isLoggedIn');   // ADD THIS
+  localStorage.removeItem('activePage');
 
   // Clear login form fields
   const loginId = document.getElementById('login-id');
   const loginPw = document.getElementById('login-pw');
   if (loginId) loginId.value = '';
   if (loginPw) loginPw.value = '';
+  // Scroll both window and all scrollable containers to top
+  window.scrollTo(0, 0);
+  document.querySelectorAll('.page-body, .main-content, .dash-wrap').forEach(el => {
+    el.scrollTop = 0;
+  });
 
   showPage('page-login');
 }
@@ -220,6 +223,9 @@ async function handleLogin() {
     const page = pages[result.role] || 'page-student';
     sessionStorage.setItem('activePage', page);
 
+    localStorage.setItem('activePage', page);
+    localStorage.setItem('isLoggedIn', 'true');
+
     localStorage.setItem('activeTab', 'dashboard');
     const roleToPrefix = {
       student: 'student',
@@ -229,8 +235,13 @@ async function handleLogin() {
     };
     localStorage.setItem('activeTabPrefix', roleToPrefix[result.role] || 'student');
 
-    loadUserDashboard();
-    showPage(page);
+    setTimeout(() => {
+      loadUserDashboard();
+      showPage(page);
+      const prefix = roleToPrefix[result.role] || 'student';
+      switchTab(prefix, 'dashboard', null);
+    }, 300);
+
   } catch (err) {
     alert('Could not connect to server. Make sure the backend is running.');
   } finally {
@@ -242,11 +253,13 @@ async function handleLogin() {
 // WIRE USER DASHBOARDS WITH REAL DATA
 
 function loadUserDashboard() {
+  clearDashboard();
   const userName = sessionStorage.getItem('userName') || localStorage.getItem('userName');
   const userId = getUserId();
   const userRole = sessionStorage.getItem('userRole') || localStorage.getItem('userRole');
 
   if (!userName || !userId || !userRole) return;
+
 
   // Get first name only for greeting
   const firstName = userName.split(' ')[0];
@@ -290,6 +303,7 @@ function loadUserDashboard() {
     loadSupervisionStudents();
     loadGradingStudents();
     loadSchoolStudents();
+    loadSchoolReports();
   }
 
   // update industry supervisor dashboard
@@ -318,8 +332,68 @@ function loadUserDashboard() {
     const sidebarRole = document.querySelector('#sidebar-admin .sidebar-user-role');
     if (sidebarName) sidebarName.textContent = userName;
     if (sidebarRole) sidebarRole.textContent = 'System Administrator';
+    const sidebarAvatar = document.querySelector('#sidebar-admin .sidebar-user-avatar');
+    if (sidebarAvatar) {
+      const initials = userName.split(' ').map(n => n[0]).join('').toUpperCase();
+      sidebarAvatar.textContent = initials;
+    }
 
     loadAdminDashboardData();
+  }
+}
+
+// Auto assign supervisor
+async function autoAssignSupervisors() {
+  if (!confirm('This will reassign ALL students to supervisors from scratch. Continue?')) return;
+
+  try {
+    // Get all students and supervisors
+    const [studentsRes, supervisorsRes] = await Promise.all([
+      fetch(`${API_URL}/users/students`, {
+        headers: { 'Authorization': `Bearer ${getToken()}` }
+      }),
+      fetch(`${API_URL}/users/role/school-supervisor`, {
+        headers: { 'Authorization': `Bearer ${getToken()}` }
+      })
+    ]);
+
+    const students = await studentsRes.json();
+    const supervisors = await supervisorsRes.json();
+
+    if (supervisors.length === 0) {
+      alert('No school supervisors found. Please add supervisors first.');
+      return;
+    }
+
+    // Distribute students evenly across supervisors
+    const assignments = students.map((student, index) => ({
+      studentId: student.id,
+      schoolSupervisorId: supervisors[index % supervisors.length].id
+    }));
+
+    // Save all assignments
+    await Promise.all(assignments.map(a =>
+      fetch(`${API_URL}/users/students/${a.studentId}/assign-supervisors`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${getToken()}`
+        },
+        body: JSON.stringify({ schoolSupervisorId: a.schoolSupervisorId }),
+      })
+    ));
+
+    const toast = document.createElement('div');
+    toast.style.cssText = 'position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:var(--success);color:#fff;padding:12px 24px;border-radius:10px;font-weight:600;z-index:9999';
+    toast.innerHTML = `<i class="fas fa-check-circle"></i> ${students.length} students assigned across ${supervisors.length} supervisors!`;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 4000);
+
+    // Refresh dashboard
+    loadAdminDashboardData();
+
+  } catch (err) {
+    alert('Could not complete auto assignment. Make sure the backend is running.');
   }
 }
 
@@ -486,9 +560,101 @@ async function loadStudentLogs(studentId) {
       }
     }
 
+    // ── APPROVED TASKS TABLE ──
+    const approvedTbody = document.querySelector('#student-tab-approved .table-wrap tbody');
+    if (approvedTbody) {
+      const approvedLogs = logs.filter(l => l.status === 'approved');
+      if (approvedLogs.length === 0) {
+        approvedTbody.innerHTML = `
+      <tr>
+        <td colspan="5" style="text-align:center;color:var(--text2);padding:20px">
+          No approved tasks yet.
+        </td>
+      </tr>`;
+      } else {
+        approvedTbody.innerHTML = approvedLogs.map(log => `
+      <tr>
+        <td>${new Date(log.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</td>
+        <td>${log.taskName}</td>
+        <td>${log.estimatedHours}h</td>
+        <td>${log.approvedBy ? 'Industry Supervisor' : '—'}</td>
+        <td><em style="color:var(--text3)">${log.supervisorComment || 'No comment'}</em></td>
+      </tr>
+    `).join('');
+      }
+    }
   } catch (err) {
     console.error('Failed to load logs:', err);
   }
+}
+
+
+async function loadSchoolReports() {
+  try {
+    const [reportsRes, studentsRes] = await Promise.all([
+      fetch(`${API_URL}/reports`, {
+        headers: { 'Authorization': `Bearer ${getToken()}` }
+      }),
+      fetch(getAssignedStudentsEndpoint(), {
+        headers: { 'Authorization': `Bearer ${getToken()}` }
+      })
+    ]);
+
+    const allReports = await reportsRes.json();
+    const assignedStudents = await studentsRes.json();
+
+    const assignedIds = new Set(assignedStudents.map(s => Number(s.id)));
+    const myReports = allReports.filter(r => assignedIds.has(Number(r.studentId)));
+
+    const tbody = document.querySelector('#school-tab-reports .table-wrap tbody');
+    if (!tbody) return;
+
+    if (myReports.length === 0) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="4" style="text-align:center;color:var(--text2);padding:20px">
+            No reports submitted yet.
+          </td>
+        </tr>`;
+      return;
+    }
+
+    tbody.innerHTML = myReports.map(report => {
+      const student = assignedStudents.find(s => Number(s.id) === Number(report.studentId));
+      const studentName = student?.fullName || 'Unknown';
+      const regNo = student?.registrationNumber || '—';
+      const submittedDate = new Date(report.submittedAt).toLocaleDateString('en-GB', {
+        day: 'numeric', month: 'short', year: 'numeric'
+      });
+      const fileName = report.fileUrl.split('\\').pop().split('/').pop();
+
+      return `
+        <tr>
+          <td>
+            <div style="display:flex;align-items:center;gap:10px">
+              <div class="avatar">${studentName.split(' ').map(n => n[0]).join('').toUpperCase()}</div>
+              ${studentName}
+            </div>
+          </td>
+          <td>${regNo}</td>
+          <td>${submittedDate}</td>
+          <td>
+            <button class="btn btn-outline btn-sm" onclick="window.open('http://localhost:3000/uploads/${fileName}', '_blank')">
+              <i class="fas fa-file-download"></i> Download
+            </button>
+          </td>
+        </tr>
+      `;
+    }).join('');
+
+  } catch (err) {
+    console.error('Failed to load reports:', err);
+  }
+}
+
+function downloadReport(fileUrl) {
+  const fileName = fileUrl.split('\\').pop().split('/').pop();
+  window.open(`http://localhost:3000/uploads/${fileName}`, '_blank');
 }
 
 function openLogDetail(id, taskName, workType, hours, status, description, skills, lat, lng, date) {
@@ -544,6 +710,26 @@ function openLogDetail(id, taskName, workType, hours, status, description, skill
   openModal('log-detail-modal');
 }
 
+// CLEAR DASHBOARD BEFORE LOADING NEW DATA
+function clearDashboard() {
+  // Clear all card values
+  document.querySelectorAll('.card-val').forEach(c => c.textContent = '—');
+
+  // Clear all table bodies
+  document.querySelectorAll('.table-wrap tbody').forEach(t => t.innerHTML = '');
+
+  // Clear student cards grid
+  document.querySelectorAll('.student-cards-grid').forEach(g => g.innerHTML = '');
+
+  // Clear request lists
+  document.querySelectorAll('.request-list').forEach(r => r.innerHTML = '');
+
+  // Clear welcome banners
+  document.querySelectorAll('.welcome-banner p').forEach(p => p.textContent = 'Loading your dashboard...');
+  document.querySelectorAll('.welcome-banner h3').forEach(h => h.textContent = 'Loading...');
+  document.querySelectorAll('.wb-badge').forEach(b => b.innerHTML = '<i class="fas fa-map-marker-alt"></i> Loading...');
+}
+
 // WIRING STUDENTS CARD
 
 async function loadStudentCards(studentId) {
@@ -580,6 +766,12 @@ async function loadStudentCards(studentId) {
     if (cards[1]) cards[1].textContent = daysLeft;
     if (cards[2]) cards[2].textContent = timeProgress + '%';
     if (cards[3]) cards[3].textContent = approved;
+
+    // Update approved tab cards
+    const approvedTabCards = document.querySelectorAll('#student-tab-approved .card-val');
+    if (approvedTabCards[0]) approvedTabCards[0].textContent = approved;
+    if (approvedTabCards[1]) approvedTabCards[1].textContent = pending;
+    if (approvedTabCards[2]) approvedTabCards[2].textContent = logs.filter(l => l.status === 'rejected').length;
 
     // Update progress bar
     const progFill = document.querySelector('#student-tab-dashboard .prog-fill');
@@ -667,8 +859,9 @@ async function loadSchoolCards() {
     // Card 0 — all registered students (until assignment is introduced)
     const totalStudents = students.length;
 
-    // Card 1 — total logs reviewed (approved or rejected)
-    const totalReviewed = allLogs.filter(l => l.status !== 'pending').length;
+    // Card 1 — total logs reviewed 
+    const assignedStudentIds = new Set(students.map(s => Number(s.id)));
+    const totalReviewed = allLogs.filter(l => assignedStudentIds.has(Number(l.studentId))).length;
 
     // Card 2 — reports submitted but not yet reviewed
     const reportsDue = allReports.filter(r => r.status === 'submitted').length;
@@ -710,6 +903,13 @@ async function loadSchoolCards() {
     // Remove messages badge for now
     const messagesBadge = document.querySelector('#sidebar-school .nav-item[onclick*="messages"] .badge');
     if (messagesBadge) messagesBadge.remove();
+
+    const settingsData = await fetch(`${API_URL}/settings`).then(r => r.json());
+    const institutionVal = settingsData.find(s => s.key === 'institution_name');
+    const schoolBadge = document.getElementById('school-institution-badge');
+    if (schoolBadge && institutionVal) {
+      schoolBadge.innerHTML = `<i class="fas fa-graduation-cap"></i> ${institutionVal.value}`;
+    }
 
   } catch (err) {
     console.error('Failed to load school cards:', err);
@@ -849,7 +1049,20 @@ async function loadAdminDashboardData() {
     const notStarted = students.filter(s => !progressMap.has(Number(s.id))).length;
     if (adminCards[0]) adminCards[0].textContent = String(counts.students || students.length);
     if (adminCards[1]) adminCards[1].textContent = String(notStarted);
-    if (adminCards[2]) adminCards[2].textContent = String(counts.supervisors || 0);
+    if (adminCards[2]) adminCards[2].textContent = String(supervisors.school?.length || 0);
+
+    // Days to end
+    const settingsForDays = await fetch(`${API_URL}/settings`).then(r => r.json());
+    const endSetting = settingsForDays.find(s => s.key === 'internship_end');
+    const endDate = endSetting ? new Date(endSetting.value) : null;
+    const daysLeft = endDate ? Math.max(0, Math.ceil((endDate - new Date()) / (1000 * 60 * 60 * 24))) : 0;
+    if (adminCards[3]) adminCards[3].textContent = String(daysLeft);
+
+    // welcome message
+    const welcomeMsg = document.getElementById('admin-welcome-msg');
+    if (welcomeMsg) {
+      welcomeMsg.innerHTML = `Managing <strong>${students.length} students</strong> across <strong>${supervisors.school?.length || 0} supervisors</strong>. Programme ends in <strong>${daysLeft} days</strong>.`;
+    }
 
     // Admin summary table (dashboard)
     const summaryTbody = document.querySelector('#admin-tab-dashboard .table-wrap tbody');
@@ -878,6 +1091,12 @@ async function loadAdminDashboardData() {
       }).join('');
     }
 
+    // badges
+    const adminStudentsBadge = document.getElementById('admin-students-badge');
+    const adminSupervisorsBadge = document.getElementById('admin-supervisors-badge');
+    if (adminStudentsBadge) adminStudentsBadge.textContent = counts.students || students.length;
+    if (adminSupervisorsBadge) adminSupervisorsBadge.textContent = supervisors.school?.length || 0;
+
     // Admin students tab heading + table
     const studentsTitle = document.querySelector('#admin-tab-students .section-head h3');
     if (studentsTitle) studentsTitle.textContent = `Students (${students.length})`;
@@ -885,10 +1104,10 @@ async function loadAdminDashboardData() {
     const studentsTbody = document.querySelector('#admin-tab-students .table-wrap tbody');
     if (studentsTbody) {
       // First load supervisors for dropdown
-      const supervisorsRes = await fetch(`${API_URL}/users/role/school-supervisor`, {
+      const schoolSvsRes = await fetch(`${API_URL}/users/role/school-supervisor`, {
         headers: { 'Authorization': `Bearer ${getToken()}` }
       });
-      const schoolSupervisors = await supervisorsRes.json();
+      const schoolSupervisors = await schoolSvsRes.json();
 
       studentsTbody.innerHTML = students.map(student => {
         const stats = progressMap.get(Number(student.id)) || { progress: 0 };
@@ -926,15 +1145,123 @@ async function loadAdminDashboardData() {
     }
 
     // Admin supervisors tab counts
+    // Update supervisor tab button
     const schoolSvTab = document.querySelector('.tab-btn[onclick*="sv\',\'school"]');
-    const industrySvTab = document.querySelector('.tab-btn[onclick*="sv\',\'industry"]');
     if (schoolSvTab) schoolSvTab.textContent = `School Supervisors (${supervisors.school?.length || 0})`;
-    if (industrySvTab) industrySvTab.textContent = `Industry Supervisors (${supervisors.industry?.length || 0})`;
+
+    // Populate school supervisors grid
+    const schoolSvGrid = document.querySelector('#sv-tab-school .student-cards-grid');
+    if (schoolSvGrid && supervisors.school) {
+      if (supervisors.school.length === 0) {
+        schoolSvGrid.innerHTML = '<p style="padding:20px;color:var(--text2)">No school supervisors yet.</p>';
+      } else {
+        schoolSvGrid.innerHTML = supervisors.school.map(sv => {
+          const initials = sv.fullName.split(' ').map(n => n[0]).join('').toUpperCase();
+          const assigned = students.filter(s => Number(s.schoolSupervisorId) === Number(sv.id)).length;
+          const capacity = 50;
+          return `
+        <div class="student-card">
+          <div class="student-card-top">
+            <div class="avatar avatar-lg">${initials}</div>
+            <div class="student-card-info">
+              <h4>${sv.fullName}</h4>
+              <p>${sv.staffId || '—'}</p>
+            </div>
+          </div>
+          <div class="student-card-meta">
+            <span>${sv.department || '—'}</span>
+            <span><span class="approved-dot"></span>Active</span>
+          </div>
+          <div style="font-size:.82rem;color:var(--text2);margin-top:8px">
+            Assigned Students: <strong>${assigned}/${capacity}</strong>
+          </div>
+          <div class="prog-bar" style="margin-top:6px">
+            <div class="prog-fill ${assigned >= capacity ? 'amber' : ''}" 
+              style="width:${Math.min(100, Math.round((assigned / capacity) * 100))}%">
+            </div>
+          </div>
+        </div>
+      `;
+        }).join('');
+      }
+    }
   } catch (err) {
     console.error('Failed to load admin dashboard data:', err);
   }
+
+  // Load settings into admin form
+  try {
+    const settingsRes = await fetch(`${API_URL}/settings`, {
+      headers: { 'Authorization': `Bearer ${getToken()}` }
+    });
+    const settingsData = await settingsRes.json();
+
+    const startVal = settingsData.find(s => s.key === 'internship_start');
+    const endVal = settingsData.find(s => s.key === 'internship_end');
+
+    const dateInputs = document.querySelectorAll('#admin-tab-settings input[type="date"]');
+    if (dateInputs[0] && startVal) dateInputs[0].value = startVal.value;
+    if (dateInputs[1] && endVal) dateInputs[1].value = endVal.value;
+
+    const institutionVal = settingsData.find(s => s.key === 'institution_name');
+    const startYear = startVal ? new Date(startVal.value).getFullYear() : new Date().getFullYear();
+    const endYear = endVal ? new Date(endVal.value).getFullYear() : new Date().getFullYear();
+
+    const institutionBadge = document.getElementById('admin-institution-badge');
+    if (institutionBadge) {
+      institutionBadge.innerHTML = `<i class="fas fa-university"></i> ${institutionVal?.value || 'Institution'} · ${startYear}/${endYear} Internship Programme`;
+    }
+  } catch (err) {
+    console.error('Failed to load settings:', err);
+  }
 }
 
+//save admin settings
+async function saveAdminSettings() {
+  const inputs = document.querySelectorAll('#admin-tab-settings input[type="date"]');
+  const startDate = inputs[0]?.value;
+  const endDate = inputs[1]?.value;
+  const institutionName = document.getElementById('institution-name')?.value || '';
+
+  if (!startDate || !endDate) {
+    alert('Please fill in both dates.');
+    return;
+  }
+
+  if (new Date(endDate) <= new Date(startDate)) {
+    alert('End date must be after start date.');
+    return;
+  }
+
+  try {
+    await Promise.all([
+      fetch(`${API_URL}/settings`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getToken()}` },
+        body: JSON.stringify({ key: 'internship_start', value: startDate, label: 'Internship Start Date' }),
+      }),
+      fetch(`${API_URL}/settings`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getToken()}` },
+        body: JSON.stringify({ key: 'internship_end', value: endDate, label: 'Internship End Date' }),
+      }),
+      fetch(`${API_URL}/settings`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getToken()}` },
+        body: JSON.stringify({ key: 'institution_name', value: institutionName, label: 'Institution Name' }),
+      }),
+    ]);
+
+    const toast = document.createElement('div');
+    toast.style.cssText = 'position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:var(--success);color:#fff;padding:12px 24px;border-radius:10px;font-weight:600;z-index:9999';
+    toast.innerHTML = '<i class="fas fa-check-circle"></i> Settings saved successfully!';
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 3000);
+
+  } catch (err) {
+    alert('Could not save settings.');
+  }
+}
 //assign supervisor
 
 async function assignSupervisor(studentId) {
@@ -975,6 +1302,69 @@ async function assignSupervisor(studentId) {
     alert('Could not connect to server.');
   }
 }
+
+//add supervisor
+async function addSupervisor() {
+  const typeSelect = document.querySelector('#admin-tab-add-supervisor select');
+  const textInputs = document.querySelectorAll('#admin-tab-add-supervisor input[type="text"]');
+  const emailInput = document.querySelector('#admin-tab-add-supervisor input[type="email"]');
+  const passwordInput = document.querySelector('#admin-tab-add-supervisor input[type="password"]');
+  const numberInput = document.querySelector('#admin-tab-add-supervisor input[type="number"]');
+
+  const type = typeSelect?.value;
+  const fullName = textInputs[0]?.value.trim();
+  const staffId = textInputs[1]?.value.trim();
+  const email = emailInput?.value.trim();
+  const department = textInputs[2]?.value.trim();
+  const password = passwordInput?.value.trim();
+  const maxCapacity = numberInput?.value;
+
+  if (!fullName || !staffId || !email || !password) {
+    alert('Please fill in Full Name, Staff ID, Email and Password.');
+    return;
+  }
+
+  const role = type === 'School Supervisor' ? 'school-supervisor' : 'industry-supervisor';
+
+  try {
+    const response = await fetch(`${API_URL}/auth/register`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        role,
+        fullName,
+        staffId,
+        email,
+        password,
+        department,
+        maxCapacity: Number(maxCapacity) || 20,
+      }),
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      alert(result.message || 'Failed to add supervisor.');
+      return;
+    }
+
+    const toast = document.createElement('div');
+    toast.style.cssText = 'position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:var(--success);color:#fff;padding:12px 24px;border-radius:10px;font-weight:600;z-index:9999';
+    toast.innerHTML = '<i class="fas fa-check-circle"></i> Supervisor added successfully!';
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 3000);
+
+    // Clear form fields
+    document.querySelectorAll('#admin-tab-add-supervisor input').forEach(i => i.value = '');
+
+    // Refresh dashboard
+    loadAdminDashboardData();
+
+  } catch (err) {
+    alert('Could not connect to server.');
+  }
+}
+
 
 function toggleSchoolChat() {
   document.getElementById('school-chat-box').classList.toggle('open');
@@ -1329,6 +1719,7 @@ function openSidebar(sidebarId, overlayId) {
   document.getElementById(sidebarId).classList.add('open');
   document.getElementById(overlayId).classList.add('open');
 }
+
 function closeSidebar(sidebarId, overlayId) {
   document.getElementById(sidebarId).classList.remove('open');
   document.getElementById(overlayId).classList.remove('open');
@@ -1336,6 +1727,7 @@ function closeSidebar(sidebarId, overlayId) {
 
 /* ===== TAB SWITCHING ===== */
 function switchTab(prefix, tabName, navEl) {
+  history.pushState({ prefix, tabName }, '', `#${prefix}-${tabName}`);
   localStorage.setItem("activeTab", tabName);
   localStorage.setItem("activeTabPrefix", prefix);
   document.querySelectorAll(`#page-${prefix === 'industry' ? 'industry-supervisor' : prefix === 'school' ? 'school-supervisor' : prefix} .tab-content`).forEach(t => t.classList.remove('active'));
@@ -2046,10 +2438,13 @@ async function loadStudentReport(studentId) {
       headers: { 'Authorization': `Bearer ${getToken()}` }
     });
 
-    const report = await response.json();
+    // Handle empty response
+    const text = await response.text();
+    if (!text || text.trim() === '') return;
+
+    const report = JSON.parse(text);
 
     if (report && report.id) {
-      // Already submitted — show success section
       document.getElementById('upload-section').style.display = 'none';
       document.getElementById('success-section').style.display = 'block';
       document.getElementById('report-status-badge').className = 'tag approved';
@@ -2061,13 +2456,22 @@ async function loadStudentReport(studentId) {
       });
 
       isReportSubmitted = true;
+    } else {
+      // No report — make sure upload section is visible
+      document.getElementById('upload-section').style.display = 'block';
+      document.getElementById('success-section').style.display = 'none';
+      document.getElementById('report-status-badge').className = 'tag pending';
+      document.getElementById('report-status-badge').textContent = 'Not Submitted';
+      isReportSubmitted = false;
     }
 
   } catch (err) {
     console.error('Failed to load report status:', err);
+    // Ensure upload section shows on error
+    document.getElementById('upload-section').style.display = 'block';
+    document.getElementById('success-section').style.display = 'none';
   }
 }
-
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', function () {
   if (isReportSubmitted) {
@@ -2075,6 +2479,12 @@ document.addEventListener('DOMContentLoaded', function () {
     document.getElementById('success-section').style.display = 'block';
     document.getElementById('report-status-badge').className = 'tag approved';
     document.getElementById('report-status-badge').textContent = 'Submitted';
+  }
+});
+
+window.addEventListener('popstate', function (e) {
+  if (e.state && e.state.prefix && e.state.tabName) {
+    switchTab(e.state.prefix, e.state.tabName, null);
   }
 });
 

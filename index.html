@@ -291,13 +291,13 @@
                 <div class="card-icon green"><i class="fas fa-clipboard-list"></i></div>
                 <div class="card-val">-</div>
                 <div class="card-label">Total Log Entries</div>
-                <div class="card-trend"><i class="fas fa-arrow-up"></i> 3 this week</div>
+                <div class="card-trend"><i class="fas fa-arrow-up"></i> All submitted entries</div>
               </div>
               <div class="card">
                 <div class="card-icon amber"><i class="fas fa-calendar-alt"></i></div>
                 <div class="card-val">-</div>
                 <div class="card-label">Days Left</div>
-                <div class="card-trend down"><i class="fas fa-clock"></i> Internship ends Apr 12</div>
+                <div class="card-trend down"><i class="fas fa-clock"></i> Until internship ends</div>
               </div>
               <div class="card">
                 <div class="card-icon blue"><i class="fas fa-chart-pie"></i></div>
@@ -308,12 +308,13 @@
                     <div class="prog-fill" style="width:72%"></div>
                   </div>
                 </div>
+                <div class="card-trend"><i class="fas fa-chart-line"></i> Based on approved tasks</div>
               </div>
               <div class="card">
                 <div class="card-icon green"><i class="fas fa-check-double"></i></div>
                 <div class="card-val">-</div>
                 <div class="card-label">Approved Tasks</div>
-                <div class="card-trend"><i class="fas fa-thumbs-up"></i> - pending</div>
+                <div class="card-trend"><i class="fas fa-thumbs-up"></i> Verified by supervisor</div>
               </div>
             </div>
 
@@ -835,7 +836,7 @@
           <div class="nav-item" onclick="switchTab('school','reports',this)"><i class="fas fa-chart-bar"></i> Reports
           </div>
           <div class="nav-item" onclick="switchTab('school','supervision',this)">
-            <i class="fas fa-user-check"></i> Supervision 
+            <i class="fas fa-user-check"></i> Supervision
           </div>
           <div class="nav-item" onclick="switchTab('school','grading',this)"><i class="fas fa-star"></i> Grading </div>
           <div class="nav-item" onclick="switchTab('school','messages',this)"><i class="fas fa-comments"></i> Messages
@@ -891,29 +892,32 @@
             <div class="welcome-banner">
               <h3>Welcome ! 🎓</h3>
               <p>Loading dashboard...</p>
-              <div class="wb-badge"><i class="fas fa-graduation-cap"></i> Loading University...
-              </div>
+              <div class="wb-badge" id="school-institution-badge"><i class="fas fa-graduation-cap"></i> Loading...</div>
             </div>
             <div class="cards-grid">
               <div class="card">
                 <div class="card-icon green"><i class="fas fa-user-graduate"></i></div>
                 <div class="card-val">-</div>
                 <div class="card-label">Assigned Students</div>
+                <div class="card-trend"><i class="fas fa-user-graduate"></i> Under your supervision</div>
               </div>
               <div class="card">
                 <div class="card-icon blue"><i class="fas fa-clipboard-check"></i></div>
                 <div class="card-val">-</div>
-                <div class="card-label">Total Logs Reviewed</div>
+                <div class="card-label">Total Student Logs</div>
+                <div class="card-trend"><i class="fas fa-clipboard-check"></i> Total activity reviewed</div>
               </div>
               <div class="card">
                 <div class="card-icon amber"><i class="fas fa-exclamation-circle"></i></div>
                 <div class="card-val">-</div>
                 <div class="card-label">Reports Due</div>
+                <div class="card-trend down"><i class="fas fa-exclamation"></i> Awaiting your review</div>
               </div>
               <div class="card">
                 <div class="card-icon green"><i class="fas fa-star"></i></div>
                 <div class="card-val">-%</div>
-                <div class="card-label">Avg. Student Progress</div>
+                <div class="card-label">Avg. Progress</div>
+                <div class="card-trend"><i class="fas fa-chart-line"></i> Across all your students</div>
               </div>
             </div>
             <div class="section-card">
@@ -931,8 +935,9 @@
                         <p>Loading registration number...</p>
                       </div>
                     </div>
-                    <div class="student-card-meta"><span><i class="fas fa-building" style="margin-right:4px"></i>Loading placement...
-                    </span><span><span class="approved-dot"></span>Latest: Loading status...</span></div>
+                    <div class="student-card-meta"><span><i class="fas fa-building" style="margin-right:4px"></i>Loading
+                        placement...
+                      </span><span><span class="approved-dot"></span>Latest: Loading status...</span></div>
                     <div style="font-size:.8rem;color:var(--text2);margin-bottom:6px">Progress</div>
                     <div class="prog-bar">
                       <div class="prog-fill" style="width:72%"></div>
@@ -947,8 +952,9 @@
                         <p>Loading registration number...</p>
                       </div>
                     </div>
-                    <div class="student-card-meta"><span><i class="fas fa-building" style="margin-right:4px"></i>Loading placement...
-                    </span><span><span class="status-dot pending" style="margin-right:4px"></span>Latest:
+                    <div class="student-card-meta"><span><i class="fas fa-building" style="margin-right:4px"></i>Loading
+                        placement...
+                      </span><span><span class="status-dot pending" style="margin-right:4px"></span>Latest:
                         Loading status...</span></div>
                     <div style="font-size:.8rem;color:var(--text2);margin-bottom:6px">Progress</div>
                     <div class="prog-bar">
@@ -964,8 +970,9 @@
                         <p>Loading registration number...</p>
                       </div>
                     </div>
-                    <div class="student-card-meta"><span><i class="fas fa-building" style="margin-right:4px"></i>Loading placement...
-                    </span><span><span class="approved-dot"></span>Latest: Loading status...</span></div>
+                    <div class="student-card-meta"><span><i class="fas fa-building" style="margin-right:4px"></i>Loading
+                        placement...
+                      </span><span><span class="approved-dot"></span>Latest: Loading status...</span></div>
                     <div style="font-size:.8rem;color:var(--text2);margin-bottom:6px">Progress</div>
                     <div class="prog-bar">
                       <div class="prog-fill" style="width:85%"></div>
@@ -1090,9 +1097,7 @@
                     <tr>
                       <th>Student</th>
                       <th>Reg. No.</th>
-                      <th>Week</th>
                       <th>Submitted</th>
-                      <th>Grade</th>
                       <th>Action</th>
                     </tr>
                   </thead>
@@ -1631,9 +1636,9 @@
           <div class="sidebar-logo-text">InternLog <span>Industry Supervisor</span></div>
         </div>
         <div class="sidebar-user">
-          <div class="sidebar-user-avatar">MO</div>
-          <div class="sidebar-user-name">Mr. Moses Ouma</div>
-          <div class="sidebar-user-role">Stanbic Bank Uganda</div>
+          <div class="sidebar-user-avatar">--</div>
+          <div class="sidebar-user-name">Loading...</div>
+          <div class="sidebar-user-role">Industry Supervisor</div>
         </div>
         <div class="sidebar-nav">
           <div class="sidebar-section">Main Menu</div>
@@ -1730,7 +1735,8 @@
                         &nbsp; Loading last log...</div>
                     </div>
                     <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px"><span
-                        class="tag pending">Loading status...</span><button class="btn btn-primary btn-sm">Review</button></div>
+                        class="tag pending">Loading status...</span><button
+                        class="btn btn-primary btn-sm">Review</button></div>
                   </div>
                   <div class="request-card" onclick="openModal('approval-detail-modal')">
                     <div class="avatar">LS</div>
@@ -1741,7 +1747,8 @@
                         &nbsp; Loading last log...</div>
                     </div>
                     <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px"><span
-                        class="tag pending">Loading status...</span><button class="btn btn-primary btn-sm">Review</button></div>
+                        class="tag pending">Loading status...</span><button
+                        class="btn btn-primary btn-sm">Review</button></div>
                   </div>
                 </div>
               </div>
@@ -1764,7 +1771,8 @@
                     Loading last log...</div>
                 </div>
                 <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px"><span
-                    class="tag pending">Loading status...</span><button class="btn btn-primary btn-sm">Review</button></div>
+                    class="tag pending">Loading status...</span><button class="btn btn-primary btn-sm">Review</button>
+                </div>
               </div>
               <div class="request-card" onclick="openModal('approval-detail-modal')">
                 <div class="avatar">AK</div>
@@ -1775,7 +1783,8 @@
                     Loading last log...</div>
                 </div>
                 <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px"><span
-                    class="tag pending">Loading status...</span><button class="btn btn-primary btn-sm">Review</button></div>
+                    class="tag pending">Loading status...</span><button class="btn btn-primary btn-sm">Review</button>
+                </div>
               </div>
               <div class="request-card" onclick="openModal('approval-detail-modal')">
                 <div class="avatar" style="background:linear-gradient(135deg,#d97706,#f59e0b)">LS</div>
@@ -1786,7 +1795,8 @@
                     Loading last log...</div>
                 </div>
                 <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px"><span
-                    class="tag pending">Loading status...</span><button class="btn btn-primary btn-sm">Review</button></div>
+                    class="tag pending">Loading status...</span><button class="btn btn-primary btn-sm">Review</button>
+                </div>
               </div>
             </div>
           </div>
@@ -1856,7 +1866,7 @@
                   </div>
                 </div>
                 <div class="student-card-meta"><span>Loading placement...</span><span><span
-                        class="approved-dot"></span>Loading status...</span></div>
+                      class="approved-dot"></span>Loading status...</span></div>
                 <div style="font-size:.8rem;color:var(--text2);margin-bottom:6px">Overall Progress</div>
                 <div class="prog-bar">
                   <div class="prog-fill" style="width:72%"></div>
@@ -1936,7 +1946,7 @@
           <div class="sidebar-logo-text">InternLog <span>Administrator</span></div>
         </div>
         <div class="sidebar-user">
-          <div class="sidebar-user-avatar">AD</div>
+          <div class="sidebar-user-avatar">..</div>
           <div class="sidebar-user-name">Loading admin...</div>
           <div class="sidebar-user-role">Loading system administrator...</div>
         </div>
@@ -1945,9 +1955,10 @@
           <div class="nav-item active" onclick="switchTab('admin','dashboard',this)"><i class="fas fa-th-large"></i>
             Dashboard</div>
           <div class="nav-item" onclick="switchTab('admin','students',this)"><i class="fas fa-user-graduate"></i>
-            Students</div>
+            Students <span class="badge" id="admin-students-badge">0</span></div>
           <div class="nav-item" onclick="switchTab('admin','supervisors',this)"><i
-              class="fas fa-chalkboard-teacher"></i> Supervisors</div>
+              class="fas fa-chalkboard-teacher"></i> Supervisors <span class="badge"
+              id="admin-supervisors-badge">0</span></div>
           <div class="nav-item" onclick="switchTab('admin','add-supervisor',this)"><i class="fas fa-user-plus"></i> Add
             Supervisor</div>
           <div class="nav-item" onclick="switchTab('admin','placements',this)"><i class="fas fa-map-marked-alt"></i>
@@ -2004,35 +2015,35 @@
           <div id="admin-tab-dashboard" class="tab-content active">
             <div class="welcome-banner">
               <h3>Welcome, Administrator! 🛡️</h3>
-              <p>InternLog system is running smoothly. Internship programme ends in <strong>47 days</strong>. Monitor
-                student progress below.</p>
-              <div class="wb-badge"><i class="fas fa-university"></i> Loading university... · 2025/2026 Internship
-                Programme</div>
+              <p id="admin-welcome-msg">Loading dashboard...</p>
+              <div class="wb-badge" id="admin-institution-badge"><i class="fas fa-university"></i> Loading...</div>
             </div>
             <div class="cards-grid">
               <div class="card">
                 <div class="card-icon green"><i class="fas fa-user-graduate"></i></div>
                 <div class="card-val">-</div>
                 <div class="card-label">Active Students</div>
-                <div class="card-trend"><i class="fas fa-arrow-up"></i> Loading students joined this week...</div>
+                <div class="card-trend"><i class="fas fa-arrow-up"></i> Registered in system</div>
               </div>
+
               <div class="card">
                 <div class="card-icon amber"><i class="fas fa-user-clock"></i></div>
                 <div class="card-val">-</div>
                 <div class="card-label">Not Yet Started</div>
-                <div class="card-trend down"><i class="fas fa-exclamation"></i> Loading students awaiting placement...</div>
+                <div class="card-trend down"><i class="fas fa-exclamation"></i> Awaiting first log entry
+                </div>
               </div>
               <div class="card">
                 <div class="card-icon blue"><i class="fas fa-chalkboard-teacher"></i></div>
                 <div class="card-val">-</div>
                 <div class="card-label">Supervisors</div>
-                <div class="card-trend"><i class="fas fa-check"></i> Loading supervisors...</div>
+                <div class="card-trend"><i class="fas fa-check"></i> School supervisors</div>
               </div>
               <div class="card">
                 <div class="card-icon red"><i class="fas fa-calendar-times"></i></div>
                 <div class="card-val">-</div>
                 <div class="card-label">Days to End</div>
-                <div class="card-trend"><i class="fas fa-flag"></i> Loading programme ends...</div>
+                <div class="card-trend"><i class="fas fa-flag"></i> Until programme ends</div>
               </div>
             </div>
 
@@ -2183,6 +2194,9 @@
                     <option>Not Started</option>
                     <option>Completed</option>
                   </select>
+                  <button class="btn btn-primary btn-sm" onclick="autoAssignSupervisors()">
+                    <i class="fas fa-magic"></i> Auto Assign All
+                  </button>
                   <button class="btn btn-primary btn-sm"><i class="fas fa-download"></i> Export</button>
                 </div>
               </div>
@@ -2248,55 +2262,10 @@
           <div id="admin-tab-supervisors" class="tab-content">
             <div class="page-header">
               <h2>Supervisors</h2>
-              <p>All registered school and industry supervisors</p>
+              <p>All registered school supervisors</p>
             </div>
-            <div class="tab-row">
-              <div class="tab-btn active" onclick="switchInnerTab('sv','school',this)">School Supervisors (0)</div>
-              <div class="tab-btn" onclick="switchInnerTab('sv','industry',this)">Industry Supervisors (0)</div>
-            </div>
-            <div id="sv-tab-school" class="tab-content active">
-              <div class="student-cards-grid">
-                <div class="student-card">
-                  <div class="student-card-top">
-                    <div class="avatar avatar-lg" style="background:linear-gradient(135deg,#1a5f8a,#2176ae)">DS</div>
-                    <div class="student-card-info">
-                      <h4>Loading supervisor...</h4>
-                      <p>Loading registration number...</p>
-                    </div>
-                  </div>
-                  <div class="student-card-meta"><span>Loading department...</span><span><span
-                        class="approved-dot"></span>Loading status...</span></div>
-                  <div style="font-size:.82rem;color:var(--text2)">Assigned Students: <strong>0</strong></div>
-                </div>
-                <div class="student-card">
-                  <div class="student-card-top">
-                    <div class="avatar avatar-lg" style="background:linear-gradient(135deg,#d97706,#f59e0b)">RN</div>
-                    <div class="student-card-info">
-                      <h4>Loading supervisor...</h4>
-                      <p>Loading registration number...</p>
-                    </div>
-                  </div>
-                  <div class="student-card-meta"><span>Loading department...</span><span><span
-                        class="approved-dot"></span>Loading status...</span></div>
-                  <div style="font-size:.82rem;color:var(--text2)">Assigned Students: <strong>0</strong></div>
-                </div>
-              </div>
-            </div>
-            <div id="sv-tab-industry" class="tab-content">
-              <div class="student-cards-grid">
-                <div class="student-card">
-                  <div class="student-card-top">
-                    <div class="avatar avatar-lg">LS</div>
-                    <div class="student-card-info">
-                      <h4>Loading supervisor...</h4>
-                      <p>Loading registration number...</p>
-                    </div>
-                  </div>
-                  <div class="student-card-meta"><span>Loading department...</span><span><span
-                        class="approved-dot"></span>Loading status...</span></div>
-                  <div style="font-size:.82rem;color:var(--text2)">Interns: <strong>0</strong></div>
-                </div>
-              </div>
+            <div id="sv-tab-school">
+              <div class="student-cards-grid"></div>
             </div>
           </div>
 
@@ -2304,25 +2273,23 @@
           <div id="admin-tab-add-supervisor" class="tab-content">
             <div class="page-header">
               <h2>Add Supervisor</h2>
-              <p>Register a new school or industry supervisor</p>
+              <p>Register a new school supervisor</p>
             </div>
-            <div class="section-card" style="max-width:600px">
+            <div class="section-card" style="margin:0 auto">
               <div class="section-head">
                 <h3>New Supervisor Form</h3>
               </div>
               <div class="section-body">
                 <div class="form-group"><label>Supervisor Type</label><select>
                     <option>School Supervisor</option>
-                    <option>Industry Supervisor</option>
                   </select></div>
                 <div class="form-row">
                   <div class="form-group"><label>Full Name</label><input type="text" placeholder="Full name"></div>
-                  <div class="form-group"><label>Staff / Employee ID</label><input type="text"
-                      placeholder="e.g. STAFF-042"></div>
+                  <div class="form-group"><label>Staff ID</label><input type="text" placeholder="e.g. STAFF-042"></div>
                 </div>
                 <div class="form-group"><label>Email Address</label><input type="email"
                     placeholder="supervisor@institution.ac.ug"></div>
-                <div class="form-group"><label>Department / Organisation</label><input type="text"
+                <div class="form-group"><label>Department</label><input type="text"
                     placeholder="Department or company name"></div>
                 <div class="form-group"><label>Phone Number</label><input type="tel" placeholder="+256 700 000 000">
                 </div>
@@ -2332,7 +2299,8 @@
                   <div class="form-group"><label>Max Student Capacity</label><input type="number" placeholder="e.g. 10"
                       min="1"></div>
                 </div>
-                <button class="btn btn-primary"><i class="fas fa-user-plus"></i> Add Supervisor</button>
+                <button class="btn btn-primary" onclick="addSupervisor()"><i class="fas fa-user-plus"></i> Add
+                  Supervisor</button>
               </div>
             </div>
           </div>
@@ -2459,12 +2427,16 @@
                   <h3>Programme Settings</h3>
                 </div>
                 <div class="section-body">
-                  <div class="form-group"><label>Internship Start Date</label><input type="date" value="2026-01-13">
+                  <div class="form-group"><label>Internship Start Date</label><input type="date"
+                      id="programme-start-date">
                   </div>
-                  <div class="form-group"><label>Internship End Date</label><input type="date" value="2026-04-21"></div>
-                  <div class="form-group"><label>Institution Name</label><input type="text" value="Makerere University">
+                  <div class="form-group"><label>Internship End Date</label><input type="date" id="programme-end-date">
                   </div>
-                  <button class="btn btn-primary btn-sm"><i class="fas fa-save"></i> Save Settings</button>
+                  <div class="form-group"><label>Institution Name</label><input type="text"
+                      value="International University of East Africa">
+                  </div>
+                  <button class="btn btn-primary btn-sm" onclick="saveAdminSettings()"><i class="fas fa-save"></i> Save
+                    Settings</button>
                 </div>
               </div>
             </div>
@@ -2524,7 +2496,8 @@
       <div class="form-group"><label>Skills Applied</label>
         <div style="font-size:.9rem">Loading skills...</div>
       </div>
-      <div class="form-group"><label>Status</label><span class="tag approved">Approved by Loading supervisor... · Loading last log...</span>
+      <div class="form-group"><label>Status</label><span class="tag approved">Approved by Loading supervisor... ·
+          Loading last log...</span>
       </div>
       <div class="form-group"><label>Supervisor Comment</label>
         <div style="font-style:italic;color:var(--text2);font-size:.9rem">"Loading comment..."</div>
@@ -2550,8 +2523,8 @@
             <div class="profile-meta-item"><i class="fas fa-building" style="margin-right:4px"></i>Placement:
               <span>Loading placement...</span>
             </div>
-            <div class="profile-meta-item"><i class="fas fa-envelope"
-                style="margin-right:4px"></i><span>Loading email...</span></div>
+            <div class="profile-meta-item"><i class="fas fa-envelope" style="margin-right:4px"></i><span>Loading
+                email...</span></div>
           </div>
         </div>
       </div>
@@ -2636,8 +2609,10 @@
         <div style="font-size:1.05rem;font-weight:700">Loading task...</div>
       </div>
       <div class="form-group"><label>Type & Duration</label>
-        <div style="display:flex;gap:10px;align-items:center"><span class="tag onsite">Loading type...</span> <span>Loading duration... ·
-            Loading date...</span></div>
+        <div style="display:flex;gap:10px;align-items:center"><span class="tag onsite">Loading type...</span>
+          <span>Loading duration... ·
+            Loading date...</span>
+        </div>
       </div>
       <div class="form-group"><label>GPS Verification</label><span class="gps-badge"><i class="fas fa-check"></i>
           Loading verification... · Loading GPS...</span></div>
