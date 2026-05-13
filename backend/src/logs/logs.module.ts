@@ -9,17 +9,20 @@
 // export class LogsModule {}
 
 import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Log } from './log.entity';
 import { LogsService } from './logs.service';
 import { LogsController } from './logs.controller';
 import { User } from '../users/user.entity';
-import { JwtModule } from '@nestjs/jwt';
+import { UsersModule } from '../users/users.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Log, User]),
-  JwtModule,
-],
+  imports: [
+    ConfigModule,
+    TypeOrmModule.forFeature([Log, User]),
+    UsersModule,
+  ],
   providers: [LogsService],
   controllers: [LogsController],
   exports: [LogsService],

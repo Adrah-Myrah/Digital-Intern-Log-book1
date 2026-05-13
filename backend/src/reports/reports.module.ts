@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { MulterModule } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
@@ -6,10 +7,11 @@ import { extname } from 'path';
 import { Report } from './report.entity';
 import { ReportsService } from './reports.service';
 import { ReportsController } from './reports.controller';
-import { JwtModule } from '@nestjs/jwt';
+import { UsersModule } from '../users/users.module';
 
 @Module({
   imports: [
+    ConfigModule,
     TypeOrmModule.forFeature([Report]),
     MulterModule.register({
       storage: diskStorage({
@@ -28,7 +30,7 @@ import { JwtModule } from '@nestjs/jwt';
       },
       limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
     }),
-    JwtModule,
+    UsersModule,
   ],
   providers: [ReportsService],
   controllers: [ReportsController],

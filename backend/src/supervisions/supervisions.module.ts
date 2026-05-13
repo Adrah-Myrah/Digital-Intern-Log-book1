@@ -9,16 +9,19 @@
 // export class SupervisionsModule {}
 
 import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Supervision } from './supervision.entity';
 import { SupervisionsService } from './supervisions.service';
 import { SupervisionsController } from './supervisions.controller';
-import { JwtModule } from '@nestjs/jwt';
+import { UsersModule } from '../users/users.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Supervision]),
-  JwtModule,
-],
+  imports: [
+    ConfigModule,
+    TypeOrmModule.forFeature([Supervision]),
+    UsersModule,
+  ],
   providers: [SupervisionsService],
   controllers: [SupervisionsController],
   exports: [SupervisionsService],

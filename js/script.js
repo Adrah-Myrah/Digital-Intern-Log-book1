@@ -107,7 +107,10 @@ async function handleRegister() {
     }
 
     alert('Account created successfully! Please sign in.');
-    goToLogin();
+    showPage('page-login');
+    // Clear the register form
+    document.getElementById('reg-role').value = '';
+    toggleRegFields();
 
   } catch (err) {
     alert('Could not connect to server. Make sure the backend is running.');
@@ -119,9 +122,20 @@ async function handleRegister() {
 /* ===== PAGE NAVIGATION ===== */
 
 function showPage(id) {
-  document.querySelectorAll('.page').forEach(p => { p.classList.remove('active'); p.style.display = 'none'; });
-  const page = document.getElementById(id);
-  if (page) { page.style.display = 'flex'; setTimeout(() => page.classList.add('active'), 10); }
+  const target = document.getElementById(id);
+  if (!target) return;
+  
+  // Only hide/show if we're actually changing pages
+  const currentActive = document.querySelector('.page.active');
+  if (currentActive && currentActive.id === id) return;
+  
+  document.querySelectorAll('.page').forEach(p => {
+    p.classList.remove('active');
+    p.style.display = 'none';
+  });
+  
+  target.style.display = 'flex';
+  target.classList.add('active'); // no setTimeout — no flash
   document.querySelectorAll('.notif-panel').forEach(n => n.classList.remove('open'));
 }
 
@@ -149,27 +163,13 @@ function toggleRegFields() {
 //   showPage('page-login');
 // }
 function goToLogin() {
-  // Clear all session and local storage
-  sessionStorage.removeItem('isLoggedIn');
-  sessionStorage.removeItem('activePage');
-  sessionStorage.removeItem('userRole');
-  sessionStorage.removeItem('token');
-  sessionStorage.removeItem('userName');
-  sessionStorage.removeItem('userId');
-  sessionStorage.removeItem('currentSupervisionId');
-  localStorage.removeItem('activeTab');
-  localStorage.removeItem('activeTabPrefix');
+  sessionStorage.clear();
   localStorage.removeItem('token');
+  localStorage.removeItem('userRole');
   localStorage.removeItem('userName');
   localStorage.removeItem('userId');
-  localStorage.removeItem('userRole');
-
-  // Clear login form fields
-  const loginId = document.getElementById('login-id');
-  const loginPw = document.getElementById('login-pw');
-  if (loginId) loginId.value = '';
-  if (loginPw) loginPw.value = '';
-
+  localStorage.removeItem('activeTab');
+  localStorage.removeItem('activeTabPrefix');
   showPage('page-login');
 }
 
@@ -195,20 +195,19 @@ async function handleLogin() {
 
     const result = await response.json();
     if (!response.ok) {
-      alert(result.message || 'Invalid credentials. Please try again.');
+      alert(result.message || 'Invalid credentials.');
       return;
     }
-
+    // Save token and user info to BOTH storages
     sessionStorage.setItem('isLoggedIn', 'true');
     sessionStorage.setItem('token', result.token);
     sessionStorage.setItem('userRole', result.role);
     sessionStorage.setItem('userName', result.name);
     sessionStorage.setItem('userId', String(result.id));
-
     localStorage.setItem('token', result.token);
+    localStorage.setItem('userRole', result.role);
     localStorage.setItem('userName', result.name);
     localStorage.setItem('userId', String(result.id));
-    localStorage.setItem('userRole', result.role);
 
     const pages = {
       student: 'page-student',
@@ -307,6 +306,7 @@ function loadUserDashboard() {
     }
     loadPendingLogs();
     loadIndustryCards();
+    loadIndustryInterns();
   }
 
   // Update admin dashboard
@@ -328,11 +328,7 @@ async function loadPendingLogs() {
   try {
     const myId = getUserId();
     const endpoint = myId ? `${API_URL}/logs/pending/${myId}` : `${API_URL}/logs/pending`;
-    const response = await fetch(endpoint, {
-      headers: { 'Authorization': `Bearer ${getToken()}` }
-    });
-
-    const logs = await response.json();
+    const logs = await fetchJson(endpoint);
 
     // Update pending count card
     const cards = document.querySelectorAll('#industry-tab-dashboard .card-val');
@@ -376,7 +372,38 @@ async function loadPendingLogs() {
 
     // Also update the requests tab
     const requestsTab = document.querySelector('#industry-tab-requests .request-list');
-    if (requestsTab) requestsTab.innerHTML = requestList ? requestList.innerHTML : '';
+    if (requestsTab) {
+      if (logs.length > 0) {
+        requestsTab.innerHTML = logs.map(log => `
+          <div class="request-card">
+            <div class="avatar">${String(log.studentId).slice(0,2)}</div>
+            <div class="request-card-body">
+              <h4>${escapeHtml(log.taskName)}</h4>
+              <p>Student ID: ${log.studentId} · ${new Date(log.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</p>
+              <div class="request-card-meta">
+                <span class="tag ${log.workType === 'Onsite' ? 'onsite' : 'offsite'}">${log.workType}</span>
+                &nbsp; ${log.estimatedHours} hours
+              </div>
+              ${log.description ? `<p style="margin-top:8px;font-size:.85rem;color:var(--text2)">${escapeHtml(log.description.substring(0, 120))}${log.description.length > 120 ? '...' : ''}</p>` : ''}
+            </div>
+            <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px">
+              <span class="tag pending">Pending</span>
+              <div style="display:flex;gap:6px">
+                <button class="btn btn-primary btn-sm" onclick="approveLog(${log.id}, 'approved')">
+                  <i class="fas fa-check"></i> Approve
+                </button>
+                <button class="btn btn-outline btn-sm" style="border-color:var(--danger);color:var(--danger)" 
+                        onclick="approveLog(${log.id}, 'rejected')">
+                  <i class="fas fa-times"></i> Reject
+                </button>
+              </div>
+            </div>
+          </div>
+        `).join('');
+      } else {
+        requestsTab.innerHTML = '<p style="padding:20px;color:var(--text2)">No pending approvals.</p>';
+      }
+    }
 
   } catch (err) {
     console.error('Failed to load pending logs:', err);
@@ -392,12 +419,8 @@ async function approveLog(logId, status) {
   const supervisorId = getUserId();
 
   try {
-    const response = await fetch(`${API_URL}/logs/${logId}/approve`, {
+    await fetchJson(`${API_URL}/logs/${logId}/approve`, {
       method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${getToken()}`
-      },
       body: JSON.stringify({
         status,
         supervisorComment: comment,
@@ -425,14 +448,78 @@ async function approveLog(logId, status) {
   }
 }
 
+async function loadIndustryInterns() {
+  try {
+    const students = await fetchJson(getAssignedStudentsEndpoint());
+    const progressMap = await getStudentProgressMap();
+    const grid = document.getElementById('industry-interns-grid');
+    if (!grid) return;
+
+    if (!students || students.length === 0) {
+      grid.innerHTML = '<p style="color:var(--text2);padding:20px">No interns assigned yet.</p>';
+      return;
+    }
+
+    grid.innerHTML = students.map(student => {
+      const stats = progressMap.get(Number(student.id)) || { progress: 0 };
+      const initials = student.fullName.split(' ').map(n => n[0]).join('').toUpperCase();
+      const fullName = (student.fullName || '').replace(/'/g, "\\'");
+      const regNo = (student.registrationNumber || '').replace(/'/g, "\\'");
+      const course = (student.course || '').replace(/'/g, "\\'");
+      const placement = (student.placementCompany || '').replace(/'/g, "\\'");
+      const email = (student.email || '').replace(/'/g, "\\'");
+
+      return `
+        <div class="student-card">
+          <div class="student-card-top">
+            <div class="avatar avatar-lg">${initials}</div>
+            <div class="student-card-info">
+              <h4>${escapeHtml(student.fullName)}</h4>
+              <p>${student.registrationNumber || '—'} · ${student.course || '—'}</p>
+            </div>
+          </div>
+          <div class="student-card-meta">
+            <span>${escapeHtml(student.placementCompany || 'Not Placed')}</span>
+            <span><span class="approved-dot"></span>Active</span>
+          </div>
+          <div style="font-size:.8rem;color:var(--text2);margin-bottom:6px">Overall Progress</div>
+          <div class="prog-bar">
+            <div class="prog-fill ${stats.progress > 0 && stats.progress < 60 ? 'amber' : ''}" 
+                 style="width:${stats.progress}%"></div>
+          </div>
+          <div style="font-size:.78rem;color:var(--text3);margin-top:4px;text-align:right">${stats.progress}%</div>
+          <div style="display:flex;gap:8px;margin-top:12px">
+            <button class="btn btn-primary btn-sm" style="flex:1"
+              onclick="openIndustryInternMessage(${student.id}, '${fullName}')">
+              <i class="fas fa-comment"></i> Message
+            </button>
+            <button class="btn btn-outline btn-sm" style="flex:1"
+              onclick="openStudentProfile(${student.id}, '${fullName}', '${regNo}', '${course}', '${placement}', '${email}')">
+              <i class="fas fa-user"></i> Profile
+            </button>
+          </div>
+        </div>
+      `;
+    }).join('');
+  } catch (err) {
+    console.error('Failed to load industry interns:', err);
+  }
+}
+
+function openIndustryInternMessage(studentId, studentName) {
+  const navItem = document.querySelector(
+    `#sidebar-industry .nav-item[onclick*="'messages'"]`
+  );
+  switchTab('industry', 'messages', navItem);
+  setTimeout(() => {
+    loadConversationWith(Number(studentId), studentName);
+  }, 400);
+}
+
 // Wire Student logs
 async function loadStudentLogs(studentId) {
   try {
-    const response = await fetch(`${API_URL}/logs/student/${studentId}`, {
-      headers: { 'Authorization': `Bearer ${getToken()}` }
-    });
-
-    const logs = await response.json();
+    const logs = await fetchJson(`${API_URL}/logs/student/${studentId}`);
 
     // ── RECENT LOGS TABLE (dashboard) ──
     const recentTbody = document.querySelector('#student-tab-dashboard .table-wrap tbody');
@@ -454,7 +541,7 @@ async function loadStudentLogs(studentId) {
             <td><span class="tag ${log.workType === 'Onsite' ? 'onsite' : 'offsite'}">${log.workType}</span></td>
             <td>${log.estimatedHours}h</td>
             <td><span class="tag ${log.status}">${log.status.charAt(0).toUpperCase() + log.status.slice(1)}</span></td>
-            <td><button class="btn btn-outline btn-sm" onclick="openModal('log-detail-modal')">View</button></td>
+            <td><button class="btn btn-outline btn-sm" onclick="openLogDetail(${log.id})">View</button></td>
           </tr>
         `).join('');
       }
@@ -480,7 +567,7 @@ async function loadStudentLogs(studentId) {
             <td>${log.estimatedHours}h</td>
             <td><span class="gps-badge"><i class="fas fa-check"></i> ${log.gpsLatitude ? 'Verified' : 'No GPS'}</span></td>
             <td><span class="tag ${log.status}">${log.status.charAt(0).toUpperCase() + log.status.slice(1)}</span></td>
-            <td><button class="btn btn-outline btn-sm" onclick="openModal('log-detail-modal')">Detail</button></td>
+            <td><button class="btn btn-outline btn-sm" onclick="openLogDetail(${log.id})">Detail</button></td>
           </tr>
         `).join('');
       }
@@ -491,19 +578,94 @@ async function loadStudentLogs(studentId) {
   }
 }
 
+async function openLogDetail(logId) {
+  try {
+    const log = await fetchJson(`${API_URL}/logs/${logId}`);
+    if (!log) return;
+
+    const modal = document.getElementById('log-detail-modal');
+    if (!modal) return;
+
+    // Work type tag
+    const headerBox = modal.querySelector('.modal > div');
+    if (headerBox) {
+      headerBox.innerHTML = `
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+          <span class="tag ${log.workType === 'Onsite' ? 'onsite' : 'offsite'}">${log.workType}</span>
+          <span class="gps-badge">
+            ${log.gpsLatitude
+              ? `<i class="fas fa-check"></i> GPS Verified · ${Number(log.gpsLatitude).toFixed(4)}°N, ${Number(log.gpsLongitude).toFixed(4)}°E`
+              : `<i class="fas fa-times"></i> No GPS recorded`}
+          </span>
+        </div>
+        <h4 style="font-size:1.05rem;margin-bottom:6px">${escapeHtml(log.taskName)}</h4>
+        <div style="font-size:.82rem;color:var(--text2)">
+          ${new Date(log.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })} · ${log.estimatedHours} hours
+        </div>
+      `;
+    }
+
+    // Description
+    const formGroups = modal.querySelectorAll('.form-group');
+    if (formGroups[0]) {
+      formGroups[0].innerHTML = `
+        <label>Description</label>
+        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px;font-size:.9rem;line-height:1.7;color:var(--text2)">
+          ${escapeHtml(log.description || '—')}
+        </div>
+      `;
+    }
+
+    // Skills applied
+    if (formGroups[1]) {
+      formGroups[1].innerHTML = `
+        <label>Skills Applied</label>
+        <div style="font-size:.9rem">${escapeHtml(log.skillsApplied || '—')}</div>
+      `;
+    }
+
+    // Status
+    if (formGroups[2]) {
+      let statusHtml = '';
+      if (log.status === 'approved') {
+        const approvedDate = log.approvedAt
+          ? new Date(log.approvedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
+          : '';
+        statusHtml = `<span class="tag approved">Approved · ${approvedDate}</span>`;
+      } else if (log.status === 'rejected') {
+        statusHtml = `<span class="tag rejected">Rejected</span>`;
+      } else {
+        statusHtml = `<span class="tag pending">Pending Approval</span>`;
+      }
+      formGroups[2].innerHTML = `<label>Status</label>${statusHtml}`;
+    }
+
+    // Supervisor comment
+    if (formGroups[3]) {
+      const comment = log.supervisorComment;
+      formGroups[3].innerHTML = `
+        <label>Supervisor Comment</label>
+        <div style="font-style:${comment ? 'italic' : 'normal'};color:${comment ? 'var(--text2)' : 'var(--text3)'};font-size:.9rem">
+          ${comment ? `"${escapeHtml(comment)}"` : 'No comment yet — awaiting supervisor review.'}
+        </div>
+      `;
+    }
+
+    openModal('log-detail-modal');
+  } catch (err) {
+    console.error('Failed to load log detail:', err);
+    alert('Could not load log details. Please try again.');
+  }
+}
+
 // WIRING STUDENTS CARD
 
 async function loadStudentCards(studentId) {
   try {
-    const [logsRes, settingsRes] = await Promise.all([
-      fetch(`${API_URL}/logs/student/${studentId}`, {
-        headers: { 'Authorization': `Bearer ${getToken()}` }
-      }),
-      fetch(`${API_URL}/settings`)
+    const [logs, settings] = await Promise.all([
+      fetchJson(`${API_URL}/logs/student/${studentId}`),
+      fetchJson(`${API_URL}/settings`)
     ]);
-
-    const logs = await logsRes.json();
-    const settings = await settingsRes.json();
 
     // Define these FIRST before using them
     const total = logs.length;
@@ -550,21 +712,11 @@ async function loadStudentCards(studentId) {
 async function loadIndustryCards() {
   try {
     const myId = getUserId();
-    const [pendingRes, allLogsRes, assignedStudentsRes] = await Promise.all([
-      fetch(myId ? `${API_URL}/logs/pending/${myId}` : `${API_URL}/logs/pending`, {
-        headers: { 'Authorization': `Bearer ${getToken()}` }
-      }),
-      fetch(`${API_URL}/logs`, {
-        headers: { 'Authorization': `Bearer ${getToken()}` }
-      }),
-      fetch(getAssignedStudentsEndpoint(), {
-        headers: { 'Authorization': `Bearer ${getToken()}` }
-      })
+    const [pendingLogs, allLogsRaw, assignedStudents] = await Promise.all([
+      fetchJson(myId ? `${API_URL}/logs/pending/${myId}` : `${API_URL}/logs/pending`),
+      fetchJson(`${API_URL}/logs`),
+      fetchJson(getAssignedStudentsEndpoint()),
     ]);
-
-    const pendingLogs = await pendingRes.json();
-    const allLogsRaw = await allLogsRes.json();
-    const assignedStudents = await assignedStudentsRes.json();
     const assignedIds = new Set((assignedStudents || []).map(s => Number(s.id)));
     const allLogs = allLogsRaw.filter(l => assignedIds.has(Number(l.studentId)));
 
@@ -595,21 +747,11 @@ async function loadIndustryCards() {
 // WIRE SCHOOL-SUP CARDS
 async function loadSchoolCards() {
   try {
-    const [allLogsRes, reportsRes, studentsRes] = await Promise.all([
-      fetch(`${API_URL}/logs`, {
-        headers: { 'Authorization': `Bearer ${getToken()}` }
-      }),
-      fetch(`${API_URL}/reports`, {
-        headers: { 'Authorization': `Bearer ${getToken()}` }
-      }),
-      fetch(getAssignedStudentsEndpoint(), {
-        headers: { 'Authorization': `Bearer ${getToken()}` }
-      })
+    const [allLogs, allReports, students] = await Promise.all([
+      fetchJson(`${API_URL}/logs`),
+      fetchJson(`${API_URL}/reports`),
+      fetchJson(getAssignedStudentsEndpoint()),
     ]);
-
-    const allLogs = await allLogsRes.json();
-    const allReports = await reportsRes.json();
-    const students = await studentsRes.json();
 
     // Card 0 — all registered students (until assignment is introduced)
     const totalStudents = students.length;
@@ -665,11 +807,7 @@ async function loadSchoolCards() {
 
 async function loadSchoolStudents() {
   try {
-    const response = await fetch(getAssignedStudentsEndpoint(), {
-      headers: { 'Authorization': `Bearer ${getToken()}` }
-    });
-
-    const students = await response.json();
+    const students = await fetchJson(getAssignedStudentsEndpoint());
     const progressMap = await getStudentProgressMap();
 
     const tbody = document.querySelector('#school-tab-students .table-wrap tbody');
@@ -752,10 +890,7 @@ async function loadSchoolStudents() {
 async function getStudentProgressMap() {
   const progressMap = new Map();
   try {
-    const logsResponse = await fetch(`${API_URL}/logs`, {
-      headers: { 'Authorization': `Bearer ${getToken()}` }
-    });
-    const allLogs = await logsResponse.json();
+    const allLogs = await fetchJson(`${API_URL}/logs`);
 
     const grouped = new Map();
     allLogs.forEach(log => {
@@ -780,15 +915,11 @@ async function getStudentProgressMap() {
 
 async function loadAdminDashboardData() {
   try {
-    const [countsRes, studentsRes, supervisorsRes] = await Promise.all([
-      fetch(`${API_URL}/users/counts`, { headers: { 'Authorization': `Bearer ${getToken()}` } }),
-      fetch(`${API_URL}/users/students`, { headers: { 'Authorization': `Bearer ${getToken()}` } }),
-      fetch(`${API_URL}/users/supervisors`, { headers: { 'Authorization': `Bearer ${getToken()}` } }),
+    const [counts, students, supervisors] = await Promise.all([
+      fetchJson(`${API_URL}/users/counts`),
+      fetchJson(`${API_URL}/users/students`),
+      fetchJson(`${API_URL}/users/supervisors`),
     ]);
-
-    const counts = await countsRes.json();
-    const students = await studentsRes.json();
-    const supervisors = await supervisorsRes.json();
     const progressMap = await getStudentProgressMap();
 
     // Admin dashboard cards
@@ -845,15 +976,19 @@ async function loadAdminDashboardData() {
             <td>${student.placementCompany || '—'}</td>
             <td><div class="prog-bar" style="min-width:80px"><div class="prog-fill ${stats.progress > 0 && stats.progress < 60 ? 'amber' : ''}" style="width:${stats.progress}%"></div></div></td>
             <td><span class="tag ${statusTag}">${statusText}</span></td>
-            <td><button class="btn btn-outline btn-sm">View</button></td>
+            <td>
+              <button class="btn btn-outline btn-sm" onclick="openAssignSupervisorModal(${student.id}, '${student.fullName.replace(/'/g, "\\'")}')">
+                Assign Supervisor
+              </button>
+            </td>
           </tr>
         `;
       }).join('');
     }
 
     // Admin supervisors tab counts
-    const schoolSvTab = document.querySelector('.tab-btn[onclick*="sv\',\'school"]');
-    const industrySvTab = document.querySelector('.tab-btn[onclick*="sv\',\'industry"]');
+    const schoolSvTab = document.querySelector('.tab-btn[onclick*=\'school\']');
+    const industrySvTab = document.querySelector('.tab-btn[onclick*=\'industry\']');
     if (schoolSvTab) schoolSvTab.textContent = `School Supervisors (${supervisors.school?.length || 0})`;
     if (industrySvTab) industrySvTab.textContent = `Industry Supervisors (${supervisors.industry?.length || 0})`;
   } catch (err) {
@@ -861,161 +996,734 @@ async function loadAdminDashboardData() {
   }
 }
 
-function toggleSchoolChat() {
-  document.getElementById('school-chat-box').classList.toggle('open');
+let assigningStudentId = null;
+
+async function handleAdminAddSupervisor() {
+  const typeSelect = document.querySelector('#admin-tab-add-supervisor select');
+  const inputs = document.querySelectorAll('#admin-tab-add-supervisor input');
+  const fullName = inputs[0]?.value.trim();
+  const staffId = inputs[1]?.value.trim();
+  const email = inputs[2]?.value.trim();
+  const department = inputs[3]?.value.trim();
+  const password = inputs[5]?.value.trim();
+
+  if (!fullName || !staffId || !email || !password) {
+    alert('Please fill in Full Name, Staff ID, Email and Password.');
+    return;
+  }
+
+  if (password.length < 8 || !/[A-Z]/.test(password) || !/[a-z]/.test(password) || !/\d/.test(password)) {
+    alert('Password must be at least 8 characters with uppercase, lowercase and a number.');
+    return;
+  }
+
+  const roleMap = {
+    'School Supervisor': 'school-supervisor',
+    'Industry Supervisor': 'industry-supervisor',
+  };
+  const role = roleMap[typeSelect?.value] || 'school-supervisor';
+
+  const btn = document.querySelector('#admin-tab-add-supervisor .btn-primary');
+  if (btn) {
+    btn.innerHTML = '<span class="spinner"></span> Adding...';
+    btn.disabled = true;
+  }
+
+  try {
+    await fetchJson(`${API_URL}/auth/register`, {
+      method: 'POST',
+      body: JSON.stringify({ fullName, staffId, email, department, password, role }),
+    });
+    alert(`Supervisor ${fullName} added successfully!`);
+    document.querySelectorAll('#admin-tab-add-supervisor input').forEach(i => i.value = '');
+    loadAdminDashboardData();
+  } catch (err) {
+    alert('Failed to add supervisor. ' + err.message);
+  } finally {
+    if (btn) {
+      btn.innerHTML = '<i class="fas fa-user-plus"></i> Add Supervisor';
+      btn.disabled = false;
+    }
+  }
 }
 
-function schoolChatEnter(e) {
-  if (e.key === 'Enter') sendSchoolChat();
+async function loadAdminSupervisors() {
+  try {
+    const supervisors = await fetchJson(`${API_URL}/users/supervisors`);
+    const schoolSups = supervisors.school || [];
+    const industrySups = supervisors.industry || [];
+
+    const schoolTab = document.querySelector('#admin-tab-supervisors .tab-row .tab-btn[onclick*=\'school\']');
+    const industryTab = document.querySelector('#admin-tab-supervisors .tab-row .tab-btn[onclick*=\'industry\']');
+    if (schoolTab) schoolTab.textContent = `School Supervisors (${schoolSups.length})`;
+    if (industryTab) industryTab.textContent = `Industry Supervisors (${industrySups.length})`;
+
+    const schoolGrid = document.querySelector('#sv-tab-school .student-cards-grid');
+    if (schoolGrid) {
+      schoolGrid.innerHTML = schoolSups.length === 0
+        ? '<p style="color:var(--text2);padding:20px">No school supervisors registered yet.</p>'
+        : schoolSups.map(sup => {
+          const initials = sup.fullName.split(' ').map(n => n[0]).join('').toUpperCase();
+          return `
+            <div class="student-card">
+              <div class="student-card-top">
+                <div class="avatar avatar-lg">${initials}</div>
+                <div class="student-card-info">
+                  <h4>${sup.fullName}</h4>
+                  <p>${sup.staffId || '—'}</p>
+                </div>
+              </div>
+              <div class="student-card-meta">
+                <span>${sup.department || 'No department'}</span>
+                <span><span class="approved-dot"></span>Active</span>
+              </div>
+              <div style="font-size:.82rem;color:var(--text2);margin-top:8px">
+                <i class="fas fa-envelope" style="margin-right:4px"></i>${sup.email || '—'}
+              </div>
+            </div>
+          `;
+        }).join('');
+    }
+
+    const industryGrid = document.querySelector('#sv-tab-industry .student-cards-grid');
+    if (industryGrid) {
+      industryGrid.innerHTML = industrySups.length === 0
+        ? '<p style="color:var(--text2);padding:20px">No industry supervisors registered yet.</p>'
+        : industrySups.map(sup => {
+          const initials = sup.fullName.split(' ').map(n => n[0]).join('').toUpperCase();
+          return `
+            <div class="student-card">
+              <div class="student-card-top">
+                <div class="avatar avatar-lg">${initials}</div>
+                <div class="student-card-info">
+                  <h4>${sup.fullName}</h4>
+                  <p>${sup.staffId || '—'}</p>
+                </div>
+              </div>
+              <div class="student-card-meta">
+                <span>${sup.department || sup.email || '—'}</span>
+                <span><span class="approved-dot"></span>Active</span>
+              </div>
+              <div style="font-size:.82rem;color:var(--text2);margin-top:8px">
+                <i class="fas fa-envelope" style="margin-right:4px"></i>${sup.email || '—'}
+              </div>
+            </div>
+          `;
+        }).join('');
+    }
+  } catch (err) {
+    console.error('Failed to load supervisors:', err);
+  }
 }
 
-async function sendSchoolChat() {
-  const input = document.getElementById('school-chat-input');
-  const msg = input.value.trim();
-  if (!msg) return;
+async function openAssignSupervisorModal(studentId, studentName) {
+  assigningStudentId = studentId;
+  const nameEl = document.getElementById('assign-student-name');
+  if (nameEl) nameEl.textContent = `Assigning supervisors for: ${studentName}`;
 
-  const myId = getUserId();
-  const chatMessages = document.getElementById('school-chat-messages');
-  const partnerId = chatMessages?.dataset.partnerId;
+  try {
+    const supervisors = await fetchJson(`${API_URL}/users/supervisors`);
+    const schoolSelect = document.getElementById('assign-school-supervisor');
+    const industrySelect = document.getElementById('assign-industry-supervisor');
+    if (!schoolSelect || !industrySelect) {
+      alert('Assignment controls are not available.');
+      return;
+    }
 
-  if (!partnerId) {
-    alert('Please select a student first from My Students tab.');
+    schoolSelect.innerHTML = '<option value="">— Select School Supervisor —</option>' +
+      (supervisors.school || []).map(s =>
+        `<option value="${s.id}">${s.fullName} (${s.staffId || s.email})</option>`
+      ).join('');
+
+    industrySelect.innerHTML = '<option value="">— Select Industry Supervisor —</option>' +
+      (supervisors.industry || []).map(s =>
+        `<option value="${s.id}">${s.fullName} (${s.staffId || s.email})</option>`
+      ).join('');
+
+    openModal('assign-supervisor-modal');
+  } catch (err) {
+    alert('Failed to load supervisors. Please try again.');
+  }
+}
+
+async function submitSupervisorAssignment() {
+  if (!assigningStudentId) return;
+  const schoolSupervisorId = document.getElementById('assign-school-supervisor')?.value;
+  const industrySupervisorId = document.getElementById('assign-industry-supervisor')?.value;
+
+  if (!schoolSupervisorId && !industrySupervisorId) {
+    alert('Please select at least one supervisor.');
     return;
   }
 
   try {
-    const response = await fetch(`${API_URL}/messages`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${getToken()}`
-      },
+    await fetchJson(`${API_URL}/users/students/${assigningStudentId}/assign-supervisors`, {
+      method: 'PATCH',
       body: JSON.stringify({
-        senderId: Number(myId),
-        receiverId: Number(partnerId),
-        content: msg,
+        schoolSupervisorId: schoolSupervisorId ? Number(schoolSupervisorId) : null,
+        industrySupervisorId: industrySupervisorId ? Number(industrySupervisorId) : null,
       }),
     });
-
-    if (!response.ok) return;
-
-    const div = document.createElement('div');
-    div.className = 'msg out';
-    div.innerHTML = `${msg}<div class="msg-time">Just now</div>`;
-    chatMessages.appendChild(div);
-    input.value = '';
-    chatMessages.scrollTop = chatMessages.scrollHeight;
-
+    alert('Supervisors assigned successfully!');
+    closeModal('assign-supervisor-modal');
+    loadAdminDashboardData();
   } catch (err) {
-    console.error('Failed to send message:', err);
+    alert('Failed to assign supervisors. Make sure the backend endpoint exists: PATCH /api/users/students/{studentId}/assign-supervisors');
   }
 }
 
-// LOAD 2 WAY CONVERSATION 
-// Load conversation between two users
-async function loadConversation(otherUserId, otherUserName) {
-  const myId = getUserId();
+function redirectToMessagesPage() {
+  const loggedIn = sessionStorage.getItem('isLoggedIn');
+  if (loggedIn !== 'true') {
+    showPage('page-login');
+    return;
+  }
+  const userRole = getUserRole();
+  const roleToPrefix = {
+    student: 'student',
+    'school-supervisor': 'school',
+    'industry-supervisor': 'industry',
+    admin: 'admin',
+  };
+  const prefix = roleToPrefix[userRole] || 'student';
+  switchTab(prefix, 'messages', null);
+}
+
+function openFloatingMessages() {
+  const role = getUserRole();
+  if (!role) { goToLogin(); return; }
+  const prefix = role === 'school-supervisor' ? 'school'
+    : role === 'industry-supervisor' ? 'industry'
+    : role === 'admin' ? 'admin' : 'student';
+  const navItem = document.querySelector(
+    `#sidebar-${prefix} .nav-item[onclick*="'messages'"]`
+  );
+  switchTab(prefix, 'messages', navItem);
+  initializeMessagingPage();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+
+
+const messagingState = {
+  activeConversationUserId: null,
+  activeConversationUserName: '',
+  pollingTimer: null,
+  searchTimer: null,
+  initialized: false,
+  currentSearchQuery: '',
+};
+
+function formatTimestamp(value) {
+  const date = new Date(value);
+  return date.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) +
+    ' ' + date.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+}
+
+function getActiveMessagesRoot() {
+  return document.querySelector('.tab-content.active');
+}
+
+function getMessagingPrefix() {
+  const role = getUserRole();
+  if (role === 'school-supervisor') return 'school-';
+  if (role === 'industry-supervisor') return 'industry-';
+  if (role === 'admin') return 'admin-';
+  return '';
+}
+
+function findMessageElement(selector) {
+  const prefix = getMessagingPrefix();
+  const prefixed = selector.replace(/^#messages-/, `#${prefix}messages-`);
+  return document.querySelector(prefixed) || document.querySelector(selector);
+}
+
+function escapeHtml(str) {
+  return String(str || '').replace(/[&<>",']/g, function (char) {
+    return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char];
+  });
+}
+
+
+
+async function initializeMessagingPage() {
+  if (messagingState.initialized) return;
+
+  const token = getToken();
+  const userId = getUserId();
+  if (!token || !userId) { goToLogin(); return; }
+
+  const searchInput = findMessageElement('#messages-search-input');
+  const sendButton = findMessageElement('#messages-send-button');
+  const textarea = findMessageElement('#messages-textarea');
+
+  if (!searchInput || !sendButton || !textarea) {
+    console.warn('[Messages] DOM elements not found for role:', getUserRole());
+    return;
+  }
+
+  // Clone elements to remove stale listeners
+  const newSearch = searchInput.cloneNode(true);
+  searchInput.parentNode.replaceChild(newSearch, searchInput);
+  const newBtn = sendButton.cloneNode(true);
+  sendButton.parentNode.replaceChild(newBtn, sendButton);
+  const newTextarea = textarea.cloneNode(true);
+  textarea.parentNode.replaceChild(newTextarea, textarea);
+
+  // Role-aware search
+  newSearch.addEventListener('input', function () {
+    const query = this.value.toLowerCase().trim();
+    const role = getUserRole();
+    const contactsList = findMessageElement('#messages-contacts-list');
+    if (!contactsList) return;
+    contactsList.querySelectorAll('.contact-item').forEach(item => {
+      const name = item.querySelector('.contact-name')?.textContent?.toLowerCase() || '';
+      const regNo = item.querySelector('.contact-subtext')?.textContent?.toLowerCase() || '';
+      let match;
+      if (role === 'student') {
+        match = name.includes(query);
+      } else {
+        match = regNo.includes(query) || name.includes(query);
+      }
+      item.style.display = (query === '' || match) ? 'flex' : 'none';
+    });
+  });
+
+  newBtn.addEventListener('click', sendActiveMessage);
+  newBtn.disabled = true;
+  newTextarea.addEventListener('input', updateSendButtonState);
+  newTextarea.addEventListener('keydown', function (event) {
+    if (event.key === 'Enter' && !event.shiftKey) {
+      event.preventDefault();
+      sendActiveMessage();
+    }
+  });
+
+  messagingState.initialized = true;
 
   try {
-    const response = await fetch(
-      `${API_URL}/messages/conversation/${myId}/${otherUserId}`,
-      { headers: { 'Authorization': `Bearer ${getToken()}` } }
-    );
+    await Promise.all([loadAvailableContacts(), refreshUnreadCount()]);
+  } catch (err) {
+    console.error('[Messages] Failed to load initial data:', err);
+    return;
+  }
 
-    const messages = await response.json();
+  if (messagingState.pollingTimer) clearInterval(messagingState.pollingTimer);
+  messagingState.pollingTimer = setInterval(async () => {
+    try {
+      const myId = getUserId();
+      const token = getToken();
+      if (!myId || !token) return; // Skip if not authenticated
+
+      const searchEl = findMessageElement('#messages-search-input');
+      const textareaEl = findMessageElement('#messages-textarea');
+      const userIsTyping = document.activeElement === searchEl ||
+                           document.activeElement === textareaEl;
+
+      if (messagingState.activeConversationUserId) {
+        try {
+          await loadConversationWith(
+            messagingState.activeConversationUserId,
+            messagingState.activeConversationUserName,
+            true
+          );
+        } catch (convErr) {
+          if (convErr.message && convErr.message.includes('403')) {
+            messagingState.activeConversationUserId = null;
+            messagingState.activeConversationUserName = '';
+          }
+          console.warn('[Messages] Conversation poll skipped:', convErr.message);
+        }
+      }
+
+      if (!userIsTyping) {
+        const currentSearch = searchEl?.value || '';
+        await loadAvailableContacts(currentSearch);
+      }
+
+      await refreshUnreadCount();
+    } catch (err) {
+      console.warn('[Messages] Polling error (non-critical):', err.message);
+    }
+  }, 15000);
+}
+
+async function loadAvailableContacts(search = '') {
+  try {
+    const myId = getUserId();
+    if (!myId) return; // Guard against null userId
+
+    const query = search ? `?q=${encodeURIComponent(search)}` : '';
+    const [contacts, conversationMessages] = await Promise.all([
+      fetchJson(`${API_URL}/messages/available-users${query}`),
+      fetchJson(`${API_URL}/messages/user/${myId}`),
+    ]);
+
+    // Guard against undefined or non-array responses
+    const messages = Array.isArray(conversationMessages) ? conversationMessages : [];
+    const contactList = Array.isArray(contacts) ? contacts : [];
+
+    const conversationSummary = messages.reduce((map, msg) => {
+      const otherId = Number(msg.senderId) === Number(myId) ? Number(msg.receiverId) : Number(msg.senderId);
+      const summary = map.get(otherId) || { unread: 0, lastMessage: '', lastAt: '' };
+      if (!summary.lastAt || new Date(msg.sentAt) > new Date(summary.lastAt)) {
+        summary.lastMessage = msg.content;
+        summary.lastAt = msg.sentAt;
+      }
+      if (Number(msg.receiverId) === Number(myId) && !msg.isRead) {
+        summary.unread += 1;
+      }
+      map.set(otherId, summary);
+      return map;
+    }, new Map());
+
+    contactList.sort((a, b) => {
+      const aMeta = conversationSummary.get(Number(a.id));
+      const bMeta = conversationSummary.get(Number(b.id));
+      if (aMeta?.lastAt && bMeta?.lastAt) {
+        return new Date(bMeta.lastAt) - new Date(aMeta.lastAt);
+      }
+      if (aMeta?.lastAt) return -1;
+      if (bMeta?.lastAt) return 1;
+      return a.fullName.localeCompare(b.fullName);
+    });
+    renderContactList(contactList, conversationSummary);
+  } catch (err) {
+    console.error('Failed to load messaging contacts:', err);
+    showMessagingEmptyState('Unable to load contacts. Please try again later.');
+  }
+}
+
+function renderContactList(users, conversationMap) {
+  const container = findMessageElement('#messages-contacts-list');
+  if (!container) return;
+  container.innerHTML = '';
+
+  const role = getUserRole();
+
+  if (!users || users.length === 0) {
+    const emptyMsg = role === 'student'
+      ? 'Your assigned supervisors will appear here.'
+      : 'Your assigned students will appear here. Search by registration number above.';
+    container.innerHTML = `<div class="message-empty-state">${emptyMsg}</div>`;
+    return;
+  }
+
+  users.forEach(user => {
+    const summary = conversationMap.get(Number(user.id)) || { unread: 0, lastMessage: '', lastAt: '' };
+    const initials = user.fullName.split(' ').map(p => p[0] || '').join('').slice(0, 2).toUpperCase();
+    const subtext = user.registrationNumber || user.staffId || '';
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'contact-item' + (Number(messagingState.activeConversationUserId) === Number(user.id) ? ' active' : '');
+    button.setAttribute('data-user-id', String(user.id));
+    button.onclick = () => loadConversationWith(Number(user.id), user.fullName);
+    button.innerHTML = `
+      <div class="contact-avatar">${escapeHtml(initials)}</div>
+      <div class="contact-details">
+        <div class="contact-top">
+          <div>
+            <div class="contact-name">${escapeHtml(user.fullName)}</div>
+            <div class="contact-role">${escapeHtml(user.role === 'student' ? (user.registrationNumber || '') : (user.role || ''))}</div>
+          </div>
+          <div class="contact-right">
+            <div class="contact-time">${summary.lastAt ? formatRecentTimestamp(summary.lastAt) : ''}</div>
+            ${summary.unread > 0 ? `<span class="contact-unread-badge">${summary.unread}</span>` : ''}
+          </div>
+        </div>
+        ${subtext ? `<div class="contact-subtext">${escapeHtml(subtext)}</div>` : ''}
+        <div class="contact-preview">${escapeHtml(summary.lastMessage || 'No messages yet')}</div>
+      </div>
+    `;
+    container.appendChild(button);
+  });
+}
+
+async function loadConversationWith(otherUserId, otherUserName, isPolling = false) {
+  if (!otherUserId) return;
+  messagingState.activeConversationUserId = otherUserId;
+  messagingState.activeConversationUserName = otherUserName;
+
+  const history = findMessageElement('#messages-history');
+  const emptyState = findMessageElement('#messages-empty-state');
+  const sendRow = findMessageElement('#messages-send-row');
+  const title = findMessageElement('#messages-chat-title');
+  const subtitle = findMessageElement('#messages-chat-subtitle');
+
+  if (title) title.textContent = otherUserName;
+  if (subtitle) subtitle.textContent = 'Loading…';
+  if (emptyState) { emptyState.textContent = 'Loading conversation…'; emptyState.style.display = 'block'; }
+  if (history) history.style.display = 'none';
+  if (sendRow) sendRow.style.display = 'none';
+
+  // Highlight active contact
+  document.querySelectorAll('.contact-item').forEach(el => el.classList.remove('active'));
+  const activeContact = document.querySelector(`.contact-item[data-user-id="${otherUserId}"]`);
+  if (activeContact) activeContact.classList.add('active');
+
+  try {
+    const myId = getUserId();
+    const messages = await fetchJson(`${API_URL}/messages/conversation/with/${otherUserId}`);
+
+    if (!messages || messages.length === 0) {
+      if (emptyState) {
+        emptyState.innerHTML = `<div style="text-align:center;padding:40px 20px">
+          <div style="font-size:3rem;margin-bottom:12px">👋</div>
+          <div style="font-weight:600;font-size:1.1rem;margin-bottom:6px">No messages yet — say hello!</div>
+          <div style="color:var(--text2);font-size:.9rem">Start the conversation with ${escapeHtml(otherUserName)}</div>
+        </div>`;
+        emptyState.style.display = 'block';
+      }
+      if (history) history.style.display = 'none';
+    } else {
+      renderMessageHistory(messages, myId);
+      if (emptyState) emptyState.style.display = 'none';
+    }
+
+    // Always show send row after contact is selected
+    if (sendRow) sendRow.style.display = 'flex';
+    if (subtitle) subtitle.textContent = `Conversation with ${otherUserName}`;
 
     // Mark messages as read
     await fetch(`${API_URL}/messages/read/${otherUserId}/${myId}`, {
       method: 'PATCH',
-      headers: { 'Authorization': `Bearer ${getToken()}` }
+      headers: { 'Authorization': `Bearer ${getToken()}` },
     });
 
-    // Find the chat messages container
-    const chatMessages = document.querySelector('.chat-messages');
-    if (!chatMessages) return;
-
-    // Update chat header
-    const chatHead = document.querySelector('.chat-head-info h4');
-    if (chatHead) chatHead.textContent = otherUserName;
-
-    // Store current chat partner id for sending
-    chatMessages.dataset.partnerId = otherUserId;
-    chatMessages.dataset.partnerName = otherUserName;
-
-    if (messages.length === 0) {
-      chatMessages.innerHTML = `
-        <div class="msg in">
-          Start your conversation with ${otherUserName}
-          <div class="msg-time">Now</div>
-        </div>`;
-      return;
-    }
-
-    chatMessages.innerHTML = messages.map(msg => `
-      <div class="msg ${Number(msg.senderId) === Number(myId) ? 'out' : 'in'}">
-        ${msg.content}
-        <div class="msg-time">
-          ${new Date(msg.sentAt).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}
-        </div>
-      </div>
-    `).join('');
-
-    chatMessages.scrollTop = chatMessages.scrollHeight;
+    await loadAvailableContacts(findMessageElement('#messages-search-input')?.value || '');
 
   } catch (err) {
     console.error('Failed to load conversation:', err);
+    if (emptyState) {
+      emptyState.textContent = 'Unable to load this conversation. Please try again.';
+      emptyState.style.display = 'block';
+    }
+    // Still show send row so user can try sending
+    if (sendRow) sendRow.style.display = 'flex';
+  } finally {
+    if (!isPolling) {
+      const textarea = findMessageElement('#messages-textarea');
+      if (textarea) textarea.focus();
+    }
   }
 }
 
-// Send a real message
-async function sendChat() {
-  const input = document.getElementById('chat-input');
-  const msg = input.value.trim();
-  if (!msg) return;
-
-  const myId = getUserId();
-  const chatMessages = document.querySelector('.chat-messages');
-  const partnerId = chatMessages?.dataset.partnerId;
-
-  if (!partnerId) {
-    // Fallback to old mock behavior if no partner selected
-    const msgs = document.querySelector('.chat-messages');
-    const div = document.createElement('div');
-    div.className = 'msg out';
-    div.innerHTML = msg + '<div class="msg-time">Just now</div>';
-    msgs.appendChild(div);
-    input.value = '';
-    msgs.scrollTop = msgs.scrollHeight;
+function renderMessageHistory(messages, myId) {
+  const history = findMessageElement('#messages-history');
+  if (!history) return;
+  if (!messages || messages.length === 0) {
+    showMessagingEmptyState('No messages yet.');
     return;
   }
 
+  const role = getUserRole();
+  const canDelete = role === 'school-supervisor' || role === 'industry-supervisor' || role === 'admin';
+
+  history.innerHTML = messages.map(msg => {
+    const isMine = Number(msg.senderId) === Number(myId);
+    const deleteBtn = canDelete
+      ? `<button class="msg-delete-btn" onclick="deleteMessage(${msg.id})" title="Delete message">
+           <i class="fas fa-trash-alt"></i>
+         </button>`
+      : '';
+    return `
+      <div class="msg ${isMine ? 'out' : 'in'}" data-msg-id="${msg.id}">
+        <div class="msg-bubble">
+          ${escapeHtml(msg.content)}
+          ${deleteBtn}
+        </div>
+        <div class="msg-time">${formatTimestamp(msg.sentAt)}</div>
+      </div>
+    `;
+  }).join('');
+
+  history.style.display = 'flex';
+  history.scrollTo({ top: history.scrollHeight, behavior: 'smooth' });
+}
+
+function showMessagingEmptyState(message) {
+  const history = findMessageElement('#messages-history');
+  const emptyState = findMessageElement('#messages-empty-state');
+  if (history) history.style.display = 'none';
+  if (emptyState) {
+    emptyState.innerHTML = `
+      <div class="empty-illustration"><i class="fas fa-comments"></i></div>
+      <h4>No messages yet — say hello! 👋</h4>
+      <p>${escapeHtml(message)}</p>
+    `;
+    emptyState.style.display = 'flex';
+  }
+}
+
+function showMessagingErrorState(message) {
+  console.error('[Messages] Error state:', message);
+  showMessagingEmptyState(message);
+}
+
+function updateSendButtonState() {
+  const input = findMessageElement('#messages-textarea');
+  const button = findMessageElement('#messages-send-button');
+  if (!button || !input) return;
+  const hasText = input.value.trim().length > 0;
+  button.disabled = !hasText;
+}
+
+function getInitials(name) {
+  return String(name || '')
+    .split(' ')
+    .filter(Boolean)
+    .slice(0, 2)
+    .map(part => part[0].toUpperCase())
+    .join('');
+}
+
+function formatRecentTimestamp(value) {
+  const date = new Date(value);
+  const now = new Date();
+  const sameDay = date.toDateString() === now.toDateString();
+  const time = date.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+  if (sameDay) {
+    return `Today ${time}`;
+  }
+  return `${date.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })} ${time}`;
+}
+
+function showChatPanel() {
+  const sidebar = document.querySelector('.tab-content.active .messages-sidebar');
+  const main = document.querySelector('.tab-content.active .messages-main');
+  if (sidebar && main) {
+    sidebar.classList.add('hidden-mobile');
+    main.classList.remove('hidden-mobile');
+  }
+}
+
+function showContactsPanel() {
+  const sidebar = document.querySelector('.tab-content.active .messages-sidebar');
+  const main = document.querySelector('.tab-content.active .messages-main');
+  if (sidebar && main) {
+    sidebar.classList.remove('hidden-mobile');
+    main.classList.add('hidden-mobile');
+  }
+}
+
+async function refreshUnreadCount() {
+  const badge = document.getElementById('floating-messages-unread');
   try {
-    const response = await fetch(`${API_URL}/messages`, {
+    const myId = getUserId();
+    const result = await fetchJson(`${API_URL}/messages/unread/${myId}`);
+    const count = Number(result);
+    const prefix = getUserRole() === 'school-supervisor'
+      ? 'school'
+      : getUserRole() === 'industry-supervisor'
+        ? 'industry'
+        : getUserRole() === 'admin'
+          ? 'admin'
+          : 'student';
+    const sidebarBadge = document.querySelector(`#sidebar-${prefix} .nav-item[onclick*="'messages'"] .badge`);
+
+    const countText = count > 0 ? String(count) : '0';
+    const messagesUnread = document.getElementById('messages-unread-count');
+    if (messagesUnread) {
+      messagesUnread.textContent = countText;
+    }
+
+    if (badge) {
+      badge.style.display = count > 0 ? 'inline-block' : 'none';
+      badge.textContent = countText;
+    }
+
+    if (sidebarBadge) {
+      sidebarBadge.textContent = countText;
+      sidebarBadge.style.display = count > 0 ? 'inline-flex' : 'none';
+    }
+  } catch (err) {
+    console.error('Failed to refresh unread count:', err);
+  }
+}
+
+async function sendActiveMessage() {
+  const input = findMessageElement('#messages-textarea');
+  const content = input?.value.trim();
+  if (!content) return;
+  if (!messagingState.activeConversationUserId) {
+    alert('Please select a contact first.');
+    return;
+  }
+
+  const myId = getUserId();
+  const history = findMessageElement('#messages-history');
+
+  // Optimistic UI — show bubble immediately
+  const tempId = 'msg-temp-' + Date.now();
+  const tempBubble = document.createElement('div');
+  tempBubble.className = 'msg out';
+  tempBubble.id = tempId;
+  tempBubble.innerHTML = `${escapeHtml(content)}<div class="msg-time">Sending…</div>`;
+  if (history) {
+    history.style.display = 'flex';
+    history.appendChild(tempBubble);
+    history.scrollTop = history.scrollHeight;
+  }
+
+  // Clear input immediately
+  input.value = '';
+
+  try {
+    await fetchJson(`${API_URL}/messages`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${getToken()}`
-      },
       body: JSON.stringify({
-        senderId: Number(myId),
-        receiverId: Number(partnerId),
-        content: msg,
+        receiverId: Number(messagingState.activeConversationUserId),
+        content,
       }),
     });
 
-    if (!response.ok) return;
+    // Replace temp bubble with confirmed one
+    const confirmed = document.getElementById(tempId);
+    if (confirmed) {
+      confirmed.innerHTML = `${escapeHtml(content)}<div class="msg-time">${formatTimestamp(new Date())}</div>`;
+    }
 
-    // Add message to UI immediately
-    const div = document.createElement('div');
-    div.className = 'msg out';
-    div.innerHTML = `${msg}<div class="msg-time">Just now</div>`;
-    chatMessages.appendChild(div);
-    input.value = '';
-    chatMessages.scrollTop = chatMessages.scrollHeight;
+    // Refresh conversation silently
+    await loadConversationWith(
+      messagingState.activeConversationUserId,
+      messagingState.activeConversationUserName,
+      true
+    );
 
   } catch (err) {
     console.error('Failed to send message:', err);
+    const failed = document.getElementById(tempId);
+    if (failed) {
+      failed.style.borderColor = 'var(--danger)';
+      failed.style.opacity = '0.7';
+      failed.innerHTML += `<div style="font-size:.7rem;color:var(--danger);margin-top:4px">Failed to send. Please retry.</div>`;
+    }
   }
+}
+
+async function fetchJson(url, options = {}) {
+  const token = getToken();
+  if (!token) {
+    goToLogin();
+    return;
+  }
+  const response = await fetch(url, {
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...(options.headers || {}),
+      'Authorization': `Bearer ${token}`,
+    },
+  });
+  if (response.status === 401) {
+    goToLogin();
+    return;
+  }
+  if (!response.ok) {
+    const text = await response.text().catch(() => response.statusText);
+    throw new Error(text || 'Request failed');
+  }
+  return response.json();
 }
 
 async function openStudentProfile(studentId, fullName, regNumber, course, placement, email) {
@@ -1040,32 +1748,26 @@ async function openStudentProfile(studentId, fullName, regNumber, course, placem
 
   // Wire send message button
   const sendMsgBtn = document.getElementById('send-message-btn');
-if (sendMsgBtn) {
-  sendMsgBtn.onclick = async () => {
-    closeModal('student-profile-modal');
-    
-    // Load conversation into school chat
-    const chatMessages = document.getElementById('school-chat-messages');
-    const chatHead = document.querySelector('#school-chat-box .chat-head-info h4');
-    
-    if (chatMessages) chatMessages.dataset.partnerId = studentId;
-    if (chatHead) chatHead.textContent = fullName;
-
-    // Load existing messages
-    await loadSchoolConversation(studentId, fullName);
-    
-    // Open chat
-    toggleSchoolChat();
-  };
-}
+  if (sendMsgBtn) {
+    sendMsgBtn.onclick = () => {
+      closeModal('student-profile-modal');
+      const role = getUserRole();
+      const prefix = role === 'school-supervisor' ? 'school'
+        : role === 'industry-supervisor' ? 'industry'
+        : role === 'admin' ? 'admin' : 'student';
+      const navItem = document.querySelector(
+        `#sidebar-${prefix} .nav-item[onclick*="'messages'"]`
+      );
+      switchTab(prefix, 'messages', navItem);
+      setTimeout(() => {
+        loadConversationWith(Number(studentId), fullName);
+      }, 400);
+    };
+  }
 
   // Fetch student logs
   try {
-    const response = await fetch(`${API_URL}/logs/student/${studentId}`, {
-      headers: { 'Authorization': `Bearer ${getToken()}` }
-    });
-
-    const logs = await response.json();
+    const logs = await fetchJson(`${API_URL}/logs/student/${studentId}`);
     const total = logs.length;
     const approved = logs.filter(l => l.status === 'approved').length;
     const progress = total > 0 ? Math.round((approved / total) * 100) : 0;
@@ -1109,11 +1811,7 @@ if (sendMsgBtn) {
 
 async function loadStudentProfile(userId) {
   try {
-    const response = await fetch(`${API_URL}/users/${userId}`, {
-      headers: { 'Authorization': `Bearer ${getToken()}` }
-    });
-
-    const user = await response.json();
+    const user = await fetchJson(`${API_URL}/users/${userId}`);
     if (!user) return;
 
     // Update placement in welcome banner
@@ -1146,11 +1844,7 @@ async function loadStudentProfile(userId) {
 
 async function downloadStudentReport(studentId, studentName) {
   try {
-    const response = await fetch(`${API_URL}/reports/student/${studentId}`, {
-      headers: { 'Authorization': `Bearer ${getToken()}` }
-    });
-
-    const report = await response.json();
+    const report = await fetchJson(`${API_URL}/reports/student/${studentId}`);
 
     if (!report || !report.id) {
       alert(`${studentName} has not submitted a report yet.`);
@@ -1165,49 +1859,6 @@ async function downloadStudentReport(studentId, studentName) {
   }
 }
 
-async function loadSchoolConversation(otherUserId, otherUserName) {
-  const myId = getUserId();
-  const chatMessages = document.getElementById('school-chat-messages');
-  if (!chatMessages) return;
-
-  try {
-    const response = await fetch(
-      `${API_URL}/messages/conversation/${myId}/${otherUserId}`,
-      { headers: { 'Authorization': `Bearer ${getToken()}` } }
-    );
-
-    const messages = await response.json();
-
-    // Mark as read
-    await fetch(`${API_URL}/messages/read/${otherUserId}/${myId}`, {
-      method: 'PATCH',
-      headers: { 'Authorization': `Bearer ${getToken()}` }
-    });
-
-    if (messages.length === 0) {
-      chatMessages.innerHTML = `
-        <div class="msg in">
-          Start your conversation with ${otherUserName}
-          <div class="msg-time">Now</div>
-        </div>`;
-      return;
-    }
-
-    chatMessages.innerHTML = messages.map(msg => `
-      <div class="msg ${Number(msg.senderId) === Number(myId) ? 'out' : 'in'}">
-        ${msg.content}
-        <div class="msg-time">
-          ${new Date(msg.sentAt).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}
-        </div>
-      </div>
-    `).join('');
-
-    chatMessages.scrollTop = chatMessages.scrollHeight;
-
-  } catch (err) {
-    console.error('Failed to load conversation:', err);
-  }
-}
 
 /* ===== SIDEBAR ===== */
 function openSidebar(sidebarId, overlayId) {
@@ -1248,6 +1899,30 @@ function switchTab(prefix, tabName, navEl) {
     const sidebarId = `sidebar-${prefix === 'industry' ? 'industry' : prefix === 'school' ? 'school' : prefix}`;
     closeSidebar(sidebarId, overlayId);
   }
+
+  if (prefix === 'industry' && tabName === 'interns') {
+    setTimeout(() => loadIndustryInterns(), 200);
+  }
+
+  // Handle messaging tab initialization and polling
+  if (tabName === 'messages') {
+    // Only initialize once — never reset while on messages tab
+    if (!messagingState.initialized) {
+      setTimeout(() => initializeMessagingPage(), 200);
+    }
+  } else {
+    if (messagingState.pollingTimer) {
+      clearInterval(messagingState.pollingTimer);
+      messagingState.pollingTimer = null;
+    }
+    messagingState.initialized = false;
+    messagingState.activeConversationUserId = null;
+    messagingState.activeConversationUserName = '';
+  }
+
+  if (prefix === 'admin' && tabName === 'supervisors') {
+    setTimeout(() => loadAdminSupervisors(), 200);
+  }
 }
 
 function switchInnerTab(prefix, tabName, el) {
@@ -1287,29 +1962,6 @@ document.addEventListener('click', function (e) {
     document.querySelectorAll('.notif-panel').forEach(n => n.classList.remove('open'));
   }
 });
-
-/* ===== CHAT ===== */
-function toggleChat() { document.getElementById('chat-box').classList.toggle('open'); }
-function sendChat() {
-  const input = document.getElementById('chat-input');
-  const msg = input.value.trim();
-  if (!msg) return;
-  const msgs = document.querySelector('.chat-messages');
-  const div = document.createElement('div');
-  div.className = 'msg out';
-  div.innerHTML = msg + '<div class="msg-time">Just now</div>';
-  msgs.appendChild(div);
-  input.value = '';
-  msgs.scrollTop = msgs.scrollHeight;
-  setTimeout(() => {
-    const reply = document.createElement('div');
-    reply.className = 'msg in';
-    reply.innerHTML = "Thanks for the update! Keep logging your daily activities. 👍 <div class='msg-time'>Just now</div>";
-    msgs.appendChild(reply);
-    msgs.scrollTop = msgs.scrollHeight;
-  }, 1200);
-}
-function chatEnter(e) { if (e.key === 'Enter') sendChat(); }
 
 /* ===== THEME ===== */
 function setTheme(theme, el) {
@@ -1381,12 +2033,8 @@ async function submitLog() {
       });
     }
 
-    const response = await fetch(`${API_URL}/logs`, {
+    await fetchJson(`${API_URL}/logs`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${getToken()}`
-      },
       body: JSON.stringify({
         studentId: Number(userId),
         taskName,
@@ -1398,13 +2046,6 @@ async function submitLog() {
         gpsLongitude,
       }),
     });
-
-    const result = await response.json();
-
-    if (!response.ok) {
-      alert(result.message || 'Failed to submit log.');
-      return;
-    }
 
     // Show success toast
     const toast = document.createElement('div');
@@ -1442,11 +2083,7 @@ if (uploadArea) {
 // LOAD GRADING STUDENTS
 async function loadGradingStudents() {
   try {
-    const response = await fetch(getAssignedStudentsEndpoint(), {
-      headers: { 'Authorization': `Bearer ${getToken()}` }
-    });
-
-    const students = await response.json();
+    const students = await fetchJson(getAssignedStudentsEndpoint());
 
     const select = document.getElementById('grading-student-select');
     if (!select) return;
@@ -1516,21 +2153,10 @@ async function submitGrading() {
   };
 
   try {
-    const response = await fetch(`${API_URL}/gradings`, {
+    await fetchJson(`${API_URL}/gradings`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${getToken()}`
-      },
       body: JSON.stringify(data),
     });
-
-    const result = await response.json();
-
-    if (!response.ok) {
-      alert(result.message || 'Failed to submit grading.');
-      return;
-    }
 
     alert('Grading submitted successfully!');
     document.getElementById('grading-form-container').style.display = 'none';
@@ -1555,11 +2181,7 @@ async function submitGrading() {
 // LOAD STUDENTS FROM THE DATABASE DYNAMICALLY
 async function loadSupervisionStudents() {
   try {
-    const response = await fetch(getAssignedStudentsEndpoint(), {
-      headers: { 'Authorization': `Bearer ${getToken()}` }
-    });
-
-    const students = await response.json();
+    const students = await fetchJson(getAssignedStudentsEndpoint());
 
     const select = document.getElementById('supervision-student-select');
     if (!select) return;
@@ -1696,12 +2318,8 @@ async function scheduleSupervision() {
   }
 
   try {
-    const response = await fetch(`${API_URL}/supervisions`, {
+    const result = await fetchJson(`${API_URL}/supervisions`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${getToken()}`
-      },
       body: JSON.stringify({
         supervisorId: Number(supervisorId),
         studentId: Number(studentId),
@@ -1714,13 +2332,6 @@ async function scheduleSupervision() {
         notesBefore: notesInput ? notesInput.value : null,
       }),
     });
-
-    const result = await response.json();
-
-    if (!response.ok) {
-      alert(result.message || 'Failed to schedule supervision.');
-      return;
-    }
 
     alert('Supervision scheduled successfully! Student has been notified.');
 
@@ -1766,12 +2377,8 @@ async function submitAssessment() {
   }
 
   try {
-    const response = await fetch(`${API_URL}/supervisions/${supervisionId}/assessment`, {
+    await fetchJson(`${API_URL}/supervisions/${supervisionId}/assessment`, {
       method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${getToken()}`
-      },
       body: JSON.stringify({
         status: statusSelect.value,
         actualDateTime: actualDateInput.value,
@@ -1782,13 +2389,6 @@ async function submitAssessment() {
         finalComments: finalCommentsInput.value,
       }),
     });
-
-    const result = await response.json();
-
-    if (!response.ok) {
-      alert(result.message || 'Failed to submit assessment.');
-      return;
-    }
 
     alert('Assessment submitted successfully!');
 
@@ -1878,20 +2478,10 @@ async function submitReport() {
     const formData = new FormData();
     formData.append('file', selectedFile);
 
-    const response = await fetch(`${API_URL}/reports/upload?studentId=${userId}`, {
+    const result = await fetchJson(`${API_URL}/reports/upload?studentId=${userId}`, {
       method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${getToken()}`
-      },
       body: formData,
     });
-
-    const result = await response.json();
-
-    if (!response.ok) {
-      alert(result.message || 'Failed to upload report.');
-      return;
-    }
 
     // Hide upload section show success
     document.getElementById('upload-section').style.display = 'none';
@@ -1931,10 +2521,17 @@ async function loadStudentReport(studentId) {
       headers: { 'Authorization': `Bearer ${getToken()}` }
     });
 
-    const report = await response.json();
+    // Handle empty body or 404 gracefully without throwing
+    if (response.status === 404 || response.status === 204) {
+      return; // No report yet — leave upload section visible
+    }
+
+    const text = await response.text();
+    if (!text || text.trim() === '') return; // Empty body — no report yet
+
+    const report = JSON.parse(text);
 
     if (report && report.id) {
-      // Already submitted — show success section
       document.getElementById('upload-section').style.display = 'none';
       document.getElementById('success-section').style.display = 'block';
       document.getElementById('report-status-badge').className = 'tag approved';
@@ -1947,9 +2544,9 @@ async function loadStudentReport(studentId) {
 
       isReportSubmitted = true;
     }
-
   } catch (err) {
-    console.error('Failed to load report status:', err);
+    // Silently ignore — student just hasn't submitted a report yet
+    console.warn('Report not yet submitted for student:', studentId);
   }
 }
 

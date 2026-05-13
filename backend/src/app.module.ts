@@ -67,23 +67,22 @@ import { Message } from './messages/message.entity';
     ConfigModule.forRoot({ isGlobal: true }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
-      useFactory: (config: ConfigService) => ({
-        type: 'postgres',
-        host: config.get('DB_HOST'),
-        port: config.get<number>('DB_PORT'),
-        username: config.get('DB_USER'),
-        password: config.get('DB_PASSWORD'),
-        database: config.get('DB_NAME'),
-        ssl: true,                          
-        extra: {
-          ssl: {
-            rejectUnauthorized: false,      
-          },
-        },
-        entities: [User, Log, Supervision, Grading, Report, Setting, Message],
-        autoLoadEntities: true,
-        synchronize: true,
-      }),
+      useFactory: (config: ConfigService) => {
+        const dbSsl = config.get<string>('DB_SSL')?.toLowerCase() === 'true';
+
+        return {
+          type: 'postgres',
+          host: config.get('DB_HOST'),
+          port: config.get<number>('DB_PORT'),
+          username: config.get('DB_USER'),
+          password: config.get('DB_PASSWORD'),
+          database: config.get('DB_NAME'),
+          ssl: dbSsl ? { rejectUnauthorized: false } : false,
+          entities: [User, Log, Supervision, Grading, Report, Setting, Message],
+          autoLoadEntities: true,
+          synchronize: true,
+        };
+      },
       inject: [ConfigService],
     }),
     UsersModule,

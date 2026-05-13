@@ -1,6 +1,6 @@
 import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, ILike, In, Not } from 'typeorm';
 import { Message } from './message.entity';
 import { SendMessageDto } from './dto/send-message.dto';
 import { User } from '../users/user.entity';
@@ -14,10 +14,18 @@ export class MessagesService {
     private usersRepository: Repository<User>,
   ) {}
 
+  private async getUserById(userId: number): Promise<User> {
+    const user = await this.usersRepository.findOne({ where: { id: userId } });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    return user;
+  }
+
   private async canUsersMessage(userId1: number, userId2: number): Promise<boolean> {
     const [user1, user2] = await Promise.all([
-      this.usersRepository.findOne({ where: { id: userId1 } }),
-      this.usersRepository.findOne({ where: { id: userId2 } }),
+      this.getUserById(userId1),
+      this.getUserById(userId2),
     ]);
 
     if (!user1 || !user2) {
@@ -31,24 +39,72 @@ export class MessagesService {
 
     const student = user1.role === 'student' ? user1 : user2;
     const other = user1.role === 'student' ? user2 : user1;
-    const allowedSupervisorIds = [student.schoolSupervisorId, student.industrySupervisorId].filter(Boolean);
+    const allowedSupervisorIds = [student.schoolSupervisorId, student.industrySupervisorId]
+      .filter(Boolean)
+      .map(Number); // Force to number
 
-    // Strict mode: a student must have explicit assignments.
     if (allowedSupervisorIds.length === 0) return false;
 
-    return allowedSupervisorIds.includes(other.id);
+    return allowedSupervisorIds.includes(Number(other.id)); // Force both to number
+  }
+
+  async getAvailableUsers(userId: number, userRole: string, query?: string): Promise<Partial<User>[]> {
+    const user = await this.getUserById(userId);
+    const searchTerm = query?.trim();
+    const nameFilter = searchTerm ? ILike(`%${searchTerm}%`) : undefined;
+    const selectFields: (keyof User)[] = ['id', 'fullName', 'role', 'email', 'registrationNumber', 'staffId', 'department'];
+    const ordering = { fullName: 'ASC' } as const;
+
+    if (userRole === 'admin') {
+      return this.usersRepository.find({
+        where: [
+          { role: Not('admin'), id: Not(user.id), ...(nameFilter ? { fullName: nameFilter } : {}) },
+        ],
+        select: selectFields,
+        order: ordering,
+      });
+    }
+
+    if (userRole === 'student') {
+      const supervisorIds = [user.schoolSupervisorId, user.industrySupervisorId].filter(Boolean) as number[];
+      if (supervisorIds.length === 0) {
+        return [];
+      }
+      return this.usersRepository.find({
+        where: supervisorIds.map(id => ({ id, ...(nameFilter ? { fullName: nameFilter } : {}) } as any)),
+        select: selectFields,
+        order: ordering,
+      });
+    }
+
+    if (userRole === 'school-supervisor' || userRole === 'industry-supervisor') {
+      const supervisorField = userRole === 'school-supervisor' ? 'schoolSupervisorId' : 'industrySupervisorId';
+      return this.usersRepository.find({
+        where: [
+          { [supervisorField]: userId, ...(nameFilter ? { fullName: nameFilter } : {}) },
+        ],
+        select: selectFields,
+        order: ordering,
+      });
+    }
+
+    return [];
   }
 
   // Send a message
-  async sendMessage(dto: SendMessageDto): Promise<Message> {
-    const allowed = await this.canUsersMessage(Number(dto.senderId), Number(dto.receiverId));
+  async sendMessage(senderId: number, receiverId: number, content: string): Promise<Message> {
+    const allowed = await this.canUsersMessage(senderId, receiverId);
     if (!allowed) {
       throw new ForbiddenException('Messaging not allowed for this user pair');
     }
 
-    const message = this.messagesRepository.create(dto);
-    const saved = await this.messagesRepository.save(message);
-    return saved as unknown as Message;
+    const message = this.messagesRepository.create({
+      senderId,
+      receiverId,
+      content,
+      isRead: false,
+    });
+    return this.messagesRepository.save(message);
   }
 
   // Get conversation between two users
@@ -92,5 +148,26 @@ export class MessagesService {
     return this.messagesRepository.count({
       where: { receiverId: userId, isRead: false }
     });
+  }
+
+  // Delete a message (only sender or admin can delete)
+  async deleteMessage(messageId: number, requesterId: number): Promise<{ message: string }> {
+    const msg = await this.messagesRepository.findOne({ where: { id: messageId } });
+    if (!msg) {
+      throw new NotFoundException('Message not found');
+    }
+    
+    const requester = await this.usersRepository.findOne({ where: { id: requesterId } });
+    if (!requester) {
+      throw new NotFoundException('User not found');
+    }
+
+    // Only sender or admin can delete
+    if (msg.senderId !== requesterId && requester.role !== 'admin') {
+      throw new ForbiddenException('You can only delete your own messages');
+    }
+
+    await this.messagesRepository.delete({ id: messageId });
+    return { message: 'Message deleted successfully' };
   }
 }
