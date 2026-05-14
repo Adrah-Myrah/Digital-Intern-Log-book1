@@ -19,7 +19,7 @@ import { UsersController } from './users.controller';
     }),
   ],
   providers: [UsersService],
-  exports: [UsersService],
+  exports: [UsersService, JwtModule],
   controllers: [UsersController],
 })
 export class UsersModule {}

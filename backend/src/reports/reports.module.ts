@@ -11,6 +11,7 @@ import { ReportsController } from './reports.controller';
 
 @Module({
   imports: [
+    ConfigModule,
     TypeOrmModule.forFeature([Report]),
     MulterModule.register({
       storage: diskStorage({

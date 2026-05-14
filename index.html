@@ -5,6 +5,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>InternLog — Smart Digital Logbook System</title>
+  <link rel="icon" href="data:,">
   <link
     href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&display=swap"
     rel="stylesheet">
@@ -779,6 +780,64 @@
             </div>
           </div>
 
+          <!-- TAB: MESSAGES -->
+          <div id="student-tab-messages" class="tab-content">
+            <div class="page-header">
+              <h2>Messages</h2>
+              <p>Communicate with your supervisors and peers</p>
+            </div>
+            <div class="messages-wrapper">
+              <!-- LEFT SIDEBAR: CONTACTS -->
+              <div class="messages-sidebar">
+                <div class="messages-sidebar-header">
+                  <h2>Messages</h2>
+                </div>
+
+                <div class="messages-search-wrapper">
+                  <input type="text" id="messages-search-input" placeholder="Search contacts...">
+                </div>
+
+                <div id="messages-contacts-list" class="messages-contacts-list">
+                  <!-- Contacts will be populated by JS -->
+                </div>
+              </div>
+
+              <!-- RIGHT MAIN AREA: CONVERSATION -->
+              <div class="messages-main">
+                <div class="messages-header">
+                  <button class="messages-back-btn mobile-only" onclick="showContactsPanel()">
+                    <i class="fas fa-arrow-left"></i>
+                  </button>
+                  <div class="messages-header-info">
+                    <div class="messages-contact-avatar" id="messages-contact-avatar" style="display:none;"></div>
+                    <div>
+                      <h3 id="messages-chat-title">Select a contact</h3>
+                      <p id="messages-chat-subtitle">Choose a contact from the list to start messaging</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div id="messages-history" class="messages-history" style="display: none;">
+                  <!-- Messages will be populated by JS -->
+                </div>
+                <div id="messages-empty-state" class="messages-empty-state">
+                  <div class="empty-illustration">
+                    <i class="fas fa-comments"></i>
+                  </div>
+                  <h4>No messages yet — say hello! 👋</h4>
+                  <p>Your assigned supervisors will appear here</p>
+                </div>
+
+                <div id="messages-send-row" class="messages-send-row">
+                  <textarea id="messages-textarea" class="messages-textarea" placeholder="Type a message..." rows="1"></textarea>
+                  <button id="messages-send-button" class="messages-send-button" disabled>
+                    <i class="fas fa-paper-plane"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
         </div>
       </div>
     </div>
@@ -791,7 +850,7 @@
             <h4>Loading supervisor...</h4>
             <p>School Supervisor · Online</p>
           </div>
-          <i class="fas fa-times chat-close" onclick="toggleChat()"></i>
+          <i class="fas fa-times chat-close" style="cursor:pointer"></i>
         </div>
         <div class="chat-messages">
           <div class="msg in">Loading message... <div class="msg-time">10:22 AM</div>
@@ -802,12 +861,12 @@
           </div>
         </div>
         <div class="chat-input-row">
-          <input type="text" id="chat-input" placeholder="Type a message..." onkeypress="chatEnter(event)">
-          <div class="chat-send" onclick="sendChat()"><i class="fas fa-paper-plane"></i></div>
+          <input type="text" id="chat-input" placeholder="Type a message..." disabled style="cursor:not-allowed;opacity:.5">
+          <div class="chat-send" style="cursor:not-allowed;opacity:.5"><i class="fas fa-paper-plane"></i></div>
         </div>
       </div>
-      <div class="chat-bubble-btn" onclick="toggleChat()" title="Chat with Supervisor"><i
-          class="fas fa-comment-dots"></i></div>
+      <div class="chat-bubble-btn" onclick="openFloatingMessages()" title="Open Messages" style="position:relative"><i
+          class="fas fa-comment-dots"></i><span id="floating-messages-unread" class="badge" style="position:absolute;top:-6px;right:-6px;display:none;min-width:20px;height:20px;padding:0 6px;border-radius:10px;background:var(--danger);color:#fff;font-size:.65rem;font-weight:700"><span id="messages-unread-count">0</span></span></div>
     </div>
   </div>
 
@@ -1515,34 +1574,55 @@
           <div id="school-tab-messages" class="tab-content">
             <div class="page-header">
               <h2>Messages</h2>
-              <p>Communicate with your assigned students</p>
+              <p>Search and message your assigned students</p>
             </div>
-            <div class="section-card">
-              <div class="section-head">
-                <h3>Inbox</h3>
-              </div>
-              <div style="display:flex;flex-direction:column;gap:0">
-                <div
-                  style="display:flex;align-items:center;gap:14px;padding:15px 22px;border-bottom:1px solid var(--border);cursor:pointer;transition:background var(--transition)"
-                  onmouseenter="this.style.background='var(--bg2)'" onmouseleave="this.style.background=''">
-                  <div class="avatar">AK</div>
-                  <div style="flex:1">
-                    <div style="font-weight:600;font-size:.9rem">Amina Kibuuka</div>
-                    <div style="font-size:.82rem;color:var(--text2)">Thank you Dr. Ssekandi! I'll make sure to...</div>
-                  </div>
-                  <div style="font-size:.78rem;color:var(--text3)">10:25 AM</div>
+            <div class="messages-wrapper">
+              <!-- LEFT SIDEBAR: CONTACTS -->
+              <div class="messages-sidebar">
+                <div class="messages-sidebar-header">
+                  <h2>Students</h2>
                 </div>
-                <div
-                  style="display:flex;align-items:center;gap:14px;padding:15px 22px;border-bottom:1px solid var(--border);cursor:pointer;background:rgba(26,107,74,.05);transition:background var(--transition)">
-                  <div class="avatar" style="background:linear-gradient(135deg,#2176ae,#3182ce)">JM</div>
-                  <div style="flex:1">
-                    <div style="font-weight:700;font-size:.9rem">Jonah Mwangi <span
-                        style="width:8px;height:8px;background:var(--primary);border-radius:50%;display:inline-block;margin-left:6px"></span>
-                    </div>
-                    <div style="font-size:.82rem;color:var(--text2)">Good morning, I had a question about my report...
+
+                <div class="messages-search-wrapper">
+                  <input type="text" id="school-messages-search-input" placeholder="Search by registration number...">
+                </div>
+
+                <div id="school-messages-contacts-list" class="messages-contacts-list">
+                  <!-- Contacts will be populated by JS -->
+                </div>
+              </div>
+
+              <!-- RIGHT MAIN AREA: CONVERSATION -->
+              <div class="messages-main">
+                <div class="messages-header">
+                  <button class="messages-back-btn mobile-only" onclick="showContactsPanel()">
+                    <i class="fas fa-arrow-left"></i>
+                  </button>
+                  <div class="messages-header-info">
+                    <div class="messages-contact-avatar" id="school-messages-contact-avatar" style="display:none;"></div>
+                    <div>
+                      <h3 id="school-messages-chat-title">Select a contact</h3>
+                      <p id="school-messages-chat-subtitle">Choose a contact from the list to start messaging</p>
                     </div>
                   </div>
-                  <div style="font-size:.78rem;color:var(--text3)">1 hr ago</div>
+                </div>
+
+                <div id="school-messages-history" class="messages-history" style="display: none;">
+                  <!-- Messages will be populated by JS -->
+                </div>
+                <div id="school-messages-empty-state" class="messages-empty-state">
+                  <div class="empty-illustration">
+                    <i class="fas fa-comments"></i>
+                  </div>
+                  <h4>No messages yet — say hello! 👋</h4>
+                  <p>Your assigned students will appear here. Search by registration number above.</p>
+                </div>
+
+                <div id="school-messages-send-row" class="messages-send-row">
+                  <textarea id="school-messages-textarea" class="messages-textarea" placeholder="Type a message..." rows="1"></textarea>
+                  <button id="school-messages-send-button" class="messages-send-button" disabled>
+                    <i class="fas fa-paper-plane"></i>
+                  </button>
                 </div>
               </div>
             </div>
@@ -1592,6 +1672,7 @@
               </div>
             </div>
           </div>
+
         </div>
       </div>
     </div>
@@ -1605,7 +1686,7 @@
             <h4>Student</h4>
             <p>Select a student to chat</p>
           </div>
-          <i class="fas fa-times chat-close" onclick="toggleSchoolChat()"></i>
+          <i class="fas fa-times chat-close" style="cursor:pointer"></i>
         </div>
         <div class="chat-messages" id="school-chat-messages">
           <div class="msg in">Select a student and click Send Message to start chatting
@@ -1613,18 +1694,13 @@
           </div>
         </div>
         <div class="chat-input-row">
-          <input type="text" id="school-chat-input" placeholder="Type a message..." onkeypress="schoolChatEnter(event)">
-          <div class="chat-send" onclick="sendSchoolChat()"><i class="fas fa-paper-plane"></i></div>
+          <input type="text" id="school-chat-input" placeholder="Type a message..." disabled style="cursor:not-allowed;opacity:.5">
+          <div class="chat-send" style="cursor:not-allowed;opacity:.5"><i class="fas fa-paper-plane"></i></div>
         </div>
       </div>
-      <div class="chat-bubble-btn" onclick="toggleSchoolChat()" title="Chat with Student">
-        <i class="fas fa-comment-dots"></i>
-      </div>
+      <!-- Floating message icon removed for supervisors - kept only for students -->
     </div>
   </div>
-
-  <!-- ============================================================ -->
-  <!--  PAGE 5: INDUSTRY SUPERVISOR DASHBOARD                       -->
   <!-- ============================================================ -->
   <div id="page-industry-supervisor" class="page" style="flex-direction:column">
     <div class="overlay-sidebar" id="overlay-industry" onclick="closeSidebar('sidebar-industry','overlay-industry')">
@@ -1649,6 +1725,9 @@
           <div class="nav-item" onclick="switchTab('industry','history',this)"><i class="fas fa-history"></i> Approval
             History</div>
           <div class="nav-item" onclick="switchTab('industry','interns',this)"><i class="fas fa-users"></i> My Interns
+          </div>
+          <div class="nav-item" onclick="switchTab('industry','messages',this)"><i class="fas fa-comments"></i> Messages
+            <span class="badge" style="display:none">0</span>
           </div>
           <div class="sidebar-section">Account</div>
           <div class="nav-item" onclick="switchTab('industry','settings',this)"><i class="fas fa-cog"></i> Settings
@@ -1856,39 +1935,8 @@
               <h2>My Interns</h2>
               <p>Students placed at your organisation</p>
             </div>
-            <div class="student-cards-grid">
-              <div class="student-card">
-                <div class="student-card-top">
-                  <div class="avatar avatar-lg">AK</div>
-                  <div class="student-card-info">
-                    <h4>Loading student...</h4>
-                    <p>Loading registration number... · Loading course...</p>
-                  </div>
-                </div>
-                <div class="student-card-meta"><span>Loading placement...</span><span><span
-                      class="approved-dot"></span>Loading status...</span></div>
-                <div style="font-size:.8rem;color:var(--text2);margin-bottom:6px">Overall Progress</div>
-                <div class="prog-bar">
-                  <div class="prog-fill" style="width:72%"></div>
-                </div>
-                <div style="font-size:.78rem;color:var(--text3);margin-top:4px;text-align:right">-</div>
-              </div>
-              <div class="student-card">
-                <div class="student-card-top">
-                  <div class="avatar avatar-lg" style="background:linear-gradient(135deg,#d97706,#f59e0b)">BN</div>
-                  <div class="student-card-info">
-                    <h4>Loading student...</h4>
-                    <p>Loading registration number... · Loading course...</p>
-                  </div>
-                </div>
-                <div class="student-card-meta"><span>Loading placement...</span><span><span
-                      class="approved-dot"></span>Loading status...</span></div>
-                <div style="font-size:.8rem;color:var(--text2);margin-bottom:6px">Overall Progress</div>
-                <div class="prog-bar">
-                  <div class="prog-fill" style="width:61%"></div>
-                </div>
-                <div style="font-size:.78rem;color:var(--text3);margin-top:4px;text-align:right">61%</div>
-              </div>
+            <div class="student-cards-grid" id="industry-interns-grid">
+              <!-- Populated by JS -->
             </div>
           </div>
 
@@ -1929,6 +1977,65 @@
               </div>
             </div>
           </div>
+
+          <!-- TAB: MESSAGES -->
+          <div id="industry-tab-messages" class="tab-content">
+            <div class="page-header">
+              <h2>Messages</h2>
+              <p>Search and message your assigned interns</p>
+            </div>
+            <div class="messages-wrapper">
+              <!-- LEFT SIDEBAR: CONTACTS -->
+              <div class="messages-sidebar">
+                <div class="messages-sidebar-header">
+                  <h2>Interns</h2>
+                </div>
+
+                <div class="messages-search-wrapper">
+                  <input type="text" id="industry-messages-search-input" placeholder="Search by registration number...">
+                </div>
+
+                <div id="industry-messages-contacts-list" class="messages-contacts-list">
+                  <!-- Contacts will be populated by JS -->
+                </div>
+              </div>
+
+              <!-- RIGHT MAIN AREA: CONVERSATION -->
+              <div class="messages-main">
+                <div class="messages-header">
+                  <button class="messages-back-btn mobile-only" onclick="showContactsPanel()">
+                    <i class="fas fa-arrow-left"></i>
+                  </button>
+                  <div class="messages-header-info">
+                    <div class="messages-contact-avatar" id="industry-messages-contact-avatar" style="display:none;"></div>
+                    <div>
+                      <h3 id="industry-messages-chat-title">Select a contact</h3>
+                      <p id="industry-messages-chat-subtitle">Choose a contact from the list to start messaging</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div id="industry-messages-history" class="messages-history" style="display: none;">
+                  <!-- Messages will be populated by JS -->
+                </div>
+                <div id="industry-messages-empty-state" class="messages-empty-state">
+                  <div class="empty-illustration">
+                    <i class="fas fa-comments"></i>
+                  </div>
+                  <h4>No messages yet — say hello! 👋</h4>
+                  <p>Your assigned interns will appear here. Search by registration number above.</p>
+                </div>
+
+                <div id="industry-messages-send-row" class="messages-send-row">
+                  <textarea id="industry-messages-textarea" class="messages-textarea" placeholder="Type a message..." rows="1"></textarea>
+                  <button id="industry-messages-send-button" class="messages-send-button" disabled>
+                    <i class="fas fa-paper-plane"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
         </div>
       </div>
     </div>
@@ -1964,6 +2071,8 @@
           <div class="nav-item" onclick="switchTab('admin','placements',this)"><i class="fas fa-map-marked-alt"></i>
             Placements & GPS</div>
           <div class="nav-item" onclick="switchTab('admin','reports',this)"><i class="fas fa-chart-bar"></i> Reports
+          </div>
+          <div class="nav-item" onclick="switchTab('admin','messages',this)"><i class="fas fa-comments"></i> Messages
           </div>
           <div class="sidebar-section">Account</div>
           <div class="nav-item" onclick="switchTab('admin','settings',this)"><i class="fas fa-cog"></i> Settings</div>
@@ -2442,6 +2551,64 @@
             </div>
           </div>
 
+          <!-- TAB: MESSAGES -->
+          <div id="admin-tab-messages" class="tab-content">
+            <div class="page-header">
+              <h2>Messages</h2>
+              <p>Search and message supervisors and students</p>
+            </div>
+            <div class="messages-wrapper">
+              <!-- LEFT SIDEBAR: CONTACTS -->
+              <div class="messages-sidebar">
+                <div class="messages-sidebar-header">
+                  <h2>Users</h2>
+                </div>
+
+                <div class="messages-search-wrapper">
+                  <input type="text" id="admin-messages-search-input" placeholder="Search by name or reg. number...">
+                </div>
+
+                <div id="admin-messages-contacts-list" class="messages-contacts-list">
+                  <!-- Contacts will be populated by JS -->
+                </div>
+              </div>
+
+              <!-- RIGHT MAIN AREA: CONVERSATION -->
+              <div class="messages-main">
+                <div class="messages-header">
+                  <button class="messages-back-btn mobile-only" onclick="showContactsPanel()">
+                    <i class="fas fa-arrow-left"></i>
+                  </button>
+                  <div class="messages-header-info">
+                    <div class="messages-contact-avatar" id="admin-messages-contact-avatar" style="display:none;"></div>
+                    <div>
+                      <h3 id="admin-messages-chat-title">Select a contact</h3>
+                      <p id="admin-messages-chat-subtitle">Choose a contact from the list to start messaging</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div id="admin-messages-history" class="messages-history" style="display: none;">
+                  <!-- Messages will be populated by JS -->
+                </div>
+                <div id="admin-messages-empty-state" class="messages-empty-state">
+                  <div class="empty-illustration">
+                    <i class="fas fa-comments"></i>
+                  </div>
+                  <h4>No messages yet — say hello! 👋</h4>
+                  <p>All users will appear here. Search by name or registration number.</p>
+                </div>
+
+                <div id="admin-messages-send-row" class="messages-send-row">
+                  <textarea id="admin-messages-textarea" class="messages-textarea" placeholder="Type a message..." rows="1"></textarea>
+                  <button id="admin-messages-send-button" class="messages-send-button" disabled>
+                    <i class="fas fa-paper-plane"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
         </div>
       </div>
     </div>
@@ -2639,6 +2806,35 @@
     </div>
   </div>
 
+  <div class="modal-overlay" id="assign-supervisor-modal">
+    <div class="modal" style="max-width:480px">
+      <div class="modal-head">
+        <h3>Assign Supervisor</h3>
+        <div class="modal-close" onclick="closeModal('assign-supervisor-modal')">
+          <i class="fas fa-times"></i>
+        </div>
+      </div>
+      <p id="assign-student-name" style="color:var(--text2);margin-bottom:16px"></p>
+      <div class="form-group">
+        <label>School Supervisor</label>
+        <select id="assign-school-supervisor">
+          <option value="">— Select School Supervisor —</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Industry Supervisor</label>
+        <select id="assign-industry-supervisor">
+          <option value="">— Select Industry Supervisor —</option>
+        </select>
+      </div>
+      <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:16px">
+        <button class="btn btn-outline" onclick="closeModal('assign-supervisor-modal')">Cancel</button>
+        <button class="btn btn-primary" onclick="submitSupervisorAssignment()">
+          <i class="fas fa-save"></i> Save Assignment
+        </button>
+      </div>
+    </div>
+  </div>
   <script src="js/script.js" defer></script>
 
 </body>

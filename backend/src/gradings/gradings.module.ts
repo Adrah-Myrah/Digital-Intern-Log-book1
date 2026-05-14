@@ -1,14 +1,17 @@
 import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Grading } from './grading.entity';
 import { GradingsService } from './gradings.service';
 import { GradingsController } from './gradings.controller';
-import { JwtModule } from '@nestjs/jwt';
+import { UsersModule } from '../users/users.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Grading]),
-  JwtModule,
-],
+  imports: [
+    ConfigModule,
+    TypeOrmModule.forFeature([Grading]),
+    UsersModule,
+  ],
   providers: [GradingsService],
   controllers: [GradingsController],
   exports: [GradingsService],
