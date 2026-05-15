@@ -72,9 +72,11 @@ export class LogsService {
     if (!log) throw new NotFoundException('Log not found');
 
     log.status = dto.status;
-    log.supervisorComment = dto.supervisorComment ?? null;
-    log.approvedBy = dto.approvedBy;
-    log.approvedAt = new Date();
+    if (dto.supervisorComment !== undefined) log.supervisorComment = dto.supervisorComment;
+    if (dto.approvedBy !== undefined) log.approvedBy = dto.approvedBy;
+    if (dto.status === 'approved' || dto.status === 'rejected') {
+      log.approvedAt = new Date();
+    }
 
     return this.logsRepository.save(log);
   }
