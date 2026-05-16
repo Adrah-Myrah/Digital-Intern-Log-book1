@@ -68,12 +68,32 @@ export class UsersController {
   }
 
   @Get(':id')
-  getUserById(@Param('id') id: string, @Req() req: any) {
+  async getUserById(@Param('id') id: string, @Req() req: any) {
     const requestedId = Number(id);
-    if (req.user.role !== 'admin' && Number(req.user.sub) !== requestedId) {
-      throw new ForbiddenException('You can only view your own profile');
+    const requester = req.user;
+
+    // Admin can view anyone
+    if (requester.role === 'admin') {
+      return this.usersService.findById(requestedId);
     }
-    return this.usersService.findById(Number(id));
+
+    // Users can view their own profile
+    if (Number(requester.sub) === requestedId) {
+      return this.usersService.findById(requestedId);
+    }
+
+    // Supervisors can view their assigned students
+    if (requester.role === 'school-supervisor' || requester.role === 'industry-supervisor') {
+      const assignedStudents = await (requester.role === 'school-supervisor'
+        ? this.usersService.findStudentsBySchoolSupervisor(Number(requester.sub))
+        : this.usersService.findStudentsByIndustrySupervisor(Number(requester.sub)));
+      const isAssigned = assignedStudents.some(student => student.id === requestedId);
+      if (isAssigned) {
+        return this.usersService.findById(requestedId);
+      }
+    }
+
+    throw new ForbiddenException('You do not have permission to view this user');
   }
 
 }

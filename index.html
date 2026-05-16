@@ -229,6 +229,9 @@
             Approved Tasks</div>
           <div class="nav-item" onclick="switchTab('student','reports',this)"><i class="fas fa-file-alt"></i> Reports
           </div>
+          <div class="nav-item" onclick="switchTab('student','messages',this)"><i class="fas fa-comments"></i> Messages
+            <span class="badge" style="display:none">0</span>
+          </div>
           <div class="sidebar-section">Account</div>
           <div class="nav-item" onclick="switchTab('student','settings',this)"><i class="fas fa-cog"></i> Settings</div>
           <div class="nav-item logout-btn" onclick="goToLogin()"><i class="fas fa-sign-out-alt"></i> Logout
@@ -394,13 +397,13 @@
                     </tr>
                   </thead>
                   <tbody>
-                    
-                      <td>Mar 03, 2026</td>
-                      <td>Database schema design for client module</td>
-                      <td><span class="tag onsite">Onsite</span></td>
-                      <td>6h</td>
-                      <td><span class="tag approved">Approved</span></td>
-                      <td><button class="btn btn-outline btn-sm">View</button></td>
+
+                    <td>Mar 03, 2026</td>
+                    <td>Database schema design for client module</td>
+                    <td><span class="tag onsite">Onsite</span></td>
+                    <td>6h</td>
+                    <td><span class="tag approved">Approved</span></td>
+                    <td><button class="btn btn-outline btn-sm">View</button></td>
                     </tr>
                     <tr>
                       <td>Mar 02, 2026</td>
@@ -670,7 +673,7 @@
 
           <!-- TAB: SETTINGS -->
           <div id="student-tab-settings" class="tab-content">
-            <div class="page-header" >
+            <div class="page-header">
               <h2>Settings</h2>
               <p>Personalise your InternLog experience</p>
             </div>
@@ -838,39 +841,8 @@
               </div>
             </div>
           </div>
-
         </div>
       </div>
-    </div>
-    <!-- CHAT WIDGET -->
-    <div class="chat-panel">
-      <div class="chat-box" id="chat-box">
-        <div class="chat-head">
-          <div class="avatar avatar-sm" style="background:rgba(255,255,255,.25);font-size:.75rem">SS</div>
-          <div class="chat-head-info">
-            <h4>Loading supervisor...</h4>
-            <p>School Supervisor · Online</p>
-          </div>
-          <i class="fas fa-times chat-close" style="cursor:pointer"></i>
-        </div>
-        <div class="chat-messages">
-          <div class="msg in">Loading message... <div class="msg-time">10:22 AM</div>
-          </div>
-          <div class="msg out">Loading message... <div class="msg-time">10:25 AM</div>
-          </div>
-          <div class="msg in">Loading message... <div class="msg-time">10:27 AM</div>
-          </div>
-        </div>
-        <div class="chat-input-row">
-          <input type="text" id="chat-input" placeholder="Type a message..." disabled
-            style="cursor:not-allowed;opacity:.5">
-          <div class="chat-send" style="cursor:not-allowed;opacity:.5"><i class="fas fa-paper-plane"></i></div>
-        </div>
-      </div>
-      <div class="chat-bubble-btn" onclick="openFloatingMessages()" title="Open Messages" style="position:relative"><i
-          class="fas fa-comment-dots"></i><span id="floating-messages-unread" class="badge"
-          style="position:absolute;top:-6px;right:-6px;display:none;min-width:20px;height:20px;padding:0 6px;border-radius:10px;background:var(--danger);color:#fff;font-size:.65rem;font-weight:700"><span
-            id="messages-unread-count">0</span></span></div>
     </div>
   </div>
 
@@ -1074,31 +1046,32 @@
                     </tr>
                   </thead>
                   <tbody>
-                    
-                      <td>
-                        <div style="display:flex;align-items:center;gap:10px">
-                          <div class="avatar">LS</div>Loading student...
+
+                    <td>
+                      <div style="display:flex;align-items:center;gap:10px">
+                        <div class="avatar">LS</div>Loading student...
+                      </div>
+                    </td>
+                    <td>Loading registration number...</td>
+                    <td>Loading placement...</td>
+                    <td>
+                      <div style="min-width:90px">
+                        <div class="prog-bar">
+                          <div class="prog-fill" style="width:72%"></div>
                         </div>
-                      </td>
-                      <td>Loading registration number...</td>
-                      <td>Loading placement...</td>
-                      <td>
-                        <div style="min-width:90px">
-                          <div class="prog-bar">
-                            <div class="prog-fill" style="width:72%"></div>
-                          </div>
-                          <div style="font-size:.75rem;color:var(--text3);margin-top:2px">-</div>
-                        </div>
-                      </td>
-                      <td>Loading last log...</td>
-                      <td><span class="tag approved">Loading status...</span></td>
-                      <td><button class="btn btn-outline btn-sm" onclick="openModal('student-profile-modal')">View
-                          Profile</button></td>
+                        <div style="font-size:.75rem;color:var(--text3);margin-top:2px">-</div>
+                      </div>
+                    </td>
+                    <td>Loading last log...</td>
+                    <td><span class="tag approved">Loading status...</span></td>
+                    <td><button class="btn btn-outline btn-sm" onclick="openModal('student-profile-modal')">View
+                        Profile</button></td>
                     </tr>
                     <tr>
                       <td>
                         <div style="display:flex;align-items:center;gap:10px">
-                          <div class="avatar" style="background:linear-gradient(135deg,#2176ae,#3182ce)">LS</div>Loading student...              
+                          <div class="avatar" style="background:linear-gradient(135deg,#2176ae,#3182ce)">LS</div>Loading
+                          student...
                         </div>
                       </td>
                       <td>Loading registration number...</td>
@@ -2606,6 +2579,53 @@
         <button class="btn btn-outline" onclick="closeModal('approval-modal')">Cancel</button>
         <button class="btn btn-primary" onclick="closeModal('approval-modal')"><i class="fas fa-paper-plane"></i> Send
           Request</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Log Review Modal (Industry Supervisor) -->
+  <div class="modal-overlay" id="log-review-modal">
+    <div class="modal" style="max-width:600px">
+      <div class="modal-head">
+        <h3><i class="fas fa-clipboard-check" style="color:var(--primary);margin-right:8px"></i>Review Log Entry</h3>
+        <div class="modal-close" onclick="closeModal('log-review-modal')"><i class="fas fa-times"></i></div>
+      </div>
+
+      <div style="background:var(--bg2);border-radius:var(--radius-sm);padding:16px;margin-bottom:18px">
+        <div style="font-weight:700;font-size:1rem;margin-bottom:4px" id="review-student-name">Student</div>
+        <div style="font-weight:600;font-size:1.05rem;margin-bottom:8px" id="review-task-name">Task Name</div>
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:8px" id="review-meta"></div>
+        <div id="review-gps"></div>
+      </div>
+
+      <div class="form-group">
+        <label>Description</label>
+        <div id="review-description"
+          style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px;font-size:.9rem;line-height:1.7;color:var(--text2);min-height:80px">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Skills Applied</label>
+        <div id="review-skills" style="font-size:.9rem;color:var(--text2)"></div>
+      </div>
+
+      <div class="form-group">
+        <label>Your Feedback / Comment <span style="color:var(--text3);font-weight:400">(optional)</span></label>
+        <textarea id="review-comment" rows="3"
+          placeholder="Add feedback for the student — what was done well, what needs improvement..."
+          style="width:100%;padding:10px;border:1.5px solid var(--border);border-radius:6px;background:var(--surface2);color:var(--text);font-family:inherit;font-size:.9rem;resize:vertical"></textarea>
+      </div>
+
+      <div style="display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;margin-top:8px">
+        <button class="btn btn-outline" onclick="closeModal('log-review-modal')">Cancel</button>
+        <button class="btn btn-outline btn-sm" id="review-reject-btn"
+          style="border-color:var(--danger);color:var(--danger)">
+          <i class="fas fa-times"></i> Reject
+        </button>
+        <button class="btn btn-primary" id="review-approve-btn">
+          <i class="fas fa-check-circle"></i> Approve
+        </button>
       </div>
     </div>
   </div>

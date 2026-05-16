@@ -400,11 +400,58 @@ async function loadPendingLogs() {
   try {
     const myId = getUserId();
     const endpoint = myId ? `${API_URL}/logs/pending/${myId}` : `${API_URL}/logs/pending`;
-    
-    const [logs, allStudents] = await Promise.all([
+
+    // Fetch logs and assigned students together
+    const [logs, assignedStudents] = await Promise.all([
       fetchJson(endpoint),
-      fetchJson(`${API_URL}/users/students`)
+      fetchJson(getAssignedStudentsEndpoint()),
     ]);
+
+    const studentMap = new Map(
+      (assignedStudents || []).map(s => [Number(s.id), s])
+    );
+
+    const getStudentInfo = (studentId) => {
+      const s = studentMap.get(Number(studentId));
+      if (!s) return { name: `Student #${studentId}`, sub: '', initials: String(studentId).slice(0,2) };
+      const initials = s.fullName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0,2);
+      return {
+        name: s.fullName,
+        sub: `${s.registrationNumber || ''} · ${s.course || ''}`.trim().replace(/^·\s*|·\s*$/, ''),
+        initials,
+      };
+    };
+
+    const cardTemplate = (log) => {
+      const info = getStudentInfo(log.studentId);
+      return `
+        <div class="request-card">
+          <div style="display:flex;align-items:center;gap:12px;flex:1;min-width:0">
+            <div class="avatar" style="flex-shrink:0">${info.initials}</div>
+            <div style="min-width:0;flex:1">
+              <div style="font-weight:600;font-size:.95rem;margin-bottom:2px">${escapeHtml(info.name)}</div>
+              ${info.sub ? `<div style="font-size:.78rem;color:var(--text3);margin-bottom:3px">${escapeHtml(info.sub)}</div>` : ''}
+              <div style="font-size:.9rem;color:var(--text);margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
+                ${escapeHtml(log.taskName)}
+              </div>
+              <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+                <span class="tag ${log.workType === 'Onsite' ? 'onsite' : 'offsite'}" style="font-size:.75rem">${log.workType}</span>
+                <span style="font-size:.78rem;color:var(--text3)">
+                  <i class="fas fa-clock" style="margin-right:3px"></i>
+                  ${log.estimatedHours}h · ${new Date(log.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })} ${new Date(log.createdAt).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}
+                </span>
+              </div>
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px;flex-shrink:0;margin-left:12px">
+            <span class="tag pending" style="font-size:.75rem">Pending</span>
+            <button class="btn btn-primary btn-sm" onclick="openLogReviewModal(${log.id})">
+              <i class="fas fa-eye"></i> View & Review
+            </button>
+          </div>
+        </div>
+      `;
+    };
 
     // Update pending count card
     const cards = document.querySelectorAll('#industry-tab-dashboard .card-val');
@@ -414,51 +461,17 @@ async function loadPendingLogs() {
     const badge = document.querySelector('#sidebar-industry .nav-item:nth-child(2) .badge');
     if (badge) badge.textContent = logs.length;
 
-    const buildCard = (log) => {
-      const student = allStudents.find(s => Number(s.id) === Number(log.studentId));
-      const studentName = student?.fullName || 'Unknown Student';
-      const initials = studentName.split(' ').map(n => n[0]).join('').toUpperCase();
-      const yearCourse = [student?.yearOfStudy, student?.course].filter(Boolean).join(' · ');
-
-      return `
-        <div class="request-card">
-          <div class="avatar">${initials}</div>
-          <div class="request-card-body">
-            <h4>${log.taskName}</h4>
-            <p>${studentName} · ${yearCourse}</p>
-            <div class="request-card-meta">
-              <span class="tag ${log.workType === 'Onsite' ? 'onsite' : 'offsite'}">${log.workType}</span>
-              &nbsp; ${log.estimatedHours} hours &nbsp; · &nbsp;
-              ${new Date(log.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
-            </div>
-            ${log.description ? `<p style="margin-top:8px;font-size:.85rem;color:var(--text2)">${escapeHtml(log.description.substring(0, 120))}${log.description.length > 120 ? '...' : ''}</p>` : ''}
-          </div>
-          <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px">
-            <span class="tag pending">Pending</span>
-            <div style="display:flex;gap:6px">
-              <button class="btn btn-primary btn-sm" onclick="approveLog(${log.id}, 'approved')">
-                <i class="fas fa-check"></i> Approve
-              </button>
-              <button class="btn btn-outline btn-sm" style="border-color:var(--danger);color:var(--danger)" onclick="approveLog(${log.id}, 'rejected')">
-                <i class="fas fa-times"></i> Reject
-              </button>
-            </div>
-          </div>
-        </div>
-      `;
-    };
-
-    const requestList = document.getElementById('industry-dashboard-requests');
+    const requestList = document.querySelector('#industry-tab-dashboard .request-list');
     if (requestList) {
       requestList.innerHTML = logs.length > 0
-        ? logs.map(buildCard).join('')
+        ? logs.map(cardTemplate).join('')
         : '<p style="padding:20px;color:var(--text2)">No pending approvals.</p>';
     }
 
-    const requestsTab = document.getElementById('industry-requests-list');
+    const requestsTab = document.querySelector('#industry-tab-requests .request-list');
     if (requestsTab) {
       requestsTab.innerHTML = logs.length > 0
-        ? logs.map(buildCard).join('')
+        ? logs.map(cardTemplate).join('')
         : '<p style="padding:20px;color:var(--text2)">No pending approvals.</p>';
     }
 
@@ -467,13 +480,11 @@ async function loadPendingLogs() {
   }
 }
 // APPROVING LOGS
-async function approveLog(logId, status) {
-  const comment = status === 'rejected'
-    ? prompt('Enter reason for rejection (optional):')
-    : null;
-
+async function approveLog(logId, status, comment = null) {
+  if (!comment && status === 'rejected') {
+    comment = prompt('Enter reason for rejection (optional):') || null;
+  }
   const supervisorId = getUserId();
-
   try {
     await fetchJson(`${API_URL}/logs/${logId}/approve`, {
       method: 'PATCH',
@@ -483,26 +494,96 @@ async function approveLog(logId, status) {
         approvedBy: Number(supervisorId),
       }),
     });
-
-    if (!response.ok) {
-      alert('Failed to update log status.');
-      return;
-    }
-
-    // Show toast
     const toast = document.createElement('div');
     toast.style.cssText = 'position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:var(--success);color:#fff;padding:12px 24px;border-radius:10px;font-weight:600;z-index:9999';
     toast.innerHTML = `<i class="fas fa-check-circle"></i> Log ${status} successfully!`;
     document.body.appendChild(toast);
     setTimeout(() => toast.remove(), 3000);
-
-    // Refresh pending logs
+    closeModal('log-review-modal');
     loadPendingLogs();
-
+    loadIndustryCards();
   } catch (err) {
-    alert('Could not connect to server.');
+    console.error('Failed to approve log:', err);
+    alert('Could not update log status. Please try again.');
   }
 }
+
+async function openLogReviewModal(logId) {
+  try {
+    const log = await fetchJson(`${API_URL}/logs/${logId}`);
+    if (!log) return;
+
+    let student = null;
+    try {
+      student = await fetchJson(`${API_URL}/users/${log.studentId}`);
+    } catch (e) {
+      console.warn('Could not load student details:', e.message);
+    }
+
+    const modal = document.getElementById('log-review-modal');
+    if (!modal) return;
+
+    const studentEl = modal.querySelector('#review-student-name');
+    const taskEl = modal.querySelector('#review-task-name');
+    const metaEl = modal.querySelector('#review-meta');
+    const gpsEl = modal.querySelector('#review-gps');
+    const descEl = modal.querySelector('#review-description');
+    const skillsEl = modal.querySelector('#review-skills');
+    const toolsEl = modal.querySelector('#review-tools');
+    const commentInput = modal.querySelector('#review-comment');
+    const approvBtn = modal.querySelector('#review-approve-btn');
+    const rejectBtn = modal.querySelector('#review-reject-btn');
+
+    if (studentEl) {
+      if (student) {
+        studentEl.innerHTML = `
+          <div style="font-weight:700;font-size:1rem">${escapeHtml(student.fullName)}</div>
+          <div style="font-size:.85rem;color:var(--text2);margin-top:2px">
+            ${student.registrationNumber || '—'} · ${student.course || '—'}
+          </div>
+        `;
+      } else {
+        studentEl.textContent = `Student #${log.studentId}`;
+      }
+    }
+
+    if (taskEl) taskEl.textContent = log.taskName;
+    if (metaEl) metaEl.innerHTML = `
+      <span class="tag ${log.workType === 'Onsite' ? 'onsite' : 'offsite'}">${log.workType}</span>
+      <span style="color:var(--text2)">${log.estimatedHours} hours · ${new Date(log.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+    `;
+    if (gpsEl) {
+      gpsEl.innerHTML = log.gpsLatitude
+        ? `<span class="gps-badge"><i class="fas fa-check"></i> Verified · ${Number(log.gpsLatitude).toFixed(4)}°N, ${Number(log.gpsLongitude).toFixed(4)}°E</span>`
+        : `<span class="gps-badge fail"><i class="fas fa-times"></i> No GPS recorded</span>`;
+    }
+    if (descEl) descEl.textContent = log.description || '—';
+    if (skillsEl) skillsEl.textContent = log.skillsApplied || '—';
+    if (toolsEl) toolsEl.textContent = log.toolsUsed || '—';
+    if (commentInput) commentInput.value = '';
+
+    if (approvBtn) {
+      approvBtn.onclick = () => {
+        const comment = commentInput?.value.trim() || null;
+        approveLog(logId, 'approved', comment);
+      };
+    }
+
+    if (rejectBtn) {
+      rejectBtn.onclick = () => {
+        const comment = commentInput?.value.trim() || null;
+        approveLog(logId, 'rejected', comment);
+      };
+    }
+
+    openModal('log-review-modal');
+  } catch (err) {
+    console.error('Failed to load log for review:', err);
+    alert('Could not load log details. Please try again.');
+  }
+}
+
+
 
 async function loadIndustryInterns() {
   try {
@@ -2449,6 +2530,7 @@ async function submitLog() {
   const workType = document.querySelector('#student-tab-dashboard select').value;
   const description = document.querySelector('#student-tab-dashboard textarea').value.trim();
   const skillsApplied = document.querySelector('#student-tab-dashboard input[placeholder="e.g. SQL, Communication, Excel"]').value.trim();
+  const toolsUsed = document.querySelector('#student-tab-dashboard input[placeholder="e.g. VS Code, Git, Postman, Excel"]').value.trim();
   const estimatedHours = document.querySelector('#student-tab-dashboard input[type="number"]').value;
 
   if (!taskName || !description || !workType) {
@@ -2497,6 +2579,7 @@ async function submitLog() {
         workType,
         description,
         skillsApplied,
+        toolsUsed,
         estimatedHours: Number(estimatedHours),
         gpsLatitude,
         gpsLongitude,
