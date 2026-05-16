@@ -6,9 +6,7 @@ import { SettingsController } from './settings.controller';
 import { JwtModule } from '@nestjs/jwt';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Setting]),
-  JwtModule,
-],
+  imports: [TypeOrmModule.forFeature([Setting]), JwtModule],
   providers: [SettingsService],
   controllers: [SettingsController],
   exports: [SettingsService],

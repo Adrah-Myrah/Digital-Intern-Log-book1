@@ -19,7 +19,7 @@ function getAssignedStudentsEndpoint() {
     return `${API_URL}/users/students/assigned/school/${userId}`;
   }
   if (role === 'industry-supervisor' && userId) {
-    return `${API_URL}/users/students/assigned/industry/${userId}`;
+    return `${API_URL}/users/industry-supervisor/my-interns`;
   }
   return `${API_URL}/users/students`;
 }
@@ -320,6 +320,21 @@ function loadUserDashboard() {
     loadPendingLogs();
     loadIndustryCards();
     loadIndustryInterns();
+    loadIndustryNotifications();
+    loadIndustryHistory();
+    loadIndustryGradingStudents();
+    // start periodic refresh to pick up new student uploads and approvals
+    try {
+      if (window._industryRefreshInterval) clearInterval(window._industryRefreshInterval);
+    } catch (e) {}
+    window._industryRefreshInterval = setInterval(() => {
+      loadPendingLogs();
+      loadIndustryCards();
+      loadIndustryInterns();
+      loadIndustryNotifications();
+      loadIndustryHistory();
+      loadIndustryGradingStudents();
+    }, 30000);
   }
 
   // Update admin dashboard
@@ -445,8 +460,8 @@ async function loadPendingLogs() {
           </div>
           <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px;flex-shrink:0;margin-left:12px">
             <span class="tag pending" style="font-size:.75rem">Pending</span>
-            <button class="btn btn-primary btn-sm" onclick="openLogReviewModal(${log.id})">
-              <i class="fas fa-eye"></i> View & Review
+            <button class="btn btn-primary btn-sm" onclick="openLogReviewModal(${log.id}, '${info.name}', '${info.sub}')">
+              <i class="fas fa-eye"></i> Review
             </button>
           </div>
         </div>
@@ -479,6 +494,95 @@ async function loadPendingLogs() {
     console.error('Failed to load pending logs:', err);
   }
 }
+
+async function loadIndustryNotifications() {
+  try {
+    const response = await fetch(`${API_URL}/notifications/my-notifications`, {
+      headers: { 'Authorization': `Bearer ${getToken()}` }
+    });
+    const notifications = await response.json();
+    const list = document.getElementById('industry-notif-list');
+    if (!list) return;
+
+    if (!Array.isArray(notifications) || notifications.length === 0) {
+      list.innerHTML = `
+        <div class="notif-item">
+          <div class="notif-icon" style="background:rgba(59,130,246,.12);color:var(--primary)"><i class="fas fa-info-circle"></i></div>
+          <div class="notif-text">
+            <h5>No new notifications</h5>
+            <p>You're all caught up.</p>
+          </div>
+        </div>`;
+      return;
+    }
+
+    list.innerHTML = notifications.slice(0, 6).map(note => {
+      const message = note.message || 'New notification';
+      const time = note.createdAt ? new Date(note.createdAt).toLocaleString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'Now';
+      return `
+        <div class="notif-item">
+          <div class="notif-icon" style="background:rgba(59,130,246,.12);color:var(--primary)"><i class="fas fa-bell"></i></div>
+          <div class="notif-text">
+            <h5>${message}</h5>
+            <p>${note.student?.fullName || note.studentId ? `Student ${note.student?.fullName || note.studentId}` : ''}</p>
+            <div class="notif-time">${time}</div>
+          </div>
+        </div>`;
+    }).join('');
+  } catch (err) {
+    console.error('Failed to load industry notifications:', err);
+  }
+}
+
+async function loadIndustryHistory() {
+  try {
+    const response = await fetch(`${API_URL}/logs`, {
+      headers: { 'Authorization': `Bearer ${getToken()}` }
+    });
+    const logs = await response.json();
+    const tbody = document.querySelector('#industry-tab-history .table-wrap tbody');
+    if (!tbody) return;
+
+    if (!Array.isArray(logs) || logs.length === 0) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="5" style="text-align:center;color:var(--text2);padding:20px">
+            No reviewed tasks yet.
+          </td>
+        </tr>`;
+      return;
+    }
+
+    const rows = logs
+      .filter(log => log.status !== 'pending')
+      .sort((a, b) => new Date(b.approvedAt || b.createdAt) - new Date(a.approvedAt || a.createdAt))
+      .map(log => {
+        const studentName = log.student?.fullName || `Student ${log.studentId}`;
+        const safeTask = (log.taskName || 'Task').replace(/'/g, "\\'");
+        const action = log.status === 'approved' ? '<span class="tag approved">Approved</span>' : '<span class="tag rejected">Rejected</span>';
+        const comment = log.supervisorComment || log.approvalComment || 'No comment';
+        const date = new Date(log.approvedAt || log.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+        return `
+          <tr>
+            <td>${date}</td>
+            <td>${studentName}</td>
+            <td>${safeTask}</td>
+            <td>${action}</td>
+            <td>${comment}</td>
+          </tr>`;
+      });
+
+    tbody.innerHTML = rows.length > 0 ? rows.join('') : `
+      <tr>
+        <td colspan="5" style="text-align:center;color:var(--text2);padding:20px">
+          No reviewed tasks yet.
+        </td>
+      </tr>`;
+  } catch (err) {
+    console.error('Failed to load industry approval history:', err);
+  }
+}
+
 // APPROVING LOGS
 async function approveLog(logId, status, comment = null) {
   if (!comment && status === 'rejected') {
@@ -564,11 +668,14 @@ async function openLogReviewModal(logId) {
 
     if (approvBtn) {
       approvBtn.onclick = () => {
-        const comment = commentInput?.value.trim() || null;
+        const comment = commentInput?.value.trim();
+        if (!comment) {
+          alert('Please add a comment before approving.');
+          return;
+        }
         approveLog(logId, 'approved', comment);
       };
     }
-
     if (rejectBtn) {
       rejectBtn.onclick = () => {
         const comment = commentInput?.value.trim() || null;
@@ -925,9 +1032,6 @@ function clearDashboard() {
   document.querySelectorAll('.wb-badge').forEach(b => b.innerHTML = '<i class="fas fa-map-marker-alt"></i> Loading...');
 }
 
-
-
-
 // WIRING STUDENTS CARD
 
 async function loadStudentCards(studentId) {
@@ -1026,35 +1130,6 @@ async function loadIndustryCards() {
 
     const requestsBadge = document.getElementById('industry-requests-badge');
     if (requestsBadge) requestsBadge.textContent = pending;
-
-    const internsGrid = document.getElementById('industry-interns-grid');
-    if (internsGrid && assignedStudents.length > 0) {
-      const progressMap = await getStudentProgressMap();
-      internsGrid.innerHTML = assignedStudents.map(student => {
-        const stats = progressMap.get(Number(student.id)) || { progress: 0 };
-        const initials = student.fullName.split(' ').map(n => n[0]).join('').toUpperCase();
-        return `
-          <div class="student-card">
-            <div class="student-card-top">
-              <div class="avatar avatar-lg">${initials}</div>
-              <div class="student-card-info">
-                <h4>${student.fullName}</h4>
-                <p>${student.registrationNumber || '—'} · ${student.course || '—'}</p>
-              </div>
-            </div>
-            <div class="student-card-meta">
-              <span>${student.placementCompany || '—'}</span>
-              <span><span class="approved-dot"></span>Active</span>
-            </div>
-            <div style="font-size:.8rem;color:var(--text2);margin-bottom:6px">Overall Progress</div>
-            <div class="prog-bar"><div class="prog-fill ${stats.progress > 0 && stats.progress < 60 ? 'amber' : ''}" style="width:${stats.progress}%"></div></div>
-            <div style="font-size:.78rem;color:var(--text3);margin-top:4px;text-align:right">${stats.progress}%</div>
-          </div>
-        `;
-      }).join('');
-    } else if (internsGrid) {
-      internsGrid.innerHTML = '<p style="padding:20px;color:var(--text2)">No interns assigned yet.</p>';
-    }
 
     const nameInput = document.getElementById('industry-profile-name');
     const orgInput = document.getElementById('industry-profile-org');
@@ -1155,33 +1230,46 @@ async function loadSchoolStudents() {
       return;
     }
 
-    tbody.innerHTML = students.map(student => `
+    tbody.innerHTML = students.map(student => {
+      const safeName = (student.fullName || '').replace(/'/g, "\\'");
+      const safeReg = (student.registrationNumber || '').replace(/'/g, "\\'");
+      const safeCourse = (student.course || '').replace(/'/g, "\\'");
+      const safePlacement = (student.placementCompany || '').replace(/'/g, "\\'");
+      const safeEmail = (student.email || '').replace(/'/g, "\\'");
+      const stats = progressMap.get(Number(student.id)) || { total: 0, approved: 0, pending: 0, progress: 0, latest: null };
+      const statusTag = stats.total === 0 ? 'rejected' : stats.progress >= 60 ? 'approved' : 'pending';
+      const statusText = stats.total === 0 ? 'No logs' : stats.progress >= 60 ? 'Good' : 'Needs review';
+      const rowProgress = `${stats.progress}%`;
+      const totalLogs = stats.total || 0;
+
+      return `
       <tr>
         <td>
           <div style="display:flex;align-items:center;gap:10px">
-            <div class="avatar">${student.fullName.split(' ').map(n => n[0]).join('').toUpperCase()}</div>
-            ${student.fullName}
+            <div class="avatar">${safeName.split(' ').map(n => n[0]).join('').toUpperCase()}</div>
+            ${safeName}
           </div>
         </td>
         <td>${student.registrationNumber || '—'}</td>
         <td>${student.placementCompany || '—'}</td>
+        <td>${totalLogs}</td>
         <td>
           <div style="min-width:90px">
             <div class="prog-bar">
-              <div class="prog-fill" style="width:0%"></div>
+              <div class="prog-fill" style="width:${rowProgress}"></div>
             </div>
-            <div style="font-size:.75rem;color:var(--text3);margin-top:2px">0%</div>
+            <div style="font-size:.75rem;color:var(--text3);margin-top:2px">${rowProgress}</div>
           </div>
         </td>
-        <td>—</td>
-        <td><span class="tag approved">Active</span></td>
+        <td><span class="tag ${statusTag}">${statusText}</span></td>
         <td>
-          <button class="btn btn-outline btn-sm" onclick="openStudentProfile(${student.id}, '${student.fullName}', '${student.registrationNumber}', '${student.course}', '${student.placementCompany}', '${student.email}')">
-            View Profile
+          <button class="btn btn-outline btn-sm" onclick="openStudentProfile(${student.id}, '${safeName}', '${safeReg}', '${safeCourse}', '${safePlacement}', '${safeEmail}')">
+            View Logs
           </button>
         </td>
       </tr>
-    `).join('');
+    `;
+    }).join('');
 
     // Also update dashboard summary cards from live students list.
     const summaryGrid = document.querySelector('#school-tab-dashboard .student-cards-grid');
@@ -2268,12 +2356,14 @@ async function openStudentProfile(studentId, fullName, regNumber, course, placem
   const subEl = document.querySelector('#student-profile-modal .profile-info p');
   const placementEl = document.querySelector('#student-profile-modal .profile-meta-item:first-child span');
   const emailEl = document.querySelector('#student-profile-modal .profile-meta-item:last-child span');
+  const sectionHeading = document.querySelector('#student-profile-modal .section-head h3');
 
   if (avatar) avatar.textContent = fullName.split(' ').map(n => n[0]).join('').toUpperCase();
   if (nameEl) nameEl.textContent = fullName;
-  if (subEl) subEl.textContent = `${regNumber} · ${course || 'N/A'}`;
+  if (subEl) subEl.textContent = `${regNumber || 'N/A'} · ${course || 'N/A'}`;
   if (placementEl) placementEl.textContent = placement || 'N/A';
   if (emailEl) emailEl.textContent = email || 'N/A';
+  if (sectionHeading) sectionHeading.textContent = 'Student Log Entries';
 
   // Wire download button immediately
   const downloadBtn = document.getElementById('download-report-btn');
@@ -2302,9 +2392,13 @@ async function openStudentProfile(studentId, fullName, regNumber, course, placem
 
   // Fetch student logs
   try {
-    const logs = await fetchJson(`${API_URL}/logs/student/${studentId}`);
-    const total = logs.length;
-    const approved = logs.filter(l => l.status === 'approved').length;
+    const response = await fetch(`${API_URL}/logs/student/${studentId}`, {
+      headers: { 'Authorization': `Bearer ${getToken()}` }
+    });
+
+    const logs = response.ok ? await response.json() : [];
+    const total = Array.isArray(logs) ? logs.length : 0;
+    const approved = total > 0 ? logs.filter(l => l.status === 'approved').length : 0;
     const progress = total > 0 ? Math.round((approved / total) * 100) : 0;
 
     // Update stats cards in modal
@@ -2318,29 +2412,77 @@ async function openStudentProfile(studentId, fullName, regNumber, course, placem
     if (progFill) progFill.style.width = progress + '%';
 
     const progText = document.querySelector('#student-profile-modal .prog-bar + div');
-    if (progText) progText.textContent = `${progress}% · ${approved}/${total} tasks approved`;
+    if (progText) progText.textContent = `${progress}% · ${approved}/${total} approved`;
 
-    // Update recent logs table in modal
     const tbody = document.querySelector('#student-profile-modal tbody');
     if (tbody) {
-      if (logs.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="3" style="text-align:center;color:var(--text2)">No logs yet</td></tr>`;
+      if (total === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:var(--text2)">No logs have been submitted yet.</td></tr>`;
       } else {
-        tbody.innerHTML = logs.slice(0, 5).map(log => `
-          <tr>
-            <td>${new Date(log.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}</td>
-            <td>${log.taskName}</td>
-            <td><span class="tag ${log.status}">${log.status.charAt(0).toUpperCase() + log.status.slice(1)}</span></td>
+        tbody.innerHTML = logs.map(log => `
+          <tr onclick="openLogDetail(${log.id})" style="cursor:pointer">
+            <td>${new Date(log.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</td>
+            <td>${log.taskName || 'Untitled log'}</td>
+            <td>${log.estimatedHours || 0}h</td>
+            <td><span class="tag ${log.status}">${log.status ? log.status.charAt(0).toUpperCase() + log.status.slice(1) : 'Unknown'}</span></td>
+            <td><button class="btn btn-outline btn-sm" onclick="event.stopPropagation(); openLogDetail(${log.id})">View</button></td>
           </tr>
         `).join('');
       }
     }
-
   } catch (err) {
     console.error('Failed to load student profile data:', err);
   }
 
   openModal('student-profile-modal');
+}
+
+async function openLogDetail(logId) {
+  try {
+    const response = await fetch(`${API_URL}/logs/${logId}`, {
+      headers: { 'Authorization': `Bearer ${getToken()}` }
+    });
+
+    if (!response.ok) {
+      console.error('Failed to load log details', response.statusText);
+      return;
+    }
+
+    const log = await response.json();
+    const titleEl = document.getElementById('log-detail-title');
+    const dateEl = document.getElementById('log-detail-date');
+    const hoursEl = document.getElementById('log-detail-hours');
+    const statusEl = document.getElementById('log-detail-status');
+    const descriptionEl = document.getElementById('log-detail-description');
+    const skillsEl = document.getElementById('log-detail-skills');
+    const challengesEl = document.getElementById('log-detail-challenges');
+    const attachmentsEl = document.getElementById('log-detail-attachments');
+    const commentsEl = document.getElementById('log-detail-comments');
+
+    if (titleEl) titleEl.textContent = log.taskName || 'Log Entry Detail';
+    if (dateEl) dateEl.textContent = log.createdAt ? new Date(log.createdAt).toLocaleString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'Unknown date';
+    if (hoursEl) hoursEl.textContent = `${log.estimatedHours || 0} hour${log.estimatedHours === 1 ? '' : 's'}`;
+
+    if (statusEl) {
+      statusEl.innerHTML = `<span class="tag ${log.status}">${log.status ? log.status.charAt(0).toUpperCase() + log.status.slice(1) : 'Unknown'}</span>`;
+    }
+    if (descriptionEl) descriptionEl.textContent = log.description || 'No description provided.';
+    if (skillsEl) skillsEl.textContent = log.skillsApplied || 'No activities recorded.';
+    if (challengesEl) challengesEl.textContent = log.challenges || 'No challenges recorded.';
+
+    if (attachmentsEl) {
+      if (log.proofFileUrl) {
+        attachmentsEl.innerHTML = `<a href="${log.proofFileUrl}" target="_blank" rel="noopener noreferrer">View attachment</a>`;
+      } else {
+        attachmentsEl.textContent = 'No attachment provided.';
+      }
+    }
+    if (commentsEl) commentsEl.textContent = log.supervisorComment || 'No supervisor comments yet.';
+
+    openModal('log-detail-modal');
+  } catch (err) {
+    console.error('Failed to load log details:', err);
+  }
 }
 
 
@@ -2431,6 +2573,16 @@ function switchTab(prefix, tabName, navEl) {
       }
     });
   }
+  
+  // Load interns when industry supervisor clicks on interns tab
+  if (prefix === 'industry' && tabName === 'interns') {
+    loadIndustryInterns();
+  }
+  // Load grading students when industry supervisor opens grading tab
+  if (prefix === 'industry' && tabName === 'grading') {
+    loadIndustryGradingStudents();
+  }
+  
   if (window.innerWidth <= 768) {
     const overlayId = `overlay-${prefix === 'industry' ? 'industry' : prefix === 'school' ? 'school' : prefix}`;
     const sidebarId = `sidebar-${prefix === 'industry' ? 'industry' : prefix === 'school' ? 'school' : prefix}`;
@@ -2656,6 +2808,9 @@ async function loadGradingForm() {
   if (nameHeader) nameHeader.textContent = studentName;
 
   if (container) container.style.display = 'block';
+
+  // Setup industry grading listeners
+  setupIndustryGradingListeners();
 }
 
 async function submitGrading() {
@@ -2670,25 +2825,32 @@ async function submitGrading() {
   const supervisorId = getUserId();
 
   // Gather all grading fields
-  const gradingInputs = document.querySelectorAll('#grading-form-container input[type="number"]');
-  const gradingSelects = document.querySelectorAll('#grading-form-container select');
-  const gradingTextareas = document.querySelectorAll('#grading-form-container textarea');
-
   const data = {
     supervisorId: Number(supervisorId),
     studentId: Number(studentId),
-    attendanceRate: Number(gradingInputs[0]?.value) || null,
-    attendanceComments: gradingTextareas[0]?.value || null,
-    logQuality: gradingSelects[0]?.value || null,
+    // Attendance
+    attendanceRate: Number(document.querySelector('#grading-form-container input[placeholder*="95"]')?.value) || null,
+    attendanceComments: document.querySelectorAll('#grading-form-container textarea')[0]?.value || null,
+    // Daily Entries
+    logQuality: document.querySelectorAll('#grading-form-container select')[0]?.value || null,
     logConsistency: Number(document.querySelector('#grading-form-container input[type="range"]')?.value) || null,
-    reportGrade: gradingSelects[1]?.value || null,
-    reportFeedback: gradingTextareas[1]?.value || null,
-    communicationRating: Number(gradingInputs[1]?.value) || null,
-    communicationObservations: gradingTextareas[2]?.value || null,
-    industryPerformance: gradingSelects[2]?.value || null,
-    industryComments: gradingTextareas[3]?.value || null,
+    // Report
+    reportGrade: document.querySelectorAll('#grading-form-container select')[1]?.value || null,
+    reportFeedback: document.querySelectorAll('#grading-form-container textarea')[1]?.value || null,
+    // Communication
+    communicationRating: Number(document.querySelectorAll('#grading-form-container input[type="number"]')[1]?.value) || null,
+    communicationObservations: document.querySelectorAll('#grading-form-container textarea')[2]?.value || null,
+    // Industry Supervisor Detailed Grading
+    enthusiasm: Number(document.getElementById('enthusiasm')?.value) || 0,
+    technicalCompetence: Number(document.getElementById('technical-competence')?.value) || 0,
+    punctuality: Number(document.getElementById('punctuality')?.value) || 0,
+    presentationSmartness: Number(document.getElementById('presentation-smartness')?.value) || 0,
+    superiorSubordinateRelationship: Number(document.getElementById('superior-relationship')?.value) || 0,
+    adherenceToPolicies: Number(document.getElementById('adherence-policies')?.value) || 0,
+    industryComments: document.getElementById('industry-comments')?.value || null,
+    // Overall
     overallGrade: document.querySelector('#grading-form-container .card-val')?.textContent || null,
-    finalComments: gradingTextareas[4]?.value || null,
+    finalComments: document.querySelectorAll('#grading-form-container textarea')[3]?.value || null,
   };
 
   try {
@@ -2706,6 +2868,156 @@ async function submitGrading() {
   }
 }
 
+// Calculate industry supervisor total dynamically
+function calculateIndustryTotal() {
+  const enthusiasm = Number(document.getElementById('enthusiasm')?.value) || 0;
+  const technicalCompetence = Number(document.getElementById('technical-competence')?.value) || 0;
+  const punctuality = Number(document.getElementById('punctuality')?.value) || 0;
+  const presentationSmartness = Number(document.getElementById('presentation-smartness')?.value) || 0;
+  const superiorRelationship = Number(document.getElementById('superior-relationship')?.value) || 0;
+  const adherencePolicies = Number(document.getElementById('adherence-policies')?.value) || 0;
+
+  const total = enthusiasm + technicalCompetence + punctuality + presentationSmartness + superiorRelationship + adherencePolicies;
+  const totalElement = document.getElementById('industry-total');
+  if (totalElement) {
+    totalElement.textContent = `${total}/30`;
+    totalElement.style.color = total > 15 ? 'var(--success)' : total > 10 ? 'var(--warning)' : 'var(--danger)';
+  }
+}
+
+// Add event listeners for industry grading inputs
+function setupIndustryGradingListeners() {
+  const industryInputs = [
+    'enthusiasm', 'technical-competence', 'punctuality',
+    'presentation-smartness', 'superior-relationship', 'adherence-policies'
+  ];
+
+  industryInputs.forEach(id => {
+    const element = document.getElementById(id);
+    if (element) {
+      element.addEventListener('input', calculateIndustryTotal);
+    }
+  });
+}
+
+// Calculate industry grading total for industry supervisor page
+function calculateIndustryGradingTotal() {
+  const enthusiasm = Number(document.getElementById('industry-enthusiasm')?.value) || 0;
+  const technicalCompetence = Number(document.getElementById('industry-technical-competence')?.value) || 0;
+  const punctuality = Number(document.getElementById('industry-punctuality')?.value) || 0;
+  const presentationSmartness = Number(document.getElementById('industry-presentation-smartness')?.value) || 0;
+  const superiorRelationship = Number(document.getElementById('industry-superior-relationship')?.value) || 0;
+  const adherencePolicies = Number(document.getElementById('industry-adherence-policies')?.value) || 0;
+
+  const total = enthusiasm + technicalCompetence + punctuality + presentationSmartness + superiorRelationship + adherencePolicies;
+  const totalElement = document.getElementById('industry-grading-total');
+  if (totalElement) {
+    totalElement.textContent = `${total}/30`;
+    totalElement.style.color = total > 15 ? 'var(--success)' : total > 10 ? 'var(--warning)' : 'var(--danger)';
+  }
+}
+
+// Setup listeners for industry grading form
+function setupIndustryGradingFormListeners() {
+  const industryInputs = [
+    'industry-enthusiasm', 'industry-technical-competence', 'industry-punctuality',
+    'industry-presentation-smartness', 'industry-superior-relationship', 'industry-adherence-policies'
+  ];
+
+  industryInputs.forEach(id => {
+    const element = document.getElementById(id);
+    if (element) {
+      element.addEventListener('input', calculateIndustryGradingTotal);
+    }
+  });
+}
+
+// Load industry grading form
+async function loadIndustryGradingForm() {
+  const select = document.getElementById('industry-grading-student-select');
+  const container = document.getElementById('industry-grading-form-container');
+
+  if (!select.value) {
+    alert('Please select an intern first');
+    return;
+  }
+
+  const studentId = select.value;
+  const selectedOption = select.options[select.selectedIndex];
+  const studentName = selectedOption.text.split('(')[0].trim();
+
+  // Update name immediately
+  const nameHeader = document.querySelector('#industry-grading-form-container h4');
+  if (nameHeader) nameHeader.textContent = studentName;
+
+  if (container) container.style.display = 'block';
+
+  // Fetch full student details
+  try {
+    const student = await fetchJson(`${API_URL}/users/${studentId}`);
+    if (student) {
+      const avatar = document.getElementById('industry-grading-avatar');
+      const nameEl = document.getElementById('industry-grading-name');
+      const regEl = document.getElementById('industry-grading-reg');
+      const placementEl = document.getElementById('industry-grading-placement');
+    
+      if (avatar) avatar.textContent = student.fullName.split(' ').map(n => n[0]).join('').toUpperCase();
+      if (nameEl) nameEl.textContent = student.fullName;
+      if (regEl) regEl.textContent = student.registrationNumber || '—';
+      if (placementEl) placementEl.textContent = `Placement: ${student.placementCompany || '—'}`;
+    }
+  } catch (err) {
+    console.error('Failed to load student details:', err);
+  }
+
+  setupIndustryGradingFormListeners();
+}
+
+// Submit industry grading
+async function submitIndustryGrading() {
+  const studentSelect = document.getElementById('industry-grading-student-select');
+  const studentId = studentSelect.value;
+
+  if (!studentId) {
+    alert('Please select an intern first.');
+    return;
+  }
+
+  const data = {
+    enthusiasm: Number(document.getElementById('industry-enthusiasm')?.value) || 0,
+    technicalCompetence: Number(document.getElementById('industry-technical-competence')?.value) || 0,
+    punctuality: Number(document.getElementById('industry-punctuality')?.value) || 0,
+    presentationSmartness: Number(document.getElementById('industry-presentation-smartness')?.value) || 0,
+    superiorSubordinateRelationship: Number(document.getElementById('industry-superior-relationship')?.value) || 0,
+    adherenceToPolicies: Number(document.getElementById('industry-adherence-policies')?.value) || 0,
+    industryComments: document.getElementById('industry-grading-comments')?.value || null,
+  };
+
+  try {
+    const response = await fetch(`${API_URL}/gradings/industry/${studentId}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${getToken()}`
+      },
+      body: JSON.stringify(data),
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      alert(result.message || 'Failed to submit grading.');
+      return;
+    }
+
+    alert('Industry grading submitted successfully!');
+    document.getElementById('industry-grading-form-container').style.display = 'none';
+    document.getElementById('industry-grading-student-select').value = '';
+
+  } catch (err) {
+    alert('Could not connect to server. Make sure the backend is running.');
+  }
+}
 
 /*====== SCHOOL SUPERVISION SCHEDULING ======*/
 // Student data
@@ -3143,3 +3455,265 @@ window.addEventListener("load", function () {
     showPage("page-login");
   }
 });
+
+/* ======== INDUSTRY SUPERVISOR - LINK & MANAGE INTERNS ========*/
+
+// Load industry supervisor interns
+async function loadIndustryInterns() {
+  try {
+    const response = await fetch(`${API_URL}/users/industry-supervisor/my-interns`, {
+      headers: { 'Authorization': `Bearer ${getToken()}` }
+    });
+
+    if (!response.ok) {
+      console.error('Failed to load interns:', response.statusText);
+      return;
+    }
+
+    const interns = await response.json();
+    const grid = document.getElementById('industry-interns-grid');
+    const emptyState = document.getElementById('industry-interns-empty');
+
+    if (!grid) return;
+
+    if (!interns || interns.length === 0) {
+      grid.innerHTML = '';
+      emptyState.style.display = 'block';
+      return;
+    }
+
+    emptyState.style.display = 'none';
+
+    grid.innerHTML = interns.map(student => {
+      const initials = (student.fullName || 'S').split(' ').map(n => n[0]).join('').toUpperCase();
+      const safeName = (student.fullName || '').replace(/'/g, "\\'");
+      const safeReg = (student.registrationNumber || '').replace(/'/g, "\\'");
+      const safeCourse = (student.course || '').replace(/'/g, "\\'");
+      const safePlacement = (student.placementCompany || '').replace(/'/g, "\\'");
+      const safeEmail = (student.email || '').replace(/'/g, "\\'");
+
+      return `
+        <div class="student-card" onclick="openStudentProfile(${student.id}, '${safeName}', '${safeReg}', '${safeCourse}', '${safePlacement}', '${safeEmail}')">
+          <div class="student-card-top">
+            <div class="avatar avatar-lg">${initials}</div>
+            <div class="student-card-info">
+              <h4>${student.fullName}</h4>
+              <p>${student.registrationNumber || '—'} · ${student.course || '—'}</p>
+            </div>
+          </div>
+          <div class="student-card-meta">
+            <span><i class="fas fa-building" style="margin-right:4px"></i>${student.placementCompany || 'Not Placed'}</span>
+            <span><span class="approved-dot"></span>Active</span>
+          </div>
+          <div style="font-size:.8rem;color:var(--text2);margin-bottom:6px">View Details</div>
+          <button class="btn btn-outline btn-sm" style="width:100%;margin-top:6px">
+            <i class="fas fa-arrow-right"></i> Open Profile
+          </button>
+        </div>
+      `;
+    }).join('');
+
+  } catch (err) {
+    console.error('Failed to load industry interns:', err);
+  }
+}
+
+// Link students by registration number
+async function linkIndustryStudents() {
+  const input = document.getElementById('industry-link-reg-numbers');
+  const messageDiv = document.getElementById('industry-link-message');
+  
+  if (!input || !input.value.trim()) {
+    messageDiv.textContent = 'Please enter at least one registration number';
+    messageDiv.className = '';
+    messageDiv.style.display = 'block';
+    messageDiv.style.backgroundColor = 'rgba(239,68,68,0.1)';
+    messageDiv.style.color = 'var(--red)';
+    return;
+  }
+
+  const regNumbers = input.value
+    .split(',')
+    .map(reg => reg.trim())
+    .filter(reg => reg.length > 0);
+
+  if (regNumbers.length === 0) {
+    messageDiv.textContent = 'Please enter valid registration numbers';
+    messageDiv.style.display = 'block';
+    messageDiv.style.backgroundColor = 'rgba(239,68,68,0.1)';
+    messageDiv.style.color = 'var(--red)';
+    return;
+  }
+
+  try {
+    const response = await fetch(`${API_URL}/users/industry-supervisor/link-students`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${getToken()}`
+      },
+      body: JSON.stringify({ registrationNumbers: regNumbers })
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      messageDiv.textContent = result.message || 'Failed to link students';
+      messageDiv.style.display = 'block';
+      messageDiv.style.backgroundColor = 'rgba(239,68,68,0.1)';
+      messageDiv.style.color = 'var(--red)';
+      return;
+    }
+
+    // Build message showing results
+    let message = '';
+    if (result.linked && result.linked.length > 0) {
+      message += `✓ Successfully linked ${result.linked.length} student(s)`;
+    }
+    if (result.failed && result.failed.length > 0) {
+      if (message) message += ' | ';
+      message += `✗ ${result.failed.length} issue(s): ${result.failed.join(', ')}`;
+    }
+
+    messageDiv.textContent = message || 'Students linked successfully';
+    messageDiv.style.display = 'block';
+    messageDiv.style.backgroundColor = result.linked && result.linked.length > 0 
+      ? 'rgba(34,197,94,0.1)' 
+      : 'rgba(239,68,68,0.1)';
+    messageDiv.style.color = result.linked && result.linked.length > 0 
+      ? 'var(--green)' 
+      : 'var(--red)';
+
+    // Clear input
+    input.value = '';
+
+    // Refresh the interns list
+    setTimeout(() => {
+      loadIndustryInterns();
+      loadIndustryCards(); // Update dashboard cards
+    }, 500);
+
+  } catch (err) {
+    console.error('Failed to link students:', err);
+    messageDiv.textContent = 'Could not connect to server. Make sure the backend is running.';
+    messageDiv.style.display = 'block';
+    messageDiv.style.backgroundColor = 'rgba(239,68,68,0.1)';
+    messageDiv.style.color = 'var(--red)';
+  }
+}
+
+// ===== Industry Supervisor Grading UI =====
+async function loadIndustryGradingStudents() {
+  try {
+    const response = await fetch(`${API_URL}/industry-supervisor/grading/students`, {
+      headers: { 'Authorization': `Bearer ${getToken()}` }
+    });
+    const students = await response.json();
+    const select = document.getElementById('industry-grading-student-select');
+    const loadBtn = document.querySelector('#industry-tab-grading .section-head button');
+    if (!select) return;
+    select.innerHTML = '<option value="">Select Intern...</option>';
+    if (!Array.isArray(students) || students.length === 0) {
+      select.disabled = true;
+      if (loadBtn) loadBtn.disabled = true;
+      select.innerHTML = '<option value="">No assigned students available for grading</option>';
+      return;
+    }
+    select.disabled = false;
+    if (loadBtn) loadBtn.disabled = false;
+    students.forEach(s => {
+      select.innerHTML += `<option value="${s.id}">${s.fullName} (${s.registrationNumber || '—'}) — ${s.internshipOrganization || ''}</option>`;
+    });
+  } catch (err) {
+    console.error('Failed to load industry grading students:', err);
+  }
+}
+
+function loadIndustryGradingForm() {
+  const select = document.getElementById('industry-grading-student-select');
+  const container = document.getElementById('industry-grading-form-container');
+  if (!select || !select.value) {
+    alert('Please select an intern to grade.');
+    return;
+  }
+  const text = select.options[select.selectedIndex].text;
+  const name = text.split('(')[0].trim();
+  const headerName = document.querySelector('#industry-grading-form-container h4');
+  if (headerName) headerName.textContent = name;
+  // Show container
+  if (container) container.style.display = 'block';
+  // Reset inputs
+  ['industry-enthusiasm','industry-technical-competence','industry-punctuality','industry-presentation-smartness','industry-superior-relationship','industry-adherence-policies'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  document.getElementById('industry-grading-total').textContent = '0/30';
+  // Wire listeners for auto-calculation
+  ['industry-enthusiasm','industry-technical-competence','industry-punctuality','industry-presentation-smartness','industry-superior-relationship','industry-adherence-policies'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.oninput = calculateIndustryGradingTotal;
+  });
+}
+
+function calculateIndustryGradingTotal() {
+  const enthusiasm = Number(document.getElementById('industry-enthusiasm')?.value) || 0;
+  const technical = Number(document.getElementById('industry-technical-competence')?.value) || 0;
+  const punctuality = Number(document.getElementById('industry-punctuality')?.value) || 0;
+  const presentation = Number(document.getElementById('industry-presentation-smartness')?.value) || 0;
+  const superior = Number(document.getElementById('industry-superior-relationship')?.value) || 0;
+  const adherence = Number(document.getElementById('industry-adherence-policies')?.value) || 0;
+  const total = enthusiasm + technical + punctuality + presentation + superior + adherence;
+  const el = document.getElementById('industry-grading-total');
+  if (el) {
+    el.textContent = `${total}/30`;
+    el.style.color = total > 20 ? 'var(--success)' : total > 10 ? 'var(--warning)' : 'var(--danger)';
+  }
+}
+
+async function submitIndustryGrading() {
+  const select = document.getElementById('industry-grading-student-select');
+  if (!select || !select.value) {
+    alert('Please select an intern first.');
+    return;
+  }
+  const studentId = Number(select.value);
+  const payload = {
+    enthusiasm: Number(document.getElementById('industry-enthusiasm')?.value) || 0,
+    technicalCompetence: Number(document.getElementById('industry-technical-competence')?.value) || 0,
+    punctuality: Number(document.getElementById('industry-punctuality')?.value) || 0,
+    presentationSmartness: Number(document.getElementById('industry-presentation-smartness')?.value) || 0,
+    superiorSubordinateRelationship: Number(document.getElementById('industry-superior-relationship')?.value) || 0,
+    adherenceToPolicies: Number(document.getElementById('industry-adherence-policies')?.value) || 0,
+    industryComments: document.getElementById('industry-grading-comments')?.value || null,
+  };
+
+  try {
+    const res = await fetch(`${API_URL}/industry-supervisor/grading/${studentId}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${getToken()}`
+      },
+      body: JSON.stringify(payload),
+    });
+
+    const result = await res.json();
+    if (!res.ok) {
+      alert(result.message || 'Failed to submit grading');
+      return;
+    }
+
+    alert('Grading saved successfully');
+    // Refresh UI: industry cards, school students/grading, and clear form
+    if (document.getElementById('industry-grading-form-container')) document.getElementById('industry-grading-form-container').style.display = 'none';
+    if (document.getElementById('industry-grading-student-select')) document.getElementById('industry-grading-student-select').value = '';
+    // Refresh cards and school/student sections
+    loadIndustryCards();
+    loadSchoolStudents();
+    // try refreshing student cards if visible
+    loadStudentCards(studentId).catch(()=>{});
+
+  } catch (err) {
+    alert('Could not connect to server.');
+  }
+}

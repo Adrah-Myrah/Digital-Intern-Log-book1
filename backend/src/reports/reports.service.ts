@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ConflictException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Report } from './report.entity';
@@ -12,10 +16,16 @@ export class ReportsService {
   ) {}
 
   // Student uploads report
-  async uploadReport(studentId: number, file: Express.Multer.File): Promise<Report> {
+  async uploadReport(
+    studentId: number,
+    file: Express.Multer.File,
+  ): Promise<Report> {
     // Check if student already submitted
-    const existing = await this.reportsRepository.findOne({ where: { studentId } });
-    if (existing) throw new ConflictException('You have already submitted a report');
+    const existing = await this.reportsRepository.findOne({
+      where: { studentId },
+    });
+    if (existing)
+      throw new ConflictException('You have already submitted a report');
 
     const report = this.reportsRepository.create({
       studentId,

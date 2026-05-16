@@ -44,10 +44,19 @@ export class MessagesController {
     @Req() req: any,
   ) {
     const me = Number(req.user.sub);
-    if (req.user.role !== 'admin' && me !== Number(userId1) && me !== Number(userId2)) {
-      throw new ForbiddenException('You can only access your own conversations');
+    if (
+      req.user.role !== 'admin' &&
+      me !== Number(userId1) &&
+      me !== Number(userId2)
+    ) {
+      throw new ForbiddenException(
+        'You can only access your own conversations',
+      );
     }
-    return this.messagesService.getConversation(Number(userId1), Number(userId2));
+    return this.messagesService.getConversation(
+      Number(userId1),
+      Number(userId2),
+    );
   }
 
   // GET /api/messages/user/:userId — all conversations
@@ -55,7 +64,9 @@ export class MessagesController {
   @Roles('student', 'school-supervisor', 'industry-supervisor', 'admin')
   getUserConversations(@Param('userId') userId: string, @Req() req: any) {
     if (req.user.role !== 'admin' && Number(req.user.sub) !== Number(userId)) {
-      throw new ForbiddenException('You can only access your own conversation list');
+      throw new ForbiddenException(
+        'You can only access your own conversation list',
+      );
     }
     return this.messagesService.getUserConversations(Number(userId));
   }
@@ -78,16 +89,17 @@ export class MessagesController {
     @Param('receiverId') receiverId: string,
     @Req() req: any,
   ) {
-    if (req.user.role !== 'admin' && Number(req.user.sub) !== Number(receiverId)) {
-      throw new ForbiddenException('You can only mark messages sent to you as read');
+    if (
+      req.user.role !== 'admin' &&
+      Number(req.user.sub) !== Number(receiverId)
+    ) {
+      throw new ForbiddenException(
+        'You can only mark messages sent to you as read',
+      );
     }
-    return this.messagesService.markAsRead(Number(senderId), Number(receiverId));
-  }
-
-  @Delete(':id')
-  @UseGuards(JwtAuthGuard)
-  @Roles('school-supervisor', 'industry-supervisor', 'admin')
-  async deleteMessage(@Param('id') id: string, @Req() req: any) {
-    return this.messagesService.deleteMessage(Number(id), Number(req.user.sub));
+    return this.messagesService.markAsRead(
+      Number(senderId),
+      Number(receiverId),
+    );
   }
 }

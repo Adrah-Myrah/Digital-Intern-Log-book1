@@ -1,4 +1,8 @@
-import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, ILike, In, Not } from 'typeorm';
 import { Message } from './message.entity';
@@ -118,7 +122,7 @@ export class MessagesService {
       .createQueryBuilder('message')
       .where(
         '(message.senderId = :userId1 AND message.receiverId = :userId2) OR (message.senderId = :userId2 AND message.receiverId = :userId1)',
-        { userId1, userId2 }
+        { userId1, userId2 },
       )
       .orderBy('message.sentAt', 'ASC')
       .getMany();
@@ -128,7 +132,9 @@ export class MessagesService {
   async getUserConversations(userId: number): Promise<Message[]> {
     return this.messagesRepository
       .createQueryBuilder('message')
-      .where('message.senderId = :userId OR message.receiverId = :userId', { userId })
+      .where('message.senderId = :userId OR message.receiverId = :userId', {
+        userId,
+      })
       .orderBy('message.sentAt', 'DESC')
       .getMany();
   }
@@ -139,35 +145,17 @@ export class MessagesService {
       .createQueryBuilder()
       .update(Message)
       .set({ isRead: true })
-      .where('senderId = :senderId AND receiverId = :receiverId', { senderId, receiverId })
+      .where('senderId = :senderId AND receiverId = :receiverId', {
+        senderId,
+        receiverId,
+      })
       .execute();
   }
 
   // Get unread count for a user
   async getUnreadCount(userId: number): Promise<number> {
     return this.messagesRepository.count({
-      where: { receiverId: userId, isRead: false }
+      where: { receiverId: userId, isRead: false },
     });
-  }
-
-  // Delete a message (only sender or admin can delete)
-  async deleteMessage(messageId: number, requesterId: number): Promise<{ message: string }> {
-    const msg = await this.messagesRepository.findOne({ where: { id: messageId } });
-    if (!msg) {
-      throw new NotFoundException('Message not found');
-    }
-    
-    const requester = await this.usersRepository.findOne({ where: { id: requesterId } });
-    if (!requester) {
-      throw new NotFoundException('User not found');
-    }
-
-    // Only sender or admin can delete
-    if (msg.senderId !== requesterId && requester.role !== 'admin') {
-      throw new ForbiddenException('You can only delete your own messages');
-    }
-
-    await this.messagesRepository.delete({ id: messageId });
-    return { message: 'Message deleted successfully' };
   }
 }
