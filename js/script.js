@@ -396,12 +396,15 @@ async function autoAssignSupervisors() {
   }
 }
 
-// WIRE INDUSTRY SUPERVISOR APPROVAL
 async function loadPendingLogs() {
   try {
     const myId = getUserId();
     const endpoint = myId ? `${API_URL}/logs/pending/${myId}` : `${API_URL}/logs/pending`;
-    const logs = await fetchJson(endpoint);
+    
+    const [logs, allStudents] = await Promise.all([
+      fetchJson(endpoint),
+      fetchJson(`${API_URL}/users/students`)
+    ]);
 
     // Update pending count card
     const cards = document.querySelectorAll('#industry-tab-dashboard .card-val');
@@ -411,20 +414,24 @@ async function loadPendingLogs() {
     const badge = document.querySelector('#sidebar-industry .nav-item:nth-child(2) .badge');
     if (badge) badge.textContent = logs.length;
 
-    // Update request list in dashboard
-    const requestList = document.querySelector('#industry-tab-dashboard .request-list');
-    if (requestList && logs.length > 0) {
-      requestList.innerHTML = logs.map(log => `
+    const buildCard = (log) => {
+      const student = allStudents.find(s => Number(s.id) === Number(log.studentId));
+      const studentName = student?.fullName || 'Unknown Student';
+      const initials = studentName.split(' ').map(n => n[0]).join('').toUpperCase();
+      const yearCourse = [student?.yearOfStudy, student?.course].filter(Boolean).join(' · ');
+
+      return `
         <div class="request-card">
-          <div class="avatar">S${log.studentId}</div>
+          <div class="avatar">${initials}</div>
           <div class="request-card-body">
             <h4>${log.taskName}</h4>
-            <p>Student ID: ${log.studentId}</p>
+            <p>${studentName} · ${yearCourse}</p>
             <div class="request-card-meta">
               <span class="tag ${log.workType === 'Onsite' ? 'onsite' : 'offsite'}">${log.workType}</span>
               &nbsp; ${log.estimatedHours} hours &nbsp; · &nbsp;
               ${new Date(log.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
             </div>
+            ${log.description ? `<p style="margin-top:8px;font-size:.85rem;color:var(--text2)">${escapeHtml(log.description.substring(0, 120))}${log.description.length > 120 ? '...' : ''}</p>` : ''}
           </div>
           <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px">
             <span class="tag pending">Pending</span>
@@ -438,51 +445,27 @@ async function loadPendingLogs() {
             </div>
           </div>
         </div>
-      `).join('');
-    } else if (requestList) {
-      requestList.innerHTML = '<p style="padding:20px;color:var(--text2)">No pending approvals.</p>';
+      `;
+    };
+
+    const requestList = document.getElementById('industry-dashboard-requests');
+    if (requestList) {
+      requestList.innerHTML = logs.length > 0
+        ? logs.map(buildCard).join('')
+        : '<p style="padding:20px;color:var(--text2)">No pending approvals.</p>';
     }
 
-    // Also update the requests tab
-    const requestsTab = document.querySelector('#industry-tab-requests .request-list');
+    const requestsTab = document.getElementById('industry-requests-list');
     if (requestsTab) {
-      if (logs.length > 0) {
-        requestsTab.innerHTML = logs.map(log => `
-          <div class="request-card">
-            <div class="avatar">${String(log.studentId).slice(0,2)}</div>
-            <div class="request-card-body">
-              <h4>${escapeHtml(log.taskName)}</h4>
-              <p>Student ID: ${log.studentId} · ${new Date(log.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</p>
-              <div class="request-card-meta">
-                <span class="tag ${log.workType === 'Onsite' ? 'onsite' : 'offsite'}">${log.workType}</span>
-                &nbsp; ${log.estimatedHours} hours
-              </div>
-              ${log.description ? `<p style="margin-top:8px;font-size:.85rem;color:var(--text2)">${escapeHtml(log.description.substring(0, 120))}${log.description.length > 120 ? '...' : ''}</p>` : ''}
-            </div>
-            <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px">
-              <span class="tag pending">Pending</span>
-              <div style="display:flex;gap:6px">
-                <button class="btn btn-primary btn-sm" onclick="approveLog(${log.id}, 'approved')">
-                  <i class="fas fa-check"></i> Approve
-                </button>
-                <button class="btn btn-outline btn-sm" style="border-color:var(--danger);color:var(--danger)" 
-                        onclick="approveLog(${log.id}, 'rejected')">
-                  <i class="fas fa-times"></i> Reject
-                </button>
-              </div>
-            </div>
-          </div>
-        `).join('');
-      } else {
-        requestsTab.innerHTML = '<p style="padding:20px;color:var(--text2)">No pending approvals.</p>';
-      }
+      requestsTab.innerHTML = logs.length > 0
+        ? logs.map(buildCard).join('')
+        : '<p style="padding:20px;color:var(--text2)">No pending approvals.</p>';
     }
 
   } catch (err) {
     console.error('Failed to load pending logs:', err);
   }
 }
-
 // APPROVING LOGS
 async function approveLog(logId, status) {
   const comment = status === 'rejected'
@@ -946,10 +929,58 @@ async function loadIndustryCards() {
     if (cards[3]) cards[3].textContent = rejected;
 
     // Update welcome banner
-    const bannerText = document.querySelector('#industry-tab-dashboard .welcome-banner p');
-    if (bannerText) {
-      bannerText.innerHTML = `You have <strong>${pending} tasks pending your approval</strong> from student interns.`;
+    const welcomeMsg = document.getElementById('industry-welcome-msg');
+    if (welcomeMsg) welcomeMsg.innerHTML = `You have <strong>${pending} tasks pending your approval</strong> from student interns.`;
+
+    const welcomeHeading = document.getElementById('industry-welcome-heading');
+    if (welcomeHeading) welcomeHeading.textContent = `Welcome, ${(localStorage.getItem('userName') || '').split(' ')[0]}! 🏢`;
+
+    const profileRes = await fetch(`${API_URL}/users/${myId}`, {
+      headers: { 'Authorization': `Bearer ${getToken()}` }
+    });
+    const profile = await profileRes.json();
+
+    const placementBadge = document.getElementById('industry-placement-badge');
+    if (placementBadge) placementBadge.innerHTML = `<i class="fas fa-building"></i> ${profile.department || profile.placementCompany || '—'}`;
+
+    const requestsBadge = document.getElementById('industry-requests-badge');
+    if (requestsBadge) requestsBadge.textContent = pending;
+
+    const internsGrid = document.getElementById('industry-interns-grid');
+    if (internsGrid && assignedStudents.length > 0) {
+      const progressMap = await getStudentProgressMap();
+      internsGrid.innerHTML = assignedStudents.map(student => {
+        const stats = progressMap.get(Number(student.id)) || { progress: 0 };
+        const initials = student.fullName.split(' ').map(n => n[0]).join('').toUpperCase();
+        return `
+          <div class="student-card">
+            <div class="student-card-top">
+              <div class="avatar avatar-lg">${initials}</div>
+              <div class="student-card-info">
+                <h4>${student.fullName}</h4>
+                <p>${student.registrationNumber || '—'} · ${student.course || '—'}</p>
+              </div>
+            </div>
+            <div class="student-card-meta">
+              <span>${student.placementCompany || '—'}</span>
+              <span><span class="approved-dot"></span>Active</span>
+            </div>
+            <div style="font-size:.8rem;color:var(--text2);margin-bottom:6px">Overall Progress</div>
+            <div class="prog-bar"><div class="prog-fill ${stats.progress > 0 && stats.progress < 60 ? 'amber' : ''}" style="width:${stats.progress}%"></div></div>
+            <div style="font-size:.78rem;color:var(--text3);margin-top:4px;text-align:right">${stats.progress}%</div>
+          </div>
+        `;
+      }).join('');
+    } else if (internsGrid) {
+      internsGrid.innerHTML = '<p style="padding:20px;color:var(--text2)">No interns assigned yet.</p>';
     }
+
+    const nameInput = document.getElementById('industry-profile-name');
+    const orgInput = document.getElementById('industry-profile-org');
+    const emailInput = document.getElementById('industry-profile-email');
+    if (nameInput) nameInput.value = profile.fullName || '';
+    if (orgInput) orgInput.value = profile.placementCompany || profile.department || '';
+    if (emailInput) emailInput.value = profile.email || '';
 
   } catch (err) {
     console.error('Failed to load industry cards:', err);
@@ -1871,11 +1902,13 @@ async function loadConversationWith(otherUserId, otherUserName, isPolling = fals
   const title = findMessageElement('#messages-chat-title');
   const subtitle = findMessageElement('#messages-chat-subtitle');
 
-  if (title) title.textContent = otherUserName;
-  if (subtitle) subtitle.textContent = 'Loading…';
-  if (emptyState) { emptyState.textContent = 'Loading conversation…'; emptyState.style.display = 'block'; }
-  if (history) history.style.display = 'none';
-  if (sendRow) sendRow.style.display = 'none';
+  if (!isPolling) {
+    if (title) title.textContent = otherUserName;
+    if (subtitle) subtitle.textContent = 'Loading…';
+    if (emptyState) { emptyState.textContent = 'Loading conversation…'; emptyState.style.display = 'block'; }
+    if (history) history.style.display = 'none';
+    if (sendRow) sendRow.style.display = 'none';
+  }
 
   // Highlight active contact
   document.querySelectorAll('.contact-item').forEach(el => el.classList.remove('active'));

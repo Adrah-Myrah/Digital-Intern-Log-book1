@@ -394,7 +394,7 @@
                     </tr>
                   </thead>
                   <tbody>
-                    <!-- <tr>
+                    
                       <td>Mar 03, 2026</td>
                       <td>Database schema design for client module</td>
                       <td><span class="tag onsite">Onsite</span></td>
@@ -670,7 +670,7 @@
 
           <!-- TAB: SETTINGS -->
           <div id="student-tab-settings" class="tab-content">
-            <div class="page-header">
+            <div class="page-header" >
               <h2>Settings</h2>
               <p>Personalise your InternLog experience</p>
             </div>
@@ -829,7 +829,8 @@
                 </div>
 
                 <div id="messages-send-row" class="messages-send-row">
-                  <textarea id="messages-textarea" class="messages-textarea" placeholder="Type a message..." rows="1"></textarea>
+                  <textarea id="messages-textarea" class="messages-textarea" placeholder="Type a message..."
+                    rows="1"></textarea>
                   <button id="messages-send-button" class="messages-send-button" disabled>
                     <i class="fas fa-paper-plane"></i>
                   </button>
@@ -861,12 +862,15 @@
           </div>
         </div>
         <div class="chat-input-row">
-          <input type="text" id="chat-input" placeholder="Type a message..." disabled style="cursor:not-allowed;opacity:.5">
+          <input type="text" id="chat-input" placeholder="Type a message..." disabled
+            style="cursor:not-allowed;opacity:.5">
           <div class="chat-send" style="cursor:not-allowed;opacity:.5"><i class="fas fa-paper-plane"></i></div>
         </div>
       </div>
       <div class="chat-bubble-btn" onclick="openFloatingMessages()" title="Open Messages" style="position:relative"><i
-          class="fas fa-comment-dots"></i><span id="floating-messages-unread" class="badge" style="position:absolute;top:-6px;right:-6px;display:none;min-width:20px;height:20px;padding:0 6px;border-radius:10px;background:var(--danger);color:#fff;font-size:.65rem;font-weight:700"><span id="messages-unread-count">0</span></span></div>
+          class="fas fa-comment-dots"></i><span id="floating-messages-unread" class="badge"
+          style="position:absolute;top:-6px;right:-6px;display:none;min-width:20px;height:20px;padding:0 6px;border-radius:10px;background:var(--danger);color:#fff;font-size:.65rem;font-weight:700"><span
+            id="messages-unread-count">0</span></span></div>
     </div>
   </div>
 
@@ -901,6 +905,7 @@
           <div class="nav-item" onclick="switchTab('school','messages',this)"><i class="fas fa-comments"></i> Messages
             <span class="badge">-</span>
           </div>
+
           <div class="sidebar-section">Account</div>
           <div class="nav-item" onclick="switchTab('school','settings',this)"><i class="fas fa-cog"></i> Settings</div>
           <div class="nav-item logout-btn" onclick="goToLogin()"><i class="fas fa-sign-out-alt"></i> Logout
@@ -1069,7 +1074,7 @@
                     </tr>
                   </thead>
                   <tbody>
-                    <!-- <tr>
+                    
                       <td>
                         <div style="display:flex;align-items:center;gap:10px">
                           <div class="avatar">LS</div>Loading student...
@@ -1161,13 +1166,13 @@
                     </tr>
                   </thead>
                   <tbody>
-                    <!-- <tr>
-                      <td>Loading student...</td>
-                      <td>Loading registration number...</td>
-                      <td>Loading week...</td>
-                      <td>Loading submitted...</td>
-                      <td><span class="tag approved">Loading grade...</span></td>
-                      <td><button class="btn btn-outline btn-sm">View</button></td>
+
+                    <td>Loading student...</td>
+                    <td>Loading registration number...</td>
+                    <td>Loading week...</td>
+                    <td>Loading submitted...</td>
+                    <td><span class="tag approved">Loading grade...</span></td>
+                    <td><button class="btn btn-outline btn-sm">View</button></td>
                     </tr>
                     <tr>
                       <td>Loading student...</td>
@@ -1599,7 +1604,8 @@
                     <i class="fas fa-arrow-left"></i>
                   </button>
                   <div class="messages-header-info">
-                    <div class="messages-contact-avatar" id="school-messages-contact-avatar" style="display:none;"></div>
+                    <div class="messages-contact-avatar" id="school-messages-contact-avatar" style="display:none;">
+                    </div>
                     <div>
                       <h3 id="school-messages-chat-title">Select a contact</h3>
                       <p id="school-messages-chat-subtitle">Choose a contact from the list to start messaging</p>
@@ -1619,7 +1625,8 @@
                 </div>
 
                 <div id="school-messages-send-row" class="messages-send-row">
-                  <textarea id="school-messages-textarea" class="messages-textarea" placeholder="Type a message..." rows="1"></textarea>
+                  <textarea id="school-messages-textarea" class="messages-textarea" placeholder="Type a message..."
+                    rows="1"></textarea>
                   <button id="school-messages-send-button" class="messages-send-button" disabled>
                     <i class="fas fa-paper-plane"></i>
                   </button>
@@ -1694,14 +1701,16 @@
           </div>
         </div>
         <div class="chat-input-row">
-          <input type="text" id="school-chat-input" placeholder="Type a message..." disabled style="cursor:not-allowed;opacity:.5">
+          <input type="text" id="school-chat-input" placeholder="Type a message..." disabled
+            style="cursor:not-allowed;opacity:.5">
           <div class="chat-send" style="cursor:not-allowed;opacity:.5"><i class="fas fa-paper-plane"></i></div>
         </div>
       </div>
       <!-- Floating message icon removed for supervisors - kept only for students -->
     </div>
   </div>
-  <!-- ============================================================ -->
+
+  <!-- ===========INDUSTRY SUPERVISOR DASHBOARD================= -->
   <div id="page-industry-supervisor" class="page" style="flex-direction:column">
     <div class="overlay-sidebar" id="overlay-industry" onclick="closeSidebar('sidebar-industry','overlay-industry')">
     </div>
@@ -1721,7 +1730,7 @@
           <div class="nav-item active" onclick="switchTab('industry','dashboard',this)"><i class="fas fa-th-large"></i>
             Dashboard</div>
           <div class="nav-item" onclick="switchTab('industry','requests',this)"><i class="fas fa-inbox"></i> Approval
-            Requests <span class="badge">5</span></div>
+            Requests <span class="badge" id="industry-requests-badge">0</span></div>
           <div class="nav-item" onclick="switchTab('industry','history',this)"><i class="fas fa-history"></i> Approval
             History</div>
           <div class="nav-item" onclick="switchTab('industry','interns',this)"><i class="fas fa-users"></i> My Interns
@@ -1769,11 +1778,9 @@
           <!-- DASHBOARD TAB -->
           <div id="industry-tab-dashboard" class="tab-content active">
             <div class="welcome-banner">
-              <h3>Welcome, Loading supervisor! 🏢</h3>
-              <p>You have <strong>5 tasks pending your approval</strong> from student interns at Stanbic Bank Uganda.
-              </p>
-              <div class="wb-badge"><i class="fas fa-building"></i> Loading placement... · Loading department...
-              </div>
+              <h3 id="industry-welcome-heading">Welcome! 🏢</h3>
+              <p id="industry-welcome-msg">Loading dashboard...</p>
+              <div class="wb-badge" id="industry-placement-badge"><i class="fas fa-building"></i> Loading...</div>
             </div>
             <div class="cards-grid">
               <div class="card">
@@ -1804,31 +1811,8 @@
                     class="fas fa-arrow-right"></i></span>
               </div>
               <div class="section-body">
-                <div class="request-list">
-                  <div class="request-card" onclick="openModal('approval-detail-modal')">
-                    <div class="avatar">LS</div>
-                    <div class="request-card-body">
-                      <h4>Loading task...</h4>
-                      <p>Loading student... · Loading registration number...</p>
-                      <div class="request-card-meta"><span class="tag onsite">Onsite</span> &nbsp; 6 hours &nbsp; ·
-                        &nbsp; Loading last log...</div>
-                    </div>
-                    <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px"><span
-                        class="tag pending">Loading status...</span><button
-                        class="btn btn-primary btn-sm">Review</button></div>
-                  </div>
-                  <div class="request-card" onclick="openModal('approval-detail-modal')">
-                    <div class="avatar">LS</div>
-                    <div class="request-card-body">
-                      <h4>Loading task...</h4>
-                      <p>Loading student... · Loading registration number...</p>
-                      <div class="request-card-meta"><span class="tag onsite">Onsite</span> &nbsp; 7 hours &nbsp; ·
-                        &nbsp; Loading last log...</div>
-                    </div>
-                    <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px"><span
-                        class="tag pending">Loading status...</span><button
-                        class="btn btn-primary btn-sm">Review</button></div>
-                  </div>
+                <div class="request-list" id="industry-dashboard-requests">
+                  <p style="padding:20px;color:var(--text2)">Loading...</p>
                 </div>
               </div>
             </div>
@@ -1902,27 +1886,7 @@
                     </tr>
                   </thead>
                   <tbody>
-                    <!-- <tr>
-                      <td>Loading last log...</td>
-                      <td>Loading student...</td>
-                      <td>Loading task...</td>
-                      <td><span class="tag approved">Loading status...</span></td>
-                      <td>Loading comment...</td>
-                    </tr>
-                    <tr>
-                      <td>Loading last log...</td>
-                      <td>Loading student...</td>
-                      <td>Loading task...</td>
-                      <td><span class="tag approved">Loading status...</span></td>
-                      <td>Loading comment...</td>
-                    </tr>
-                    <tr>
-                      <td>Loading last log...</td>
-                      <td>Amina Kibuuka</td>
-                      <td>Loading task...</td>
-                      <td><span class="tag rejected">Loading status...</span></td>
-                      <td>Loading comment...</td>
-                    </tr> -->
+
                   </tbody>
                 </table>
               </div>
@@ -1968,10 +1932,12 @@
                   <h3>Profile</h3>
                 </div>
                 <div class="section-body">
-                  <div class="form-group"><label>Full Name</label><input type="text" value="Mr. Moses Ouma"></div>
-                  <div class="form-group"><label>Organisation</label><input type="text" value="Stanbic Bank Uganda Ltd">
+                  <div class="form-group"><label>Full Name</label><input type="text" id="industry-profile-name"
+                      value=""></div>
+                  <div class="form-group"><label>Organisation</label><input type="text" id="industry-profile-org"
+                      value=""></div>
+                  <div class="form-group"><label>Email</label><input type="email" id="industry-profile-email" value="">
                   </div>
-                  <div class="form-group"><label>Email</label><input type="email" value="m.ouma@stanbic.co.ug"></div>
                   <button class="btn btn-primary btn-sm"><i class="fas fa-save"></i> Save Changes</button>
                 </div>
               </div>
@@ -2007,7 +1973,8 @@
                     <i class="fas fa-arrow-left"></i>
                   </button>
                   <div class="messages-header-info">
-                    <div class="messages-contact-avatar" id="industry-messages-contact-avatar" style="display:none;"></div>
+                    <div class="messages-contact-avatar" id="industry-messages-contact-avatar" style="display:none;">
+                    </div>
                     <div>
                       <h3 id="industry-messages-chat-title">Select a contact</h3>
                       <p id="industry-messages-chat-subtitle">Choose a contact from the list to start messaging</p>
@@ -2027,7 +1994,8 @@
                 </div>
 
                 <div id="industry-messages-send-row" class="messages-send-row">
-                  <textarea id="industry-messages-textarea" class="messages-textarea" placeholder="Type a message..." rows="1"></textarea>
+                  <textarea id="industry-messages-textarea" class="messages-textarea" placeholder="Type a message..."
+                    rows="1"></textarea>
                   <button id="industry-messages-send-button" class="messages-send-button" disabled>
                     <i class="fas fa-paper-plane"></i>
                   </button>
@@ -2600,7 +2568,8 @@
                 </div>
 
                 <div id="admin-messages-send-row" class="messages-send-row">
-                  <textarea id="admin-messages-textarea" class="messages-textarea" placeholder="Type a message..." rows="1"></textarea>
+                  <textarea id="admin-messages-textarea" class="messages-textarea" placeholder="Type a message..."
+                    rows="1"></textarea>
                   <button id="admin-messages-send-button" class="messages-send-button" disabled>
                     <i class="fas fa-paper-plane"></i>
                   </button>

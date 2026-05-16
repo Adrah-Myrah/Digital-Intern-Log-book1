@@ -72,14 +72,6 @@ body {
   width: 100%;
 }
 
-/* Topbar: Sticky inside main content */
-.topbar {
-  position: sticky;
-  top: 0;
-  z-index: 50;
-  background: var(--surface);
-}
-
 :root {
   --primary: #1a6b4a;
   --primary-light: #22874f;
@@ -741,14 +733,16 @@ ul {
 .topbar {
   background: var(--surface);
   border-bottom: 1px solid var(--border);
-  padding: 0 28px;
-  height: 64px;
+  padding: 0 32px;
+  height: 72px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   position: sticky;
   top: 0;
-  z-index: 50
+  z-index: 50;
+  box-shadow: 0 2px 12px rgba(26, 107, 74, 0.08);
+  gap: 16px;
 }
 
 .topbar-left {
@@ -760,7 +754,9 @@ ul {
 .topbar-title {
   font-family: var(--font-head);
   font-weight: 700;
-  font-size: 1.15rem
+  font-size: 1.25rem;
+  padding-left: 16px;
+  border-left: 3px solid var(--primary);
 }
 
 .topbar-right {
@@ -768,11 +764,10 @@ ul {
   align-items: center;
   gap: 10px
 }
-
 .topbar-btn {
-  width: 38px;
-  height: 38px;
-  border-radius: 9px;
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
   background: var(--bg2);
   border: 1px solid var(--border);
   display: flex;
@@ -781,7 +776,8 @@ ul {
   cursor: pointer;
   color: var(--text2);
   transition: all var(--transition);
-  position: relative
+  position: relative;
+  font-size: 1rem;
 }
 
 .topbar-btn:hover {
@@ -789,6 +785,8 @@ ul {
   color: #fff;
   border-color: var(--primary)
 }
+
+
 
 .notif-dot {
   width: 8px;
@@ -807,7 +805,8 @@ ul {
 
 .page-body {
   padding: 28px;
-  flex: 1
+  flex: 1;
+  background: var(--bg);
 }
 
 .page-header {
@@ -825,6 +824,7 @@ ul {
   color: var(--text2);
   font-size: .93rem
 }
+
 
 .welcome-banner {
   background: linear-gradient(120deg, var(--primary-dark), var(--primary), var(--primary-light));
