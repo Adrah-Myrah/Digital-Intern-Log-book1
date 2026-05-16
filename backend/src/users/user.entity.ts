@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn } from 'typeorm';
+import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity('users')
 export class User {
@@ -62,9 +62,25 @@ export class User {
   @Column({ nullable: true })
   internshipEndDate: string;
 
+  // Relationships
+  @ManyToOne(() => User, { nullable: true })
+  @JoinColumn({ name: 'schoolSupervisorId' })
+  schoolSupervisor: User | null;
+
   @Column({ type: 'int', nullable: true })
   schoolSupervisorId: number | null;
 
+  @ManyToOne(() => User, { nullable: true })
+  @JoinColumn({ name: 'industrySupervisorId' })
+  industrySupervisor: User | null;
+
   @Column({ type: 'int', nullable: true })
   industrySupervisorId: number | null;
+
+  // Reverse relationships for supervisors
+  @OneToMany(() => User, user => user.schoolSupervisor)
+  assignedSchoolStudents: User[];
+
+  @OneToMany(() => User, user => user.industrySupervisor)
+  assignedIndustryStudents: User[];
 }

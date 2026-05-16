@@ -19,7 +19,7 @@ async function bootstrap() {
   app.enableCors({
     origin: '*', // Tighten this in production
   });
-   // All routes prefixed with /api
+  // All routes prefixed with /api
   app.setGlobalPrefix('api');
 
   // Serve uploaded files statically

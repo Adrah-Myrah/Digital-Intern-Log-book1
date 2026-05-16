@@ -1,4 +1,14 @@
-import { Controller, Post, Get, Patch, Body, Param, ForbiddenException, Req, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Get,
+  Patch,
+  Body,
+  Param,
+  ForbiddenException,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import { MessagesService } from './messages.service';
 import { SendMessageDto } from './dto/send-message.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -14,7 +24,10 @@ export class MessagesController {
   @Post()
   @Roles('student', 'school-supervisor', 'industry-supervisor', 'admin')
   sendMessage(@Body() body: SendMessageDto, @Req() req: any) {
-    if (req.user.role !== 'admin' && Number(req.user.sub) !== Number(body.senderId)) {
+    if (
+      req.user.role !== 'admin' &&
+      Number(req.user.sub) !== Number(body.senderId)
+    ) {
       throw new ForbiddenException('You can only send as your own user');
     }
     return this.messagesService.sendMessage(body);
@@ -29,10 +42,19 @@ export class MessagesController {
     @Req() req: any,
   ) {
     const me = Number(req.user.sub);
-    if (req.user.role !== 'admin' && me !== Number(userId1) && me !== Number(userId2)) {
-      throw new ForbiddenException('You can only access your own conversations');
+    if (
+      req.user.role !== 'admin' &&
+      me !== Number(userId1) &&
+      me !== Number(userId2)
+    ) {
+      throw new ForbiddenException(
+        'You can only access your own conversations',
+      );
     }
-    return this.messagesService.getConversation(Number(userId1), Number(userId2));
+    return this.messagesService.getConversation(
+      Number(userId1),
+      Number(userId2),
+    );
   }
 
   // GET /api/messages/user/:userId — all conversations
@@ -40,7 +62,9 @@ export class MessagesController {
   @Roles('student', 'school-supervisor', 'industry-supervisor', 'admin')
   getUserConversations(@Param('userId') userId: string, @Req() req: any) {
     if (req.user.role !== 'admin' && Number(req.user.sub) !== Number(userId)) {
-      throw new ForbiddenException('You can only access your own conversation list');
+      throw new ForbiddenException(
+        'You can only access your own conversation list',
+      );
     }
     return this.messagesService.getUserConversations(Number(userId));
   }
@@ -63,9 +87,17 @@ export class MessagesController {
     @Param('receiverId') receiverId: string,
     @Req() req: any,
   ) {
-    if (req.user.role !== 'admin' && Number(req.user.sub) !== Number(receiverId)) {
-      throw new ForbiddenException('You can only mark messages sent to you as read');
+    if (
+      req.user.role !== 'admin' &&
+      Number(req.user.sub) !== Number(receiverId)
+    ) {
+      throw new ForbiddenException(
+        'You can only mark messages sent to you as read',
+      );
     }
-    return this.messagesService.markAsRead(Number(senderId), Number(receiverId));
+    return this.messagesService.markAsRead(
+      Number(senderId),
+      Number(receiverId),
+    );
   }
 }

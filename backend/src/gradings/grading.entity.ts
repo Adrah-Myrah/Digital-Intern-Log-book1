@@ -1,4 +1,9 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn } from 'typeorm';
+import {
+    Column,
+    CreateDateColumn,
+    Entity,
+    PrimaryGeneratedColumn,
+} from 'typeorm';
 
 @Entity('gradings')
 export class Grading {
@@ -39,12 +44,34 @@ export class Grading {
   @Column({ nullable: true, type: 'text' })
   communicationObservations: string | null;
 
-  // Industry Evaluation (20%)
+  // Industry Evaluation (20%) - Detailed criteria from industry supervisor
   @Column({ nullable: true })
   industryPerformance: string;
 
   @Column({ nullable: true, type: 'text' })
   industryComments: string | null;
+
+  // Industry Supervisor Detailed Grading (30 marks total)
+  @Column({ nullable: true, default: 0 })
+  enthusiasm: number; // Enthusiasm in organization activities (5 marks)
+
+  @Column({ nullable: true, default: 0 })
+  technicalCompetence: number; // Technical competence (5 marks)
+
+  @Column({ nullable: true, default: 0 })
+  punctuality: number; // Punctuality (5 marks)
+
+  @Column({ nullable: true, default: 0 })
+  presentationSmartness: number; // Presentation smartness (5 marks)
+
+  @Column({ nullable: true, default: 0 })
+  superiorSubordinateRelationship: number; // Superior-subordinate relationship (5 marks)
+
+  @Column({ nullable: true, default: 0 })
+  adherenceToPolicies: number; // Adherence to organization goals, procedures and policies (5 marks)
+
+  @Column({ nullable: true, default: 0 })
+  industrySupervisorTotal: number; // Total marks from industry supervisor (max 30)
 
   // Overall
   @Column({ nullable: true })

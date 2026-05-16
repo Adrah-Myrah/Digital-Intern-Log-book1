@@ -46,21 +46,27 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { AuthModule } from './auth/auth.module';
+import { Grading } from './gradings/grading.entity';
+import { GradingsModule } from './gradings/gradings.module';
+import { Comment } from './logs/comment.entity';
+import { Log } from './logs/log.entity';
+import { LogsModule } from './logs/logs.module';
+import { Message } from './messages/message.entity';
+import { MessagesModule } from './messages/messages.module';
+import { Notification } from './notifications/notification.entity';
+import { NotificationsModule } from './notifications/notifications.module';
+import { Organization } from './organizations/organization.entity';
+import { Placement } from './placements/placement.entity';
+import { PlacementsModule } from './placements/placements.module';
+import { Report } from './reports/report.entity';
+import { ReportsModule } from './reports/reports.module';
+import { Setting } from './settings/setting.entity';
+import { SettingsModule } from './settings/settings.module';
+import { Supervision } from './supervisions/supervision.entity';
+import { SupervisionsModule } from './supervisions/supervisions.module';
 import { User } from './users/user.entity';
 import { UsersModule } from './users/users.module';
-import { AuthModule } from './auth/auth.module';
-import { LogsModule } from './logs/logs.module';
-import { Log } from './logs/log.entity';
-import { SupervisionsModule } from './supervisions/supervisions.module';
-import { Supervision } from './supervisions/supervision.entity';
-import { GradingsModule } from './gradings/gradings.module';
-import { Grading } from './gradings/grading.entity';
-import { ReportsModule } from './reports/reports.module';
-import { Report } from './reports/report.entity';
-import { SettingsModule } from './settings/settings.module';
-import { Setting } from './settings/setting.entity';
-import { MessagesModule } from './messages/messages.module';
-import { Message } from './messages/message.entity';
 
 @Module({
   imports: [
@@ -74,13 +80,25 @@ import { Message } from './messages/message.entity';
         username: config.get('DB_USER'),
         password: config.get('DB_PASSWORD'),
         database: config.get('DB_NAME'),
-        ssl: true,                          
+        ssl: true,
         extra: {
           ssl: {
-            rejectUnauthorized: false,      
+            rejectUnauthorized: false,
           },
         },
-        entities: [User, Log, Supervision, Grading, Report, Setting, Message],
+        entities: [
+          User,
+          Log,
+          Comment,
+          Supervision,
+          Grading,
+          Report,
+          Setting,
+          Message,
+          Placement,
+          Organization,
+          Notification,
+        ],
         autoLoadEntities: true,
         synchronize: true,
       }),
@@ -89,6 +107,8 @@ import { Message } from './messages/message.entity';
     UsersModule,
     AuthModule,
     LogsModule,
+    PlacementsModule,
+    NotificationsModule,
     SupervisionsModule,
     GradingsModule,
     ReportsModule,
@@ -96,4 +116,4 @@ import { Message } from './messages/message.entity';
     MessagesModule,
   ],
 })
-export class AppModule { }
+export class AppModule {}

@@ -1,9 +1,21 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn } from 'typeorm';
+import {
+    Column,
+    CreateDateColumn,
+    Entity,
+    JoinColumn,
+    ManyToOne,
+    PrimaryGeneratedColumn,
+} from 'typeorm';
+import { User } from '../users/user.entity';
 
 @Entity('logs')
 export class Log {
   @PrimaryGeneratedColumn()
   id: number;
+
+  @ManyToOne(() => User)
+  @JoinColumn({ name: 'studentId' })
+  student: User;
 
   @Column()
   studentId: number;
@@ -37,6 +49,13 @@ export class Log {
 
   @Column({ nullable: true, type: 'text' })
   supervisorComment: string | null;
+
+  @Column({ nullable: true, type: 'text' })
+  approvalComment: string | null;
+
+  @ManyToOne(() => User, { nullable: true })
+  @JoinColumn({ name: 'approvedBy' })
+  approvedBySupervisor: User | null;
 
   @Column({ nullable: true })
   approvedBy: number;

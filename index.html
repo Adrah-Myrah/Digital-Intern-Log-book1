@@ -996,8 +996,8 @@
                       <th>Student</th>
                       <th>Reg. No.</th>
                       <th>Placement</th>
+                      <th>Submitted Logs</th>
                       <th>Progress</th>
-                      <th>Last Log</th>
                       <th>Status</th>
                       <th></th>
                     </tr>
@@ -1468,19 +1468,69 @@
                         style="font-size:.8rem;color:var(--text3);background:var(--bg2);padding:4px 8px;border-radius:4px">20%
                         Weight</span>
                     </div>
-                    <div class="form-group">
-                      <label>Overall Performance</label>
-                      <select
-                        style="width:100%;padding:9px;border:1.5px solid var(--border);border-radius:6px;background:var(--surface2)">
-                        <option>Exceeds Expectations</option>
-                        <option>Meets Expectations</option>
-                        <option>Below Expectations</option>
-                      </select>
+
+                    <!-- Industry Supervisor Detailed Criteria -->
+                    <div style="background:var(--bg2);padding:16px;border-radius:8px;margin-bottom:16px">
+                      <h5 style="margin:0 0 12px 0;color:var(--primary)">Detailed Assessment (30 marks total)</h5>
+
+                      <div class="form-group" style="margin-bottom:12px">
+                        <label style="display:flex;justify-content:space-between;align-items:center">
+                          <span>Enthusiasm in organization activities</span>
+                          <span style="font-size:.8rem;color:var(--text3)">5 marks</span>
+                        </label>
+                        <input type="number" min="0" max="5" placeholder="0-5" style="width:100%" id="enthusiasm">
+                      </div>
+
+                      <div class="form-group" style="margin-bottom:12px">
+                        <label style="display:flex;justify-content:space-between;align-items:center">
+                          <span>Technical competence</span>
+                          <span style="font-size:.8rem;color:var(--text3)">5 marks</span>
+                        </label>
+                        <input type="number" min="0" max="5" placeholder="0-5" style="width:100%" id="technical-competence">
+                      </div>
+
+                      <div class="form-group" style="margin-bottom:12px">
+                        <label style="display:flex;justify-content:space-between;align-items:center">
+                          <span>Punctuality</span>
+                          <span style="font-size:.8rem;color:var(--text3)">5 marks</span>
+                        </label>
+                        <input type="number" min="0" max="5" placeholder="0-5" style="width:100%" id="punctuality">
+                      </div>
+
+                      <div class="form-group" style="margin-bottom:12px">
+                        <label style="display:flex;justify-content:space-between;align-items:center">
+                          <span>Presentation smartness</span>
+                          <span style="font-size:.8rem;color:var(--text3)">5 marks</span>
+                        </label>
+                        <input type="number" min="0" max="5" placeholder="0-5" style="width:100%" id="presentation-smartness">
+                      </div>
+
+                      <div class="form-group" style="margin-bottom:12px">
+                        <label style="display:flex;justify-content:space-between;align-items:center">
+                          <span>Superior-subordinate relationship</span>
+                          <span style="font-size:.8rem;color:var(--text3)">5 marks</span>
+                        </label>
+                        <input type="number" min="0" max="5" placeholder="0-5" style="width:100%" id="superior-relationship">
+                      </div>
+
+                      <div class="form-group" style="margin-bottom:12px">
+                        <label style="display:flex;justify-content:space-between;align-items:center">
+                          <span>Adherence to organization goals, procedures and policies</span>
+                          <span style="font-size:.8rem;color:var(--text3)">5 marks</span>
+                        </label>
+                        <input type="number" min="0" max="5" placeholder="0-5" style="width:100%" id="adherence-policies">
+                      </div>
+
+                      <div style="display:flex;justify-content:space-between;align-items:center;padding:12px;background:var(--surface);border-radius:6px">
+                        <strong>Total Score:</strong>
+                        <span id="industry-total" style="font-weight:700;color:var(--primary)">0/30</span>
+                      </div>
                     </div>
+
                     <div class="form-group">
                       <label>Supervisor Comments</label>
                       <textarea placeholder="Comments from industry supervisor..." rows="3"
-                        style="width:100%"></textarea>
+                        style="width:100%" id="industry-comments"></textarea>
                     </div>
                   </div>
 
@@ -1645,6 +1695,8 @@
             History</div>
           <div class="nav-item" onclick="switchTab('industry','interns',this)"><i class="fas fa-users"></i> My Interns
           </div>
+          <div class="nav-item" onclick="switchTab('industry','grading',this)"><i class="fas fa-star"></i> Student Grading
+          </div>
           <div class="sidebar-section">Account</div>
           <div class="nav-item" onclick="switchTab('industry','settings',this)"><i class="fas fa-cog"></i> Settings
           </div>
@@ -1667,13 +1719,15 @@
                 <div
                   style="padding:12px 16px;border-bottom:1px solid var(--border);font-size:.82rem;font-weight:700;color:var(--text2)">
                   Notifications</div>
-                <div class="notif-item">
-                  <div class="notif-icon" style="background:rgba(245,166,35,.12);color:var(--warning)"><i
-                      class="fas fa-clock"></i></div>
-                  <div class="notif-text">
-                    <h5>5 Pending Approvals</h5>
-                    <p>Student tasks awaiting your review</p>
-                    <div class="notif-time">Now</div>
+                <div id="industry-notif-list" style="min-width:320px">
+                  <div class="notif-item">
+                    <div class="notif-icon" style="background:rgba(245,166,35,.12);color:var(--warning)"><i
+                        class="fas fa-clock"></i></div>
+                    <div class="notif-text">
+                      <h5>Loading notifications...</h5>
+                      <p>Checking for the latest updates</p>
+                      <div class="notif-time">Now</div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -1846,38 +1900,139 @@
               <h2>My Interns</h2>
               <p>Students placed at your organisation</p>
             </div>
-            <div class="student-cards-grid">
-              <div class="student-card">
-                <div class="student-card-top">
-                  <div class="avatar avatar-lg">AK</div>
-                  <div class="student-card-info">
-                    <h4>Loading student...</h4>
-                    <p>Loading registration number... · Loading course...</p>
-                  </div>
-                </div>
-                <div class="student-card-meta"><span>Loading placement...</span><span><span
-                        class="approved-dot"></span>Loading status...</span></div>
-                <div style="font-size:.8rem;color:var(--text2);margin-bottom:6px">Overall Progress</div>
-                <div class="prog-bar">
-                  <div class="prog-fill" style="width:72%"></div>
-                </div>
-                <div style="font-size:.78rem;color:var(--text3);margin-top:4px;text-align:right">-</div>
+
+            <!-- Link Students Section -->
+            <div class="section-card" style="margin-bottom:24px">
+              <div class="section-head">
+                <h3>Link Student by Registration Number</h3>
               </div>
-              <div class="student-card">
-                <div class="student-card-top">
-                  <div class="avatar avatar-lg" style="background:linear-gradient(135deg,#d97706,#f59e0b)">BN</div>
-                  <div class="student-card-info">
-                    <h4>Loading student...</h4>
-                    <p>Loading registration number... · Loading course...</p>
+              <div style="display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap">
+                <div class="form-group" style="flex:1;min-width:200px;margin:0">
+                  <label style="font-size:.9rem">Registration Number(s)</label>
+                  <input type="text" id="industry-link-reg-numbers" placeholder="Enter one or more registration numbers (comma separated)" style="width:100%;padding:10px 14px;border:1.5px solid var(--border);border-radius:9px;font-size:.88rem;background:var(--surface2);color:var(--text);outline:none">
+                </div>
+                <button class="btn btn-primary" onclick="linkIndustryStudents()" style="padding:10px 20px"><i class="fas fa-plus"></i> Link Student(s)</button>
+              </div>
+              <div id="industry-link-message" style="margin-top:12px;display:none;padding:12px;border-radius:8px;font-size:.88rem"></div>
+            </div>
+
+            <div id="industry-interns-empty" style="text-align:center;padding:40px 20px;color:var(--text2)">
+              <i class="fas fa-users" style="font-size:3rem;margin-bottom:16px;display:block;opacity:.5"></i>
+              <p style="margin:0;font-size:.95rem">No students assigned yet</p>
+              <p style="margin:8px 0 0 0;font-size:.85rem">Link students above to get started</p>
+            </div>
+
+            <div class="student-cards-grid" id="industry-interns-grid">
+            </div>
+            </div>
+
+            <!-- GRADING TAB -->
+          <div id="industry-tab-grading" class="tab-content">
+            <div class="page-header">
+              <h2>Student Grading</h2>
+              <p>Evaluate your interns' performance</p>
+            </div>
+            <div class="section-card">
+              <div class="section-head">
+                <h3>Grading Form</h3>
+                <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+                  <select id="industry-grading-student-select"
+                    style="padding:9px 14px;border:1.5px solid var(--border);border-radius:9px;font-size:.88rem;background:var(--surface2);color:var(--text);outline:none">
+                    <option value="">Select Intern...</option>
+                  </select>
+                  <button class="btn btn-primary btn-sm" onclick="loadIndustryGradingForm()"><i class="fas fa-search"></i> Load Form</button>
+                </div>
+              </div>
+
+              <div id="industry-grading-form-container" style="display:none">
+                <div class="grading-header"
+                  style="display:flex;align-items:center;gap:16px;margin-bottom:24px;padding-bottom:16px;border-bottom:1px solid var(--border)">
+                  <div class="avatar avatar-lg">AK</div>
+                  <div>
+                    <h4 style="margin:0 0 4px 0">Loading student...</h4>
+                    <p style="margin:0;color:var(--text2);font-size:.88rem">Loading registration number...</p>
+                    <p style="margin:4px 0 0 0;color:var(--text2);font-size:.88rem">Placement: Loading placement...</p>
                   </div>
                 </div>
-                <div class="student-card-meta"><span>Loading placement...</span><span><span
-                      class="approved-dot"></span>Loading status...</span></div>
-                <div style="font-size:.8rem;color:var(--text2);margin-bottom:6px">Overall Progress</div>
-                <div class="prog-bar">
-                  <div class="prog-fill" style="width:61%"></div>
+
+                <div class="grading-criteria">
+                  <div class="grading-section" style="margin-bottom:24px">
+                    <div class="section-title"
+                      style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+                      <div style="display:flex;align-items:center;gap:8px">
+                        <i class="fas fa-building" style="color:var(--primary)"></i>
+                        <strong>Internship Performance Assessment</strong>
+                      </div>
+                      <span
+                        style="font-size:.8rem;color:var(--text3);background:var(--bg2);padding:4px 8px;border-radius:4px">30 marks total</span>
+                    </div>
+
+                    <div class="form-group" style="margin-bottom:12px">
+                      <label style="display:flex;justify-content:space-between;align-items:center">
+                        <span>Enthusiasm in organization activities</span>
+                        <span style="font-size:.8rem;color:var(--text3)">5 marks</span>
+                      </label>
+                      <input type="number" min="0" max="5" placeholder="0-5" style="width:100%" id="industry-enthusiasm">
+                    </div>
+
+                    <div class="form-group" style="margin-bottom:12px">
+                      <label style="display:flex;justify-content:space-between;align-items:center">
+                        <span>Technical competence</span>
+                        <span style="font-size:.8rem;color:var(--text3)">5 marks</span>
+                      </label>
+                      <input type="number" min="0" max="5" placeholder="0-5" style="width:100%" id="industry-technical-competence">
+                    </div>
+
+                    <div class="form-group" style="margin-bottom:12px">
+                      <label style="display:flex;justify-content:space-between;align-items:center">
+                        <span>Punctuality</span>
+                        <span style="font-size:.8rem;color:var(--text3)">5 marks</span>
+                      </label>
+                      <input type="number" min="0" max="5" placeholder="0-5" style="width:100%" id="industry-punctuality">
+                    </div>
+
+                    <div class="form-group" style="margin-bottom:12px">
+                      <label style="display:flex;justify-content:space-between;align-items:center">
+                        <span>Presentation smartness</span>
+                        <span style="font-size:.8rem;color:var(--text3)">5 marks</span>
+                      </label>
+                      <input type="number" min="0" max="5" placeholder="0-5" style="width:100%" id="industry-presentation-smartness">
+                    </div>
+
+                    <div class="form-group" style="margin-bottom:12px">
+                      <label style="display:flex;justify-content:space-between;align-items:center">
+                        <span>Superior-subordinate relationship</span>
+                        <span style="font-size:.8rem;color:var(--text3)">5 marks</span>
+                      </label>
+                      <input type="number" min="0" max="5" placeholder="0-5" style="width:100%" id="industry-superior-relationship">
+                    </div>
+
+                    <div class="form-group" style="margin-bottom:12px">
+                      <label style="display:flex;justify-content:space-between;align-items:center">
+                        <span>Adherence to organization goals, procedures and policies</span>
+                        <span style="font-size:.8rem;color:var(--text3)">5 marks</span>
+                      </label>
+                      <input type="number" min="0" max="5" placeholder="0-5" style="width:100%" id="industry-adherence-policies">
+                    </div>
+
+                    <div style="display:flex;justify-content:space-between;align-items:center;padding:12px;background:var(--surface);border-radius:6px;margin-bottom:16px">
+                      <strong>Total Score:</strong>
+                      <span id="industry-grading-total" style="font-weight:700;color:var(--primary)">0/30</span>
+                    </div>
+
+                    <div class="form-group">
+                      <label>Supervisor Comments</label>
+                      <textarea placeholder="Additional comments about the intern's performance..." rows="4"
+                        style="width:100%" id="industry-grading-comments"></textarea>
+                    </div>
+
+                    <div style="display:flex;gap:12px;margin-top:16px">
+                      <button class="btn btn-primary" onclick="submitIndustryGrading()"><i class="fas fa-save"></i> Submit Grading</button>
+                      <button class="btn btn-outline"
+                        onclick="document.getElementById('industry-grading-form-container').style.display='none'">Cancel</button>
+                    </div>
+                  </div>
                 </div>
-                <div style="font-size:.78rem;color:var(--text3);margin-top:4px;text-align:right">61%</div>
               </div>
             </div>
           </div>
@@ -2504,30 +2659,38 @@
 
   <!-- Log Detail Modal -->
   <div class="modal-overlay" id="log-detail-modal">
-    <div class="modal">
+    <div class="modal" style="max-width:700px">
       <div class="modal-head">
         <h3>Log Entry Detail</h3>
         <div class="modal-close" onclick="closeModal('log-detail-modal')"><i class="fas fa-times"></i></div>
       </div>
-      <div style="background:var(--bg2);border-radius:var(--radius-sm);padding:16px;margin-bottom:18px">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px"><span
-            class="tag onsite">Onsite</span><span class="gps-badge"><i class="fas fa-check"></i> GPS Verified ·
-            0.3476°N, 32.5825°E</span></div>
-        <h4 style="font-size:1.05rem;margin-bottom:6px">Loading task...</h4>
-        <div style="font-size:.82rem;color:var(--text2)">Loading last log...</div>
+      <div class="form-group"><label>Title</label>
+        <div id="log-detail-title" style="font-size:1.05rem;font-weight:700;">Loading task...</div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(3,minmax(120px,1fr));gap:12px;margin-bottom:18px">
+        <div class="form-group"><label>Date</label><div id="log-detail-date" style="color:var(--text2);">Loading date...</div></div>
+        <div class="form-group"><label>Hours Worked</label><div id="log-detail-hours" style="color:var(--text2);">Loading hours...</div></div>
+        <div class="form-group"><label>Status</label><div id="log-detail-status"><span class="tag pending">Loading status...</span></div></div>
       </div>
       <div class="form-group"><label>Description</label>
-        <div
-          style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px;font-size:.9rem;line-height:1.7;color:var(--text2)">
+        <div id="log-detail-description" style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px;font-size:.9rem;line-height:1.7;color:var(--text2);min-height:80px">
           Loading description...</div>
       </div>
-      <div class="form-group"><label>Skills Applied</label>
-        <div style="font-size:.9rem">Loading skills...</div>
+      <div class="form-group"><label>Activities Performed</label>
+        <div id="log-detail-skills" style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px;font-size:.9rem;line-height:1.7;color:var(--text2);min-height:50px">
+          Loading activities...</div>
       </div>
-      <div class="form-group"><label>Status</label><span class="tag approved">Approved by Loading supervisor... · Loading last log...</span>
+      <div class="form-group"><label>Challenges Faced</label>
+        <div id="log-detail-challenges" style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px;font-size:.9rem;line-height:1.7;color:var(--text2);min-height:50px">
+          Loading challenges...</div>
       </div>
-      <div class="form-group"><label>Supervisor Comment</label>
-        <div style="font-style:italic;color:var(--text2);font-size:.9rem">"Loading comment..."</div>
+      <div class="form-group"><label>Attachments</label>
+        <div id="log-detail-attachments" style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px;font-size:.9rem;line-height:1.7;color:var(--text2);min-height:40px">
+          Loading attachments...</div>
+      </div>
+      <div class="form-group"><label>Supervisor Comments</label>
+        <div id="log-detail-comments" style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px;font-size:.9rem;line-height:1.7;color:var(--text2);min-height:50px">
+          Loading comments...</div>
       </div>
       <button class="btn btn-outline" onclick="closeModal('log-detail-modal')"><i class="fas fa-times"></i>
         Close</button>
@@ -2538,7 +2701,7 @@
   <div class="modal-overlay" id="student-profile-modal">
     <div class="modal" style="max-width:640px">
       <div class="modal-head">
-        <h3>Student Profile</h3>
+        <h3>Student Logs</h3>
         <div class="modal-close" onclick="closeModal('student-profile-modal')"><i class="fas fa-times"></i></div>
       </div>
       <div class="profile-header">
@@ -2576,7 +2739,7 @@
         <div style="font-size:.8rem;color:var(--text3);margin-top:4px">Loading progress... · 38/56 days completed</div>
       </div>
       <div class="section-head" style="margin-bottom:12px">
-        <h3>Recent Log Entries</h3>
+        <h3>Student Log Entries</h3>
       </div>
       <div class="table-wrap">
         <table>
@@ -2584,7 +2747,9 @@
             <tr>
               <th>Date</th>
               <th>Task</th>
+              <th>Hours</th>
               <th>Status</th>
+              <th>Action</th>
             </tr>
           </thead>
           <tbody>

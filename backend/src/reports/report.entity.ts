@@ -1,4 +1,9 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  CreateDateColumn,
+} from 'typeorm';
 
 @Entity('reports')
 export class Report {
@@ -15,7 +20,7 @@ export class Report {
   fileUrl: string;
 
   @Column({ default: 'submitted' })
-  status: string;           // submitted / reviewed / graded
+  status: string; // submitted / reviewed / graded
 
   @Column({ nullable: true })
   reviewedBy: number;

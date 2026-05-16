@@ -19,7 +19,11 @@ export class SettingsService {
     return this.settingsRepository.find();
   }
 
-  async setSetting(key: string, value: string, label?: string): Promise<Setting> {
+  async setSetting(
+    key: string,
+    value: string,
+    label?: string,
+  ): Promise<Setting> {
     let setting = await this.settingsRepository.findOne({ where: { key } });
     if (setting) {
       setting.value = value;

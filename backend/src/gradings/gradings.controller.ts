@@ -1,6 +1,9 @@
-import { Controller, Post, Get, Patch, Param, Body } from '@nestjs/common';
-import { GradingsService } from './gradings.service';
+import { Body, Controller, Get, Param, Patch, Post, Req, UseGuards } from '@nestjs/common';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { Roles } from '../auth/guards/roles.decorator';
+import { RolesGuard } from '../auth/guards/roles.guard';
 import { CreateGradingDto } from './dto/create-grading.dto';
+import { GradingsService } from './gradings.service';
 
 @Controller('gradings')
 export class GradingsController {
@@ -38,7 +41,35 @@ export class GradingsController {
 
   // PATCH /api/gradings/:id — update a grading
   @Patch(':id')
-  updateGrading(@Param('id') id: string, @Body() body: Partial<CreateGradingDto>) {
+  updateGrading(
+    @Param('id') id: string,
+    @Body() body: Partial<CreateGradingDto>,
+  ) {
     return this.gradingsService.updateGrading(Number(id), body);
+  }
+
+  // POST /api/gradings/industry/:studentId — industry supervisor submits grading
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('industry-supervisor')
+  @Post('industry/:studentId')
+  submitIndustryGrading(
+    @Param('studentId') studentId: string,
+    @Body()
+    body: {
+      enthusiasm: number;
+      technicalCompetence: number;
+      punctuality: number;
+      presentationSmartness: number;
+      superiorSubordinateRelationship: number;
+      adherenceToPolicies: number;
+      industryComments?: string;
+    },
+    @Req() req: any,
+  ) {
+    return this.gradingsService.submitIndustryGrading(
+      Number(req.user.sub),
+      Number(studentId),
+      body,
+    );
   }
 }

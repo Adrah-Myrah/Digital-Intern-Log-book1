@@ -19,7 +19,9 @@ export class SupervisionsService {
   }
 
   // Get all supervisions for a supervisor
-  async getSupervisorSupervisions(supervisorId: number): Promise<Supervision[]> {
+  async getSupervisorSupervisions(
+    supervisorId: number,
+  ): Promise<Supervision[]> {
     return this.supervisionsRepository.find({
       where: { supervisorId },
       order: { createdAt: 'DESC' },
@@ -36,14 +38,21 @@ export class SupervisionsService {
 
   // Get single supervision
   async getSupervisionById(id: number): Promise<Supervision> {
-    const supervision = await this.supervisionsRepository.findOne({ where: { id } });
+    const supervision = await this.supervisionsRepository.findOne({
+      where: { id },
+    });
     if (!supervision) throw new NotFoundException('Supervision not found');
     return supervision;
   }
 
   // Submit assessment after visit
-  async submitAssessment(id: number, dto: SubmitAssessmentDto): Promise<Supervision> {
-    const supervision = await this.supervisionsRepository.findOne({ where: { id } });
+  async submitAssessment(
+    id: number,
+    dto: SubmitAssessmentDto,
+  ): Promise<Supervision> {
+    const supervision = await this.supervisionsRepository.findOne({
+      where: { id },
+    });
     if (!supervision) throw new NotFoundException('Supervision not found');
 
     Object.assign(supervision, dto);

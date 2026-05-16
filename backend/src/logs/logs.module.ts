@@ -1,15 +1,19 @@
 import { Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { Log } from './log.entity';
-import { LogsService } from './logs.service';
-import { LogsController } from './logs.controller';
+import { JwtModule } from '@nestjs/jwt';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { Notification } from '../notifications/notification.entity';
+import { Placement } from '../placements/placement.entity';
 import { User } from '../users/user.entity';
+import { Comment } from './comment.entity';
+import { IndustrySupervisorController } from './industry-supervisor.controller';
+import { Log } from './log.entity';
+import { LogsController } from './logs.controller';
+import { LogsService } from './logs.service';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Log, User]),
+    TypeOrmModule.forFeature([Log, User, Placement, Notification, Comment]),
     JwtModule.registerAsync({
       imports: [ConfigModule],
       useFactory: (config: ConfigService) => ({
@@ -20,7 +24,7 @@ import { User } from '../users/user.entity';
     }),
   ],
   providers: [LogsService],
-  controllers: [LogsController],
+  controllers: [LogsController, IndustrySupervisorController],
   exports: [LogsService],
 })
 export class LogsModule {}
